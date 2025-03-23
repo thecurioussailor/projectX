@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int        @id @default(autoincrement())
+  username        String     @unique
+  password        String
+  name            String?
+  email           String?    @unique
+  role            Role       @default(USER)
+  phone           String?    @unique
+  emailVerified   Boolean    @default(false)
+  emailVerifiedAt DateTime?
+  wallet          Decimal    @default(0.0)
+  createdAt       DateTime   @default(now())
+
+  plans           Plan[]
+  products        DigitalProduct[]
+  orders          Order[]
+  subscriptions   Subscription[]
+  shortenedLinks  ShortenedLink[]
+  transactions    Transaction[]
+  telegramChannel TelegramChannel[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Plan {
+  id        String    @id @default(cuid())
+  name      String
+  price     Decimal
+  duration  Int       // Days for validity
+  status    String    @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt DateTime  @default(now())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  subscriptions Subscription[]
+}
+
+model DigitalProduct {
+  id          String    @id @default(cuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  name        String
+  description String?
+  price       Decimal
+  status      String    @default("ACTIVE") // ACTIVE, INACTIVE
+  image       String?
+  documents   String[]  // Store URLs for PDFs, images, videos
+  createdAt   DateTime  @default(now())
+
+  orders      Order[]
+}
+
+model Order {
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  product    DigitalProduct @relation(fields: [productId], references: [id])
+  productId  String
+  status     String    @default("PENDING") // PENDING, SUCCESS, FAILED
+  method     String    // Payment method like Stripe, Razorpay
+  transactionId String?
+  createdAt  DateTime  @default(now())
+
+  transaction Transaction?
+}
+
+model Subscription {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+  plan      Plan      @relation(fields: [planId], references: [id])
+  planId    String
+  expiryDate DateTime
+  status    String    @default("ACTIVE") // ACTIVE, EXPIRED
+  createdAt DateTime  @default(now())
+}
+
+model ShortenedLink {
+  id          String    @id @default(cuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  originalUrl String
+  shortUrl    String    @unique
+  views       Int       @default(0)
+  createdAt   DateTime  @default(now())
+}
+
+model Transaction {
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  amount     Decimal
+  status     String    @default("PENDING") // PENDING, SUCCESS, FAILED
+  orderId    String?   @unique
+  createdAt  DateTime  @default(now())
+
+  order      Order?    @relation(fields: [orderId], references: [id])
+}
+
+model TelegramChannel {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  channelId   String   @unique
+  botAdded    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Setting {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  logo        String?
+  email       String
+  phone       String
+  createdAt   DateTime @default(now())
+}
