@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { create } from 'zustand';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // User interface
 export interface User {
