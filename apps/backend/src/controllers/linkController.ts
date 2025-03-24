@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "@repo/db/client";
+import { prismaClient } from "@repo/db/client";
 
 // Custom function to generate a random short ID
 const generateShortId = (length = 8) => {
@@ -30,7 +30,7 @@ export const createLink = async (req: Request, res: Response) => {
     const baseUrl = `${req.protocol}://${req.get("host")}/api/v1/links`;
     const shortUrl = `${baseUrl}/${shortId}`;
 
-    const link = await prisma.link.create({
+    const link = await prismaClient.link.create({
       data: {
         originalUrl,
         shortId,
@@ -63,7 +63,7 @@ export const getUserLinks = async (req: Request, res: Response) => {
     }
 
     
-    const links = await prisma.link.findMany({
+    const links = await prismaClient.link.findMany({
       where: {
         userId: req.user.id,
       },
@@ -89,7 +89,7 @@ export const redirectToOriginalUrl = async (req: Request, res: Response) => {
   try {
     const { shortId } = req.params;
 
-    const link = await prisma.link.findUnique({
+    const link = await prismaClient.link.findUnique({
       where: {
         shortId,
       },
@@ -104,7 +104,7 @@ export const redirectToOriginalUrl = async (req: Request, res: Response) => {
     }
 
     
-    await prisma.link.update({
+    await prismaClient.link.update({
       where: {
         id: link.id,
       },
@@ -130,7 +130,7 @@ export const getLinkStats = async (req: Request, res: Response) => {
   try {
     const { shortId } = req.params;
     
-    const link = await prisma.link.findUnique({
+    const link = await prismaClient.link.findUnique({
       where: {
         shortId,
       },
@@ -168,7 +168,7 @@ export const deleteLink = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     
-    const link = await prisma.link.findUnique({
+    const link = await prismaClient.link.findUnique({
       where: { id },
     });
 
@@ -189,7 +189,7 @@ export const deleteLink = async (req: Request, res: Response) => {
       return;
     }
 
-    await prisma.link.delete({
+    await prismaClient.link.delete({
       where: { id },
     });
 

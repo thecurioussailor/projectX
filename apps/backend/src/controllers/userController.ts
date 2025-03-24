@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from '@repo/db/client';
+import { prismaClient } from '@repo/db/client';
 
 export const getProfile = async (req: Request, res: Response) => {
   try {
@@ -11,7 +11,7 @@ export const getProfile = async (req: Request, res: Response) => {
       return;
     }
     
-    const user = await prisma.user.findUnique({
+    const user = await prismaClient.user.findUnique({
       where: { id: req.user.id },
       select: {
         id: true,
@@ -59,7 +59,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     
     const { name, email, phone } = req.body;
     
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prismaClient.user.update({
       where: { id: req.user.id },
       data: {
         ...(name && { name }),
@@ -104,7 +104,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const users = await prisma.user.findMany({
+    const users = await prismaClient.user.findMany({
       select: {
         id: true,
         username: true,
@@ -142,7 +142,7 @@ export const getUserById = async (req: Request, res: Response) => {
       return;
     }
     
-    const user = await prisma.user.findUnique({
+    const user = await prismaClient.user.findUnique({
       where: { id: Number(id) },
       select: {
         id: true,
@@ -190,7 +190,7 @@ export const deleteUserById = async (req: Request, res: Response) => {
     }
     
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prismaClient.user.findUnique({
       where: { id: Number(id) }
     });
     
@@ -204,7 +204,7 @@ export const deleteUserById = async (req: Request, res: Response) => {
     
     // Prevent deleting the last admin
     if (existingUser.role === 'ADMIN') {
-      const adminCount = await prisma.user.count({
+      const adminCount = await prismaClient.user.count({
         where: { role: 'ADMIN' }
       });
       
@@ -218,7 +218,7 @@ export const deleteUserById = async (req: Request, res: Response) => {
     }
     
     // Delete user
-    await prisma.user.delete({
+    await prismaClient.user.delete({
       where: { id: Number(id) }
     });
     

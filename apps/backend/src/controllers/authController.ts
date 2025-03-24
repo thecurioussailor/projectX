@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '@repo/db/client';
+import { prismaClient } from '@repo/db/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -17,7 +17,7 @@ export const signup = async (req: Request, res: Response) => {
       return;
     }
 
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prismaClient.user.findUnique({
       where: { username }
     });
 
@@ -31,10 +31,10 @@ export const signup = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const userCount = await prisma.user.count();
+    const userCount = await prismaClient.user.count();
     const role = userCount === 0 ? 'ADMIN' : 'USER';
 
-    const newUser = await prisma.user.create({
+    const newUser = await prismaClient.user.create({
       data: {
         username,
         password: hashedPassword,
@@ -80,7 +80,7 @@ export const signin = async (req: Request, res: Response) => {
       return;
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prismaClient.user.findUnique({
       where: { username }
     });
 
