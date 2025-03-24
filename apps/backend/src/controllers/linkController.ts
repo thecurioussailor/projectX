@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import prisma from "../utils/db";
+import { prisma } from "@repo/db/client";
 
 // Custom function to generate a random short ID
 const generateShortId = (length = 8) => {

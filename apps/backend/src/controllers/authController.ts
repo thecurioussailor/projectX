@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../utils/db';
+import { prisma } from '@repo/db/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
