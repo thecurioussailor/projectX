@@ -31,9 +31,9 @@ export default function App() {
           <Route
             element={
                 <SidebarProvider>
-                  <ProtectedRoute>
+                  
                     <AuthLayout />
-                  </ProtectedRoute>
+                 
                 </SidebarProvider>
             }
           >
