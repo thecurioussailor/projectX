@@ -1,6 +1,6 @@
 import { Router } from "express";
-import * as linkController from "../controllers/linkController";
-import { authenticate } from "../middleware/auth";
+import * as linkController from "../controllers/linkController.js";
+import { authenticate } from "../middleware/auth.js";
 
 export const linkRouter = Router();
 

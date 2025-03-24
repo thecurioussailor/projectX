@@ -1,6 +1,6 @@
 import { Router } from "express";
-import * as userController from "../controllers/userController";
-import { authenticate, authorizeAdmin } from "../middleware/auth";
+import * as userController from "../controllers/userController.js";
+import { authenticate, authorizeAdmin } from "../middleware/auth.js";
 export const userRouter = Router();
 
 // User profile routes
