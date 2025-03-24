@@ -1,0 +1,7 @@
+{
+    "build": "cd apps/backend && npm run build",
+    "start": "cd apps/backend && npm run start",
+    "envVars": {
+      "PORT": "3000"
+    }
+}
