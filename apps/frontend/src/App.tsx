@@ -15,7 +15,6 @@ import Settings from './pages/Settings'
 import { SidebarProvider } from './context/SidebarContext'
 import Audience from './pages/Audience'
 import Profile from './pages/Profile'
-import ProtectedRoute from './components/ProtectedRoute'
 export default function App() {
   return (
     <AuthProvider>
