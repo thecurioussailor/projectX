@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prismaClient } from '@repo/db/client';
+import { prismaClient } from '@repo/db';
 
 export const getProfile = async (req: Request, res: Response) => {
   try {
