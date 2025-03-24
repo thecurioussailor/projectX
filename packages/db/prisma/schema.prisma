@@ -21,6 +21,9 @@ model User {
   email           String?    @unique
   role            Role       @default(USER)
   phone           String?    @unique
+  profileImage    String?
+  coverImage      String?
+  location        String?
   emailVerified   Boolean    @default(false)
   emailVerifiedAt DateTime?
   wallet          Decimal    @default(0.0)
