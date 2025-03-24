@@ -1,15 +1,31 @@
+import axios from 'axios';
 import { create } from 'zustand';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-// Define profile interface
+
+// Define profile interface based on API response
 export interface ProfileData {
+  id: number;
+  username: string;
   name: string;
-  title: string;
   email: string;
+  role: string;
   phone: string;
-  contact: string;
-  location: string;
-  coverImage: string; 
   profileImage: string;
+  coverImage: string;
+  location: string;
+  emailVerified: boolean;
+  wallet: string;
+  createdAt: string;
+}
+
+// Define update profile interface
+export interface UpdateProfileData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  profileImage?: string;
+  coverImage?: string;
+  location?: string;
 }
 
 // Define store state interface
@@ -18,8 +34,25 @@ interface ProfileState {
   isLoading: boolean;
   error: string | null;
   fetchProfile: () => Promise<void>;
-  updateProfile: (data: Partial<ProfileData>) => Promise<void>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
 }
+
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: BACKEND_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth interceptor
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // Create profile store
 export const useProfileStore = create<ProfileState>((set) => ({
@@ -31,39 +64,33 @@ export const useProfileStore = create<ProfileState>((set) => ({
   fetchProfile: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(`${BACKEND_URL}/api/v1/users/me`);
-      const data = await response.json();
-      
-      
+      const response = await api.get('/api/v1/users/me');
+      const data = response.data.data;
       set({ profile: data, isLoading: false });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'An error occurred', isLoading: false });
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch profile', 
+        isLoading: false 
+      });
     }
   },
 
   // Update profile data
-  updateProfile: async (data: Partial<ProfileData>) => {
+  updateProfile: async (data: UpdateProfileData) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/profile', {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
-      // const updatedData = await response.json();
+      const response = await api.put('/api/v1/users/me', data);
+      const updatedData = response.data.data;
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Update state with new data (merging with existing data)
       set(state => ({
-        profile: state.profile ? { ...state.profile, ...data } : null,
+        profile: state.profile ? { ...state.profile, ...updatedData } : null,
         isLoading: false
       }));
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'An error occurred', isLoading: false });
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to update profile', 
+        isLoading: false 
+      });
     }
   }
 })); 

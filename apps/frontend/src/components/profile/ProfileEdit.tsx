@@ -1,0 +1,64 @@
+import { useState } from "react";
+import { useProfile } from "../../hooks/useProfile";
+import { IoMdClose } from "react-icons/io";
+const ProfileEdit = ({ setOpenEditDialog }: { setOpenEditDialog: (open: boolean) => void }) => {
+  const { profile, updateProfile } = useProfile()
+  const [name, setName] = useState(profile?.name);
+  const [phone, setPhone] = useState(profile?.phone);
+  const [location, setLocation] = useState(profile?.location);
+  const [profileImage, setProfileImage] = useState(profile?.profileImage);
+  const [coverImage, setCoverImage] = useState(profile?.coverImage);
+  
+  const handleUpdateProfile = () => {
+    updateProfile({
+      name,
+      phone,
+      location,
+      profileImage,
+      coverImage
+    })
+    setOpenEditDialog(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex justify-center items-center">
+      <div className="bg-white w-1/2 rounded-3xl pb-8">
+        <div className="flex justify-between">
+            <h2 className="text-2xl p-6 py-8 border-b border-gray-200">Edit Profile</h2>
+            <button onClick={() => setOpenEditDialog(false)} className="text-2xl p-6 py-8">
+                <IoMdClose />
+            </button>
+        </div>
+        <div className="flex flex-wrap gap-4 p-6">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="name">Name</label>
+            <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="border border-gray-100 rounded-3xl p-2 outline-none px-4" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="phone">Phone Number</label>
+            <input type="text" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="border border-gray-100 rounded-3xl p-2 outline-none px-4" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="location">Location</label>
+            <input type="text" id="location" value={location} onChange={(e) => setLocation(e.target.value)} className="border border-gray-100 rounded-3xl p-2 outline-none px-4" />
+          </div>
+          <div className="flex flex-col gap-2 w-80">
+            <label htmlFor="profileImage">Profile Image</label>
+            <input type="text" id="profileImage" value={profileImage} onChange={(e) => setProfileImage(e.target.value)} className="border border-gray-100 rounded-3xl p-2 outline-none px-4" />
+          </div>
+          <div className="flex flex-col gap-2 w-1/2">
+            <label htmlFor="coverImage">Cover Image</label>
+            <input type="text" id="coverImage" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} className="border border-gray-100 rounded-3xl p-2 outline-none px-4" />
+          </div>
+        </div>
+        <div className="flex justify-end p-6">
+          <button 
+            onClick={handleUpdateProfile}
+            className="bg-[#7e57c2] text-white px-4 py-2 rounded-3xl w-40">Update Profile</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default ProfileEdit

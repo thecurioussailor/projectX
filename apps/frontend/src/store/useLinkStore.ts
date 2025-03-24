@@ -1,5 +1,41 @@
 import { create } from 'zustand';
-import { Link, linkService } from '../services/linkService';
+import axios from 'axios';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: BACKEND_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth interceptor
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export interface Link {
+  id: string;
+  originalUrl: string;
+  shortId: string;
+  shortUrl: string;
+  clicks: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LinkStats {
+  originalUrl: string;
+  shortUrl: string;
+  shortId: string;
+  clicks: number;
+  createdAt: string;
+}
 
 interface LinkState {
   links: Link[];
@@ -24,15 +60,16 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   createLink: async (url: string) => {
     set({ isLoading: true, error: null });
     try {
-      const link = await linkService.createLink(url);
+      const response = await api.post('/api/v1/links', { originalUrl: url });
+      const link = response.data.data;
       set((state) => ({ 
         links: [link, ...state.links],
         currentLink: link,
         isLoading: false 
       }));
       return link;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to create link';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create link';
       set({ error: errorMessage, isLoading: false });
       return null;
     }
@@ -42,10 +79,11 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   fetchLinks: async () => {
     set({ isLoading: true, error: null });
     try {
-      const links = await linkService.getUserLinks();
+      const response = await api.get('/api/v1/links');
+      const links = response.data.data;
       set({ links, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to fetch links';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch links';
       set({ error: errorMessage, isLoading: false });
     }
   },
@@ -54,8 +92,9 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   fetchLinkStats: async (shortId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const stats = await linkService.getLinkStats(shortId);
-      
+      const response = await api.get(`/api/v1/links/stats/${shortId}`);
+      const stats = response.data.data;
+
       // Find the link in the current list and update its click count
       const links = get().links.map(link => 
         link.shortId === shortId 
@@ -67,8 +106,8 @@ export const useLinkStore = create<LinkState>((set, get) => ({
       const currentLink = links.find(link => link.shortId === shortId) || null;
       
       set({ links, currentLink, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to fetch link statistics';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch link statistics';
       set({ error: errorMessage, isLoading: false });
     }
   },

@@ -1,20 +1,11 @@
+import { useState } from "react";
+import LoadingSpinner from "../components/ui/LoadingSpinner"
 import { useProfile } from "../hooks/useProfile"
-
-// Simple inline loading spinner component to avoid import issues
-const LoadingSpinner = () => (
-  <div className="flex justify-center items-center">
-    <div
-      className="w-8 h-8 animate-spin rounded-full border-4 border-solid border-t-transparent"
-      style={{ borderColor: '#7F37D8 transparent transparent transparent' }}
-      role="status"
-      aria-label="loading"
-    />
-  </div>
-);
-
+import { GrEdit } from "react-icons/gr";
+import ProfileEdit from "../components/profile/ProfileEdit";
 const Profile = () => {
   const { profile, isLoading, error } = useProfile()
-
+  const [openEditDialog, setOpenEditDialog] = useState(false);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-72px)]">
@@ -46,14 +37,20 @@ const Profile = () => {
       </div>
       <div className="flex relative justify-between">
         <div className="w-full h-96 rounded-t-lg">
-          <img src={profile.coverImage} alt="cover" className="w-full h-96 rounded-t-lg object-cover object-center" />
+          <img src={profile?.coverImage} alt="cover" className="w-full h-96 rounded-t-lg object-cover object-center" />
         </div>
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 p-2 bg-white rounded-full">
           <img src={profile.profileImage} alt="profile" className="w-32 h-32 rounded-full" />
         </div>
+        <button 
+          onClick={() => setOpenEditDialog(true)}
+          className="absolute -bottom-[30px] left-1/2 translate-x-1/2 flex flex-col items-center rounded-full bg-white p-2 shadow-md">
+          <GrEdit className="text-2xl" />
+        </button>
+        {openEditDialog && <ProfileEdit setOpenEditDialog={setOpenEditDialog} />}
         <div className="absolute -bottom-[84px] left-1/2 -translate-x-1/2 flex flex-col items-center">
           <h3 className="text-xl font-semibold text-[#7F37D8]">{profile.name}</h3>
-          <p className="text-sm text-gray-500">{profile.title}</p>
+          <p className="text-sm text-gray-500">{profile.role}</p>
         </div>
       </div>
       <div className="flex justify-between gap-4 pt-6 pb-12 px-6 border-b border-[#E0E0E0]">
@@ -70,7 +67,7 @@ const Profile = () => {
         <div className="flex gap-4">
           <div>
             <h3 className="text-xs text-[#898989]">Contact</h3>
-            <p className="text-sm text-gray-500">{profile.contact}</p>
+            <p className="text-sm text-gray-500">{profile.phone}</p>
           </div>
           <div>
             <h3 className="text-xs text-[#898989]">Location</h3>
