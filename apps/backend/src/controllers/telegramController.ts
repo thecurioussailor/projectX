@@ -1,0 +1,909 @@
+import { Request, Response } from "express";
+import { StringSession } from "telegram/sessions/index.js";
+import { TelegramClient, Api } from "telegram";
+import { prismaClient } from "@repo/db";
+import dotenv from "dotenv";
+
+dotenv.config();
+const apiId: number = Number(process.env.TELEGRAM_API_ID);
+const apiHash: string = process.env.TELEGRAM_API_HASH || '';
+
+export const sendOtp = async (req: Request, res: Response) => {
+    try {
+        const { phoneNumber } = req.body;
+        const userId = req.user?.id;
+        
+        if(!phoneNumber){
+            res.status(400).json({
+                status: "error",
+                message: "Phone number required"
+            });
+            return;
+        }
+
+        if(!userId){
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        const stringSession = new StringSession('');
+        const client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5});
+        await client.connect();
+
+        const result = await client.invoke(
+            new Api.auth.SendCode({
+              phoneNumber: phoneNumber,
+              apiId: apiId,
+              apiHash: apiHash,
+              settings: new Api.CodeSettings({}),
+            })
+          );
+        
+        if(!result){
+            res.status(400).json({
+                status: "error",
+                message: "Error trying to send code, please try again later"
+            });
+            return;
+        }
+        
+        const phoneCodeHash = (result as any).phoneCodeHash || (result as any).phone_code_hash;
+        
+        // Check if user has a telegram account already
+        const userWithTelegramAccounts = await prismaClient.user.findUnique({
+            where: {
+                id: userId
+            },
+            include: {
+                telegramAccounts: true
+            }
+        });
+        
+        if(!userWithTelegramAccounts){
+            res.status(404).json({
+                status: "error",
+                message: "User not found"
+            });
+            return;
+        }
+        
+        // Create or update telegram account
+        if(!userWithTelegramAccounts.telegramAccounts){  
+            await prismaClient.telegramAccount.create({
+                data: {
+                    user: {
+                        connect: {
+                            id: userId
+                        }
+                    },
+                    telegramNumber: phoneNumber,
+                    phoneCodeHash: phoneCodeHash,
+                    session: stringSession.save()
+                }
+            });
+        } else {
+            const telegramAccount = userWithTelegramAccounts.telegramAccounts.find(account => account.telegramNumber === phoneNumber);
+            if(!telegramAccount){
+                await prismaClient.telegramAccount.create({
+                    data: {
+                        user: {
+                            connect: { id: userId }
+                        },
+                        telegramNumber: phoneNumber,
+                        phoneCodeHash: phoneCodeHash,
+                        session: stringSession.save()
+                    }
+                });
+            } else {
+                await prismaClient.telegramAccount.update({
+                    where: {
+                    id: telegramAccount.id
+                },
+                data: {
+                        phoneCodeHash: phoneCodeHash,
+                        session: stringSession.save()
+                    }
+                });
+            }
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "OTP sent successfully",
+            data: {
+                userId: userId
+            }
+        });
+    } catch (error) {
+        console.error("Send OTP error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to send OTP"
+        });
+    }
+};
+
+export const verifyOtp = async (req: Request, res: Response) => {
+    try {
+        const { code, phoneNumber } = req.body;
+        const userId = req.user?.id;
+        
+        if(!code || !phoneNumber) {
+            res.status(400).json({
+                status: "error",
+                message: "Verification code and phone number are required"
+            });
+            return;
+        }
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get user data with telegram account
+        const userWithTelegramAccounts = await prismaClient.user.findUnique({
+            where: {
+                id: userId
+            },
+            include: {
+                telegramAccounts: true
+            }
+        });
+        
+        if(!userWithTelegramAccounts || !userWithTelegramAccounts.telegramAccounts) {
+            res.status(400).json({
+                status: "error",
+                message: "Please request OTP first"
+            });
+            return;
+        }
+        
+        const telegramAccount = userWithTelegramAccounts.telegramAccounts.find(account => account.telegramNumber === phoneNumber);
+        
+        if(!telegramAccount?.session || !telegramAccount?.phoneCodeHash) {
+            res.status(400).json({
+                status: "error",
+                message: "Please request a new OTP"
+            });
+            return;
+        }
+        
+        // Create client with saved session
+        const stringSession = new StringSession(telegramAccount.session);
+        const client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
+        await client.connect();
+        
+        // Sign in with the code
+        try {
+            await client.invoke(
+                new Api.auth.SignIn({
+                    phoneNumber: telegramAccount.telegramNumber,
+                    phoneCodeHash: telegramAccount.phoneCodeHash,
+                    phoneCode: code
+                })
+            );
+            
+            // Save the updated session
+            await prismaClient.telegramAccount.update({
+                where: {
+                    id: telegramAccount.id
+                },
+                data: {
+                    session: stringSession.save(),
+                    authenticated: true
+                }
+            });
+            
+            res.status(200).json({
+                status: "success",
+                message: "Verification successful",
+                data: {
+                    userId: userId,
+                    authenticated: true
+                }
+            });
+        } catch (signInError: any) {
+            console.error("Sign in error:", signInError);
+            
+            // Handle specific Telegram API errors
+            if (signInError.message && signInError.message.includes("SESSION_PASSWORD_NEEDED")) {
+                res.status(400).json({
+                    status: "error",
+                    message: "Two-factor authentication is enabled. Please use another method."
+                });
+            }
+            
+            res.status(400).json({
+                status: "error",
+                message: "Invalid verification code"
+            });
+        }
+    } catch (error) {
+        console.error("Verify OTP error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to verify OTP"
+        });
+    }
+};
+
+export const getAccount = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+        }
+
+        const user = await prismaClient.user.findUnique({
+            where: { id: userId },
+            include: { telegramAccounts: true }
+        });
+
+        if(!user || !user.telegramAccounts) {
+            res.status(404).json({
+                status: "error",
+                message: "Telegram account not found"
+            });
+            return;
+        }
+        
+        const telegramAccounts = user.telegramAccounts.map(account => ({
+            id: account.id,
+            telegramNumber: account.telegramNumber,
+            authenticated: account.authenticated,
+            verified: account.verified,
+            createdAt: account.createdAt,
+            updatedAt: account.updatedAt,
+        }));
+        
+        res.status(200).json({
+            status: "success",
+            data: telegramAccounts
+        });
+    } catch (error) {
+        console.error("Get account error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to fetch account"
+        });
+    }
+}
+
+export const createChannel = async (req: Request, res: Response) => {
+    try {
+        const { channelName, channelDescription } = req.body;
+        const userId = req.user?.id;
+        
+        if(!channelName || !channelDescription) {
+            res.status(400).json({
+                status: "error",
+                message: "Channel name and description are required"
+            });
+            return;
+        }
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get user with telegram account
+        const userWithTelegramAccounts = await prismaClient.user.findUnique({
+            where: { id: userId },
+            include: { telegramAccounts: true }
+        });
+        
+        if(!userWithTelegramAccounts || !userWithTelegramAccounts.telegramAccounts) {
+            res.status(400).json({
+                status: "error",
+                message: "Telegram account not found. Please connect your Telegram account first."
+            });
+            return;
+        }
+        
+        if(!userWithTelegramAccounts.telegramAccounts.find(account => account.authenticated && account.session)) {
+            res.status(400).json({
+                status: "error",
+                message: "Telegram account not authenticated. Please verify your account first."
+            });
+            return;
+        }
+        console.log(userWithTelegramAccounts.telegramAccounts.find(account => account.authenticated && account.session));
+        const stringSession = new StringSession(userWithTelegramAccounts.telegramAccounts.find(account => account.authenticated && account.session)?.session || '');
+        const client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
+        await client.connect();
+
+        if(!await client.isUserAuthorized()) {
+            res.status(401).json({
+                status: "error",
+                message: "User not authorized on Telegram"
+            });
+            return;
+        }
+
+        const result = await client.invoke(
+            new Api.channels.CreateChannel({
+                title: channelName,
+                about: channelDescription || "",
+                broadcast: true,
+                megagroup: false
+            })
+        );
+        const channelData = (result as any).chats?.[0];
+        
+        if (!channelData || !channelData.id) {
+            res.status(400).json({
+                status: "error",
+                message: "Failed to retrieve channel information"
+            });
+            return;
+        }
+        
+        // Create new channel
+        const newChannel = await prismaClient.telegramChannel.create({
+            data: {
+                telegramChannelId: channelData.id,
+                channelName,
+                channelDescription,
+                telegramAccount: {
+                    connect: {
+                        id: userWithTelegramAccounts.telegramAccounts.find(account => account.authenticated && account.session)?.id || ''
+                    }
+                }
+            }
+        });
+        
+        res.status(201).json({
+            status: "success",
+            message: "Channel created successfully",
+            data: newChannel
+        });
+    } catch (error) {
+        console.error("Create channel error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to create channel"
+        });
+    }
+};
+
+export const getChannels = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get user with telegram account
+        const userWithTelegramAccounts = await prismaClient.user.findUnique({
+            where: { id: userId },
+            include: { 
+                telegramAccounts: {
+                    include: {
+                        channels: true
+                    }
+                }
+            }
+        });
+        
+        if(!userWithTelegramAccounts || !userWithTelegramAccounts.telegramAccounts) {
+            res.status(400).json({
+                status: "error",
+                message: "Telegram account not found"
+            });
+            return;
+        }
+        
+        const channels = userWithTelegramAccounts.telegramAccounts.flatMap(account => account.channels);
+        
+        res.status(200).json({
+            status: "success",
+            data: channels
+        });
+    } catch (error) {
+        console.error("Get channels error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to fetch channels"
+        });
+    }
+};
+
+export const getChannelById = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: {
+                telegramAccount: true,
+                telegramPlans: true
+            }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to access this channel"
+            });
+            return;
+        }
+        
+        res.status(200).json({
+            status: "success",
+            data: channel
+        });
+    } catch (error) {
+        console.error("Get channel by ID error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to fetch channel"
+        });
+    }
+};
+
+export const updateChannel = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const { botAdded } = req.body;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to update this channel"
+            });
+            return;
+        }
+        
+        // Update channel
+        const updatedChannel = await prismaClient.telegramChannel.update({
+            where: { id: channelId },
+            data: { botAdded }
+        });
+        
+        res.status(200).json({
+            status: "success",
+            message: "Channel updated successfully",
+            data: updatedChannel
+        });
+    } catch (error) {
+        console.error("Update channel error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to update channel"
+        });
+    }
+};
+
+export const deleteChannel = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to delete this channel"
+            });
+            return;
+        }
+        
+        // Delete channel
+        await prismaClient.telegramChannel.delete({
+            where: { id: channelId }
+        });
+        
+        res.status(200).json({
+            status: "success",
+            message: "Channel deleted successfully"
+        });
+    } catch (error) {
+        console.error("Delete channel error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to delete channel"
+        });
+    }
+};
+
+export const createPlan = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const { name, price, duration } = req.body;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        if(!name || !price || !duration) {
+            res.status(400).json({
+                status: "error",
+                message: "Name, price, and duration are required"
+            });
+            return;
+        }
+        
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to create plans for this channel"
+            });
+            return;
+        }
+        
+        // Create plan
+        const newPlan = await prismaClient.telegramPlan.create({
+            data: {
+                name,
+                price: typeof price === 'string' ? parseFloat(price) : price,
+                duration: Number(duration),
+                channel: {
+                    connect: { id: channelId }
+                }
+            }
+        });
+        
+        res.status(201).json({
+            status: "success",
+            message: "Plan created successfully",
+            data: newPlan
+        });
+    } catch (error) {
+        console.error("Create plan error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to create plan"
+        });
+    }
+};
+
+export const getPlans = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { 
+                telegramAccount: true,
+                telegramPlans: {
+                    where: {
+                        status: 'ACTIVE'
+                    }
+                }
+            }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to view plans for this channel"
+            });
+            return;
+        }
+        
+        res.status(200).json({
+            status: "success",
+            data: channel.telegramPlans
+        });
+    } catch (error) {
+        console.error("Get plans error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to fetch plans"
+        });
+    }
+};
+
+export const getPlanById = async (req: Request, res: Response) => {
+    try {
+        const { planId } = req.params;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get plan with channel and telegram account
+        const plan = await prismaClient.telegramPlan.findUnique({
+            where: { id: planId },
+            include: {
+                channel: {
+                    include: {
+                        telegramAccount: true
+                    }
+                }
+            }
+        });
+        
+        if(!plan) {
+            res.status(404).json({
+                status: "error",
+                message: "Plan not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this plan's channel
+        if(plan.channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to view this plan"
+            });
+            return;
+        }
+        
+        res.status(200).json({
+            status: "success",
+            data: plan
+        });
+    } catch (error) {
+        console.error("Get plan by ID error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to fetch plan"
+        });
+    }
+};
+
+export const updatePlan = async (req: Request, res: Response) => {
+    try {
+        const { planId } = req.params;
+        const { name, price, duration, status } = req.body;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get plan with channel and telegram account
+        const plan = await prismaClient.telegramPlan.findUnique({
+            where: { id: planId },
+            include: {
+                channel: {
+                    include: {
+                        telegramAccount: true
+                    }
+                }
+            }
+        });
+        
+        if(!plan) {
+            res.status(404).json({
+                status: "error",
+                message: "Plan not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this plan's channel
+        if(plan.channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to update this plan"
+            });
+            return;
+        }
+        
+        // Update plan
+        const updatedPlan = await prismaClient.telegramPlan.update({
+            where: { id: planId },
+            data: {
+                name,
+                price: price !== undefined ? (typeof price === 'string' ? parseFloat(price) : price) : undefined,
+                duration: duration !== undefined ? Number(duration) : undefined,
+                status: status
+            }
+        });
+        
+        res.status(200).json({
+            status: "success",
+            message: "Plan updated successfully",
+            data: updatedPlan
+        });
+    } catch (error) {
+        console.error("Update plan error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to update plan"
+        });
+    }
+};
+
+export const deletePlan = async (req: Request, res: Response) => {
+    try {
+        const { planId } = req.params;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+        
+        // Get plan with channel and telegram account
+        const plan = await prismaClient.telegramPlan.findUnique({
+            where: { id: planId },
+            include: {
+                channel: {
+                    include: {
+                        telegramAccount: true
+                    }
+                }
+            }
+        });
+        
+        if(!plan) {
+            res.status(404).json({
+                status: "error",
+                message: "Plan not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this plan's channel
+        if(plan.channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to delete this plan"
+            });
+            return;
+        }
+        
+        // Soft delete by updating status instead of actual deletion
+        const deletedPlan = await prismaClient.telegramPlan.update({
+            where: { id: planId },
+            data: {
+                status: 'INACTIVE',
+                deletedAt: new Date()
+            }
+        });
+        
+        res.status(200).json({
+            status: "success",
+            message: "Plan deleted successfully",
+            data: deletedPlan
+        });
+    } catch (error) {
+        console.error("Delete plan error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to delete plan"
+        });
+    }
+};
+
+

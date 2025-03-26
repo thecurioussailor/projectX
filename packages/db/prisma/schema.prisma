@@ -14,28 +14,27 @@ datasource db {
 }
 
 model User {
-  id              Int        @id @default(autoincrement())
-  username        String     @unique
-  password        String
-  name            String?
-  email           String?    @unique
-  role            Role       @default(USER)
-  phone           String?    @unique
-  profileImage    String?
-  coverImage      String?
-  location        String?
-  emailVerified   Boolean    @default(false)
-  emailVerifiedAt DateTime?
-  wallet          Decimal    @default(0.0)
-  createdAt       DateTime   @default(now())
+  id                Int        @id @default(autoincrement())
+  username          String     @unique
+  password          String
+  name              String?
+  email             String?    @unique
+  role              Role       @default(USER)
+  phone             String?    @unique
+  profileImage      String?
+  coverImage        String?
+  location          String?
+  emailVerified     Boolean    @default(false)
+  emailVerifiedAt   DateTime?
+  wallet            Decimal    @default(0.0)
+  createdAt         DateTime   @default(now())
 
-  plans           Plan[]
-  products        DigitalProduct[]
-  orders          Order[]
-  subscriptions   Subscription[]
-  transactions    Transaction[]
-  telegramChannel TelegramChannel[]
-  links           Link[]
+  telegramAccounts       TelegramAccount[]
+  products              DigitalProduct[]
+  orders                Order[]
+  transactions          Transaction[]
+  links                 Link[]
+  telegramSubscriptions TelegramSubscription[]
 }
 
 enum Role {
@@ -43,16 +42,78 @@ enum Role {
   ADMIN
 }
 
-model Plan {
-  id        String    @id @default(cuid())
-  name      String
-  price     Decimal
-  duration  Int       // Days for validity
-  status    String    @default("ACTIVE") // ACTIVE, INACTIVE
-  createdAt DateTime  @default(now())
-  userId    Int
-  user      User      @relation(fields: [userId], references: [id])
-  subscriptions Subscription[]
+model TelegramAccount {
+  id              String      @id @default(cuid())
+  userId          Int         @unique
+  user            User        @relation(fields: [userId], references: [id])
+  telegramNumber  String      @unique
+  session         String?
+  phoneCodeHash   String?
+  authenticated   Boolean     @default(false)
+  verified        Boolean     @default(false)
+  channels        TelegramChannel[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model TelegramChannel {
+  id                    String            @id @default(cuid())
+  telegramAccountId     String            
+  telegramAccount       TelegramAccount   @relation(fields: [telegramAccountId], references: [id])
+  telegramChannelId     String?
+  channelName           String
+  channelDescription    String?
+  botAdded              Boolean           @default(false)
+  status                TelegramChannelStatus @default(ACTIVE)
+  createdAt             DateTime          @default(now())
+  telegramPlans         TelegramPlan[]
+  telegramSubscriptions TelegramSubscription[]
+}
+
+enum TelegramChannelStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model TelegramPlan {
+  id              String          @id @default(cuid())
+  channel         TelegramChannel @relation(fields: [channelId], references: [id])
+  channelId       String
+  name            String
+  price           Decimal
+  duration        Int      // Duration in days
+  status          TelegramPlanStatus  @default(ACTIVE)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  deletedAt       DateTime? 
+  subscriptions   TelegramSubscription[]
+}
+
+enum TelegramPlanStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model TelegramSubscription {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])  // Customer subscribing
+  userId            Int
+  telegramUsername String   // User’s Telegram username or number
+  plan          TelegramPlan @relation(fields: [planId], references: [id])
+  planId        String
+  planName      String
+  planPrice     Decimal
+  planDuration  Int
+  channel       TelegramChannel @relation(fields: [channelId], references: [id])
+  channelId     String
+  expiryDate    DateTime
+  status        TelegramSubscriptionStatus @default(ACTIVE)
+  createdAt     DateTime @default(now())
+}
+
+enum TelegramSubscriptionStatus {
+  ACTIVE
+  EXPIRED
 }
 
 model DigitalProduct {
@@ -84,16 +145,6 @@ model Order {
   transaction Transaction?
 }
 
-model Subscription {
-  id        String    @id @default(cuid())
-  user      User      @relation(fields: [userId], references: [id])
-  userId    Int
-  plan      Plan      @relation(fields: [planId], references: [id])
-  planId    String
-  expiryDate DateTime
-  status    String    @default("ACTIVE") // ACTIVE, EXPIRED
-  createdAt DateTime  @default(now())
-}
 
 model Transaction {
   id         String    @id @default(cuid())
@@ -105,15 +156,6 @@ model Transaction {
   createdAt  DateTime  @default(now())
 
   order      Order?    @relation(fields: [orderId], references: [id])
-}
-
-model TelegramChannel {
-  id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-  channelId   String   @unique
-  botAdded    Boolean  @default(false)
-  createdAt   DateTime @default(now())
 }
 
 model Setting {
