@@ -24,9 +24,9 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Public Routes with PublicLayout */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signin" element={<Signin />} />
           <Route element={<PublicLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/signin" element={<Signin />} />
             <Route path="/c/:slug" element={<PublicChannelPage />} />
           </Route>
 

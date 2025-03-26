@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTelegramStore } from '../store/useTelegramStore';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 interface PublicPlan {
   id: string;
@@ -55,7 +56,7 @@ const PublicChannelPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#7F37D8]"></div>
+        <LoadingSpinner/>
       </div>
     );
   }
@@ -89,72 +90,75 @@ const PublicChannelPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
-        <header className="bg-white p-6 rounded-lg shadow-sm mb-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-800">{channel.channelName}</h1>
-            <Link to="/" className="text-[#7F37D8] hover:underline">projectX</Link>
-          </div>
-          <p className="mt-2 text-gray-600">{channel.channelDescription}</p>
-        </header>
+    <div className="bg-gray-50 w-full">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+          <div className="flex flex-col gap-6 bg-white p-6 rounded-3xl shadow-sm">
+            <header className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-gray-800">{channel.channelName}</h1>
+                <Link to="/" className="text-[#7F37D8] hover:underline">projectX</Link>
+              </div>
+              <p className="mt-2 text-gray-600">{channel.channelDescription}</p>
+            </header>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-          <h2 className="text-xl font-semibold mb-4">Subscription Plans</h2>
-          
-          {channel.plans.length === 0 ? (
-            <p className="text-gray-500">No subscription plans available at the moment.</p>
-          ) : (
-            <div className="space-y-4">
-              {channel.plans.map((plan) => (
-                <div 
-                  key={plan.id} 
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedPlan === plan.id ? 'border-[#7F37D8] bg-purple-50' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setSelectedPlan(plan.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">{plan.name}</h3>
-                      <p className="text-gray-600">{plan.duration} days access</p>
+            <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+              <h2 className="text-xl font-semibold mb-4">Subscription Plans</h2>
+              
+              {channel.plans.length === 0 ? (
+                <p className="text-gray-500">No subscription plans available at the moment.</p>
+              ) : (
+                <div className="space-y-4">
+                  {channel.plans.map((plan) => (
+                    <div 
+                      key={plan.id} 
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        selectedPlan === plan.id ? 'border-[#7F37D8] bg-purple-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setSelectedPlan(plan.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">{plan.name}</h3>
+                          <p className="text-gray-600">{plan.duration} days access</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold">${plan.price}</p>
+                          <input
+                            type="radio"
+                            name="plan"
+                            checked={selectedPlan === plan.id}
+                            onChange={() => setSelectedPlan(plan.id)}
+                            className="ml-2"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold">${plan.price}</p>
-                      <input
-                        type="radio"
-                        name="plan"
-                        checked={selectedPlan === plan.id}
-                        onChange={() => setSelectedPlan(plan.id)}
-                        className="ml-2"
-                      />
-                    </div>
+                  ))}
+
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      onClick={handleSubscribe}
+                      disabled={!selectedPlan}
+                      className="bg-[#7F37D8] text-white py-2 px-8 rounded-full hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      Subscribe Now
+                    </button>
                   </div>
                 </div>
-              ))}
+              )}
+            </div>
 
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={handleSubscribe}
-                  disabled={!selectedPlan}
-                  className="bg-[#7F37D8] text-white py-2 px-8 rounded-full hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  Subscribe Now
-                </button>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">About This Channel</h2>
+              <p className="text-gray-600">
+                This channel offers exclusive content and benefits to subscribers.
+                Join now to gain access to premium content and updates.
+              </p>
+              <div className="mt-4 text-sm text-gray-500">
+                <p>Channel created on: {new Date(channel.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
-          )}
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">About This Channel</h2>
-          <p className="text-gray-600">
-            This channel offers exclusive content and benefits to subscribers.
-            Join now to gain access to premium content and updates.
-          </p>
-          
-          <div className="mt-4 text-sm text-gray-500">
-            <p>Channel created on: {new Date(channel.createdAt).toLocaleDateString()}</p>
           </div>
         </div>
       </div>
