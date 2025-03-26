@@ -28,14 +28,12 @@ export interface TelegramChannel {
 // Define Plan interface
 export interface TelegramPlan {
   id: string;
-  channelId: string;
   name: string;
   price: number;
   duration: number;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+  telegramChannelId: string;
   subscriptions: TelegramSubscription[];
 }
 
@@ -52,6 +50,21 @@ export interface TelegramSubscription {
   updatedAt: string;
   deletedAt: string | null;
 }
+
+// Define PublicChannel interface for shareable page
+export interface PublicChannel {
+  id: string;
+  channelName: string;
+  channelDescription: string;
+  createdAt: string;
+  plans: {
+    id: string;
+    name: string;
+    price: number;
+    duration: number;
+  }[];
+}
+
 // Define store state interface
 interface TelegramState {
   accounts: TelegramAccount[];
@@ -70,6 +83,7 @@ interface TelegramState {
   createChannel: (channelName: string, channelDescription: string) => Promise<TelegramChannel>;
   fetchChannels: () => Promise<void>;
   fetchChannelById: (channelId: string) => Promise<void>;
+  fetchPublicChannelBySlug: (slug: string) => Promise<PublicChannel>;
   updateChannel: (channelId: string, data: { botAdded: boolean }) => Promise<void>;
   publishChannel: (channelId: string) => Promise<void>;
   deleteChannel: (channelId: string) => Promise<void>;
@@ -209,6 +223,22 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
         currentChannel: channel,
         isLoading: false 
       });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch channel', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+  
+  fetchPublicChannelBySlug: async (slug: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/telegram/public/channels/${slug}`);
+      const channel = response.data.data;
+      set({ isLoading: false });
+      return channel;
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch channel', 

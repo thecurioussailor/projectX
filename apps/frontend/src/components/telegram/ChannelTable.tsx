@@ -1,13 +1,16 @@
-import { GoCopy } from "react-icons/go"
+import { GoCheck, GoCopy } from "react-icons/go"
 import { IoShareSocialOutline } from "react-icons/io5"
 import { useTelegram } from "../../hooks/useTelegram";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
+import { TelegramChannel } from "../../store/useTelegramStore";
+
+const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 
 const ChannelTable = () => {
     const { channels, fetchChannels, isLoading } = useTelegram();
     const [hasFetched, setHasFetched] = useState(false);
-
+    
     useEffect(() => {
         // Only fetch channels if we haven't fetched them yet
         if (!hasFetched && channels.length === 0) {
@@ -41,20 +44,7 @@ const ChannelTable = () => {
                     </thead>
                     <tbody>
                         {channels.map((channel, index) => (
-                            <tr key={index} className="border-t border-gray-200 h-20">
-                                <td className="px-8">{index + 1}</td>
-                                <td>{channel.channelName}</td>
-                                <td>{channel.status}</td>
-                                <td>{channel.telegramPlans?.length}</td>
-                                <td>{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0)}</td>
-                                <td>{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.reduce((acc, subscription) => acc + Number(subscription.planPrice), 0), 0)}</td>
-                                <td>
-                                    <div className="flex items-center bg-[#7F37D8] rounded-3xl text-white w-40">
-                                        <button className="border-r flex items-center gap-2 border-white px-4 py-2 w-2/3"><IoShareSocialOutline size={20}/> Share</button>
-                                        <button className="px-4 py-2 rounded-r-3xl w-1/3"><GoCopy size={20}/></button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <ChannelTableRow key={channel.id} channel={channel} index={index} />
                         ))}
                     </tbody>
                 </table>
@@ -63,4 +53,42 @@ const ChannelTable = () => {
     )
 }
 
-export default ChannelTable
+export default ChannelTable;
+
+const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: number }) => {
+    const [copied, setCopied] = useState(false);
+    const handleShare = (channelId: string) => {
+        const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
+        window.open(shareableLink, '_blank');
+    };
+    const handleCopy = (channelId: string) => {
+        const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
+        navigator.clipboard.writeText(shareableLink).then(() => {
+            setCopied(true);
+            setTimeout(() => {
+                setCopied(false);
+            }, 2000);
+        });
+    };  
+    
+    return (
+        <tr className="border-t border-gray-200 h-20">
+            <td className="px-8">{index + 1}</td>
+            <td>{channel.channelName}</td>
+            <td>{channel.status}</td>
+            <td>{channel.telegramPlans?.length}</td>
+            <td>{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0)}</td>
+            <td>{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.reduce((acc, subscription) => acc + Number(subscription.planPrice), 0), 0)}</td>
+            <td>
+                <div className="flex items-center bg-[#7F37D8] rounded-3xl text-white w-40">
+                    <button 
+                        onClick={() => handleShare(channel.id)}
+                        className="border-r flex items-center gap-2 border-white px-4 py-2 w-2/3"><IoShareSocialOutline size={20}/> Share</button>
+                    <button 
+                    onClick={() => handleCopy(channel.id)}
+                        className="px-4 py-2 rounded-r-3xl w-1/3">{copied ? <GoCheck size={20} /> : <GoCopy size={20} />}</button>
+                </div>
+            </td>
+        </tr>  
+    )
+}

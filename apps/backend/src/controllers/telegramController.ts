@@ -972,4 +972,53 @@ export const deletePlan = async (req: Request, res: Response) => {
     }
 };
 
+export const getPublicChannelBySlug = async (req: Request, res: Response) => {
+    try {
+        const { slug } = req.params;
+        
+        // Get channel with plans
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: slug, status: "ACTIVE" }, // Only return published/active channels
+            include: {
+                telegramPlans: {
+                    where: { status: "ACTIVE" }, // Only return active plans
+                }
+            }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found or not published"
+            });
+            return;
+        }
+        
+        // Remove sensitive information
+        const publicChannel = {
+            id: channel.id,
+            channelName: channel.channelName,
+            channelDescription: channel.channelDescription,
+            createdAt: channel.createdAt,
+            plans: channel.telegramPlans.map(plan => ({
+                id: plan.id,
+                name: plan.name,
+                price: plan.price,
+                duration: plan.duration
+            }))
+        };
+        
+        res.status(200).json({
+            status: "success",
+            data: publicChannel
+        });
+    } catch (error) {
+        console.error("Get public channel error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to fetch channel"
+        });
+    }
+};
+
 

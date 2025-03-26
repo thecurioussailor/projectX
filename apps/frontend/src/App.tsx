@@ -16,6 +16,8 @@ import { SidebarProvider } from './context/SidebarContext'
 import Audience from './pages/Audience'
 import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
+import PublicChannelPage from './pages/PublicChannelPage'
+
 export default function App() {
   return (
     <AuthProvider>
@@ -25,6 +27,7 @@ export default function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/signin" element={<Signin />} />
+            <Route path="/c/:slug" element={<PublicChannelPage />} />
           </Route>
 
           {/* Protected Routes with AuthLayout */}
