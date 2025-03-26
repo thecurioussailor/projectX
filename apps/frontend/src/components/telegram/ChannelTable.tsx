@@ -64,6 +64,7 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
     };
     const handleCopy = (channelId: string) => {
         const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
+        console.log(shareableLink);
         navigator.clipboard.writeText(shareableLink).then(() => {
             setCopied(true);
             setTimeout(() => {
