@@ -47,6 +47,7 @@ interface LinkState {
   createLink: (url: string) => Promise<Link | null>;
   fetchLinks: () => Promise<void>;
   fetchLinkStats: (shortId: string) => Promise<void>;
+  deleteLink: (id: string) => Promise<void>;
   clearCurrentLink: () => void;
 }
 
@@ -115,5 +116,20 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   // Clear the current link
   clearCurrentLink: () => {
     set({ currentLink: null });
-  }
+  },
+
+  // Delete a link
+  deleteLink: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.delete(`/api/v1/links/${id}`);
+      set((state) => ({
+        links: state.links.filter((link) => link.id !== id),
+        isLoading: false,
+      }));
+    } catch (error: unknown) {  
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete link';
+      set({ error: errorMessage, isLoading: false });
+    }
+  },    
 })); 

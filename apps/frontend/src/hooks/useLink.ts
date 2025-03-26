@@ -12,6 +12,7 @@ export const useLink = () => {
     createLink: storeCreateLink, 
     fetchLinks: storeFetchLinks, 
     fetchLinkStats: storeFetchLinkStats, 
+    deleteLink: storeDeleteLink,
     clearCurrentLink 
   } = useLinkStore();
 
@@ -33,6 +34,13 @@ export const useLink = () => {
     return storeFetchLinkStats(shortId);
   }, [storeFetchLinkStats]);
 
+  const deleteLink = useCallback(async (id: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to delete links');
+    }
+    return storeDeleteLink(id);
+  }, [token, storeDeleteLink]);
+
   return {
     links,
     currentLink,
@@ -42,5 +50,6 @@ export const useLink = () => {
     fetchLinks,
     fetchLinkStats,
     clearCurrentLink,
+    deleteLink,
   };
 };

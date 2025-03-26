@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const LinkTable = () => {
-    const { links, fetchLinks, isLoading } = useLink();
+    const { links, fetchLinks, isLoading, deleteLink } = useLink();
     const [copied, setCopied] = useState<string | null>(null);
 
     useEffect(() => {
@@ -67,7 +67,9 @@ const LinkTable = () => {
                                         </button>
                                     </td>
                                     <td className="text-[#7F37D8] pl-5">
-                                        <FaTrash size={20}/>
+                                        <button onClick={() => deleteLink(link.id)}>
+                                            <FaTrash size={20}/>
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
