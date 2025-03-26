@@ -14,7 +14,7 @@ const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
         setOpen(false);
     }
     return (
-    <div className="fixed flex justify-center items-center inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 w-full h-full">
+    <div className="fixed flex justify-center z-50 items-center inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 w-full h-full">
         <div className=" bg-white w-1/2 h-1/2 p-6 rounded-3xl shadow-md">
             <h2 className="text-xl font-semibold mb-4 flex justify-between items-center gap-2 py-10 px-8 border-b border-gray-200">
                 <span>Create Short Link</span>
@@ -31,7 +31,7 @@ const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://example.com/very-long-url-that-needs-shortening"
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                className="w-full p-3 border border-gray-300 outline-none rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
                 required
                 />
             </div>

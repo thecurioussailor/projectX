@@ -14,6 +14,7 @@ telegramRouter.post("/channels", authenticate, telegramController.createChannel)
 telegramRouter.get("/channels", authenticate, telegramController.getChannels);
 telegramRouter.get("/channels/:channelId", authenticate, telegramController.getChannelById);
 telegramRouter.put("/channels/:channelId", authenticate, telegramController.updateChannel);
+telegramRouter.put("/channels/:channelId/publish", authenticate, telegramController.publishChannel);
 telegramRouter.delete("/channels/:channelId", authenticate, telegramController.deleteChannel);
 
 //plan management

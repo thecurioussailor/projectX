@@ -25,6 +25,7 @@ export const useTelegram = () => {
     fetchChannels: storeFetchChannels,
     fetchChannelById: storeFetchChannelById,
     updateChannel: storeUpdateChannel,
+    publishChannel: storePublishChannel,
     deleteChannel: storeDeleteChannel,
     setCurrentChannel,
     createPlan: storeCreatePlan,
@@ -84,6 +85,13 @@ export const useTelegram = () => {
     }
     return storeUpdateChannel(channelId, data);
   }, [token, storeUpdateChannel]);
+
+  const publishChannel = useCallback(async (channelId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to publish a channel');
+    }
+    return storePublishChannel(channelId);
+  }, [token, storePublishChannel]);
   
   const deleteChannel = useCallback(async (channelId: string) => {
     if (!token) {
@@ -147,6 +155,7 @@ export const useTelegram = () => {
     fetchChannels,
     fetchChannelById,
     updateChannel,
+    publishChannel,
     deleteChannel,
     setCurrentChannel,
     

@@ -64,10 +64,9 @@ model TelegramChannel {
   channelName           String
   channelDescription    String?
   botAdded              Boolean           @default(false)
-  status                TelegramChannelStatus @default(ACTIVE)
+  status                TelegramChannelStatus @default(INACTIVE)
   createdAt             DateTime          @default(now())
   telegramPlans         TelegramPlan[]
-  telegramSubscriptions TelegramSubscription[]
 }
 
 enum TelegramChannelStatus {
@@ -104,8 +103,6 @@ model TelegramSubscription {
   planName      String
   planPrice     Decimal
   planDuration  Int
-  channel       TelegramChannel @relation(fields: [channelId], references: [id])
-  channelId     String
   expiryDate    DateTime
   status        TelegramSubscriptionStatus @default(ACTIVE)
   createdAt     DateTime @default(now())

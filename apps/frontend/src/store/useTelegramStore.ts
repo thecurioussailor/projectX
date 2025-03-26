@@ -19,8 +19,10 @@ export interface TelegramChannel {
   channelName: string;
   channelDescription: string;
   botAdded: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
   telegramAccountId: string;
+  telegramPlans: TelegramPlan[];
 }
 
 // Define Plan interface
@@ -34,8 +36,22 @@ export interface TelegramPlan {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  subscriptions: TelegramSubscription[];
 }
 
+// Define Subscription interface
+export interface TelegramSubscription {
+  id: string;
+  planId: string;
+  userId: string;
+  telegramUsername: string;
+  planPrice: number;
+  expiryDate: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
 // Define store state interface
 interface TelegramState {
   accounts: TelegramAccount[];
@@ -51,10 +67,11 @@ interface TelegramState {
   verifyOtp: (code: string, phoneNumber: string) => Promise<void>;
   getAccounts: () => Promise<void>;
   // Channel methods
-  createChannel: (channelName: string, channelDescription: string) => Promise<void>;
+  createChannel: (channelName: string, channelDescription: string) => Promise<TelegramChannel>;
   fetchChannels: () => Promise<void>;
   fetchChannelById: (channelId: string) => Promise<void>;
   updateChannel: (channelId: string, data: { botAdded: boolean }) => Promise<void>;
+  publishChannel: (channelId: string) => Promise<void>;
   deleteChannel: (channelId: string) => Promise<void>;
   setCurrentChannel: (channel: TelegramChannel | null) => void;
   
@@ -156,6 +173,7 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
         currentChannel: newChannel,
         isLoading: false 
       }));
+      return newChannel;
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to create channel', 
@@ -224,6 +242,18 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
     }
   },
   
+  publishChannel: async (channelId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.put(`/api/v1/telegram/channels/${channelId}/publish`);
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to publish channel', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
   deleteChannel: async (channelId: string) => {
     set({ isLoading: true, error: null });
     try {

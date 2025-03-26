@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTelegram } from "../../hooks/useTelegram";
+import { TelegramChannel } from "../../store/useTelegramStore";
 
 interface Plan {
   name: string;
@@ -9,20 +10,19 @@ interface Plan {
 
 interface CreatePlanFormProps {
   onPlanCreated: (plan: Plan) => void;
+  channel: TelegramChannel;
 }
 
-const CreatePlanForm = ({ onPlanCreated }: CreatePlanFormProps) => {
+const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
   const [planName, setPlanName] = useState("");
   const [planPrice, setPlanPrice] = useState("");
   const [planDuration, setPlanDuration] = useState("");
-  const { createPlan, fetchPlans, isLoading, error, currentChannel, plans } = useTelegram();
+  const { createPlan, fetchPlans, isLoading, error, plans } = useTelegram();
   
   useEffect(() => {
-    // Fetch plans when component mounts if there's a current channel
-    if (currentChannel?.id) {
-      fetchPlans(currentChannel.id);
-    }
-  }, [currentChannel?.id, fetchPlans]);
+    // Fetch plans when component mounts
+    fetchPlans(channel.id);
+  }, [channel.id, fetchPlans]);
   
   const handleCreatePlan = async () => {
     if (!planName || !planPrice || !planDuration) return;
@@ -41,11 +41,7 @@ const CreatePlanForm = ({ onPlanCreated }: CreatePlanFormProps) => {
         duration
       };
       
-      if (!currentChannel?.id) {
-        throw new Error("Channel ID is required");
-      }
-      
-      await createPlan(currentChannel.id, planData);
+      await createPlan(channel.id, planData);
       
       // Call onPlanCreated with the plan data
       onPlanCreated(planData);
@@ -64,8 +60,8 @@ const CreatePlanForm = ({ onPlanCreated }: CreatePlanFormProps) => {
       <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium mb-2">Channel Created Successfully</h3>
           <div className="flex flex-col gap-1 mb-2">
-              <p className="text-sm font-medium">Name: <span className="font-normal">{currentChannel?.channelName}</span></p>
-              <p className="text-sm font-medium">Description: <span className="font-normal">{currentChannel?.channelDescription}</span></p>
+              <p className="text-sm font-medium">Name: <span className="font-normal">{channel.channelName}</span></p>
+              <p className="text-sm font-medium">Description: <span className="font-normal">{channel.channelDescription}</span></p>
           </div>
       </div>
       

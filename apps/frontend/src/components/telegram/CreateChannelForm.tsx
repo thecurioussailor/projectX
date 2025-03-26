@@ -11,14 +11,14 @@ interface CreateChannelFormProps {
 const CreateChannelForm = ({ onSuccess, onError, selectedAccount }: CreateChannelFormProps) => {
   const [channelName, setChannelName] = useState("");
   const [channelDescription, setChannelDescription] = useState("");
-  const { createChannel, isLoading, error, currentChannel } = useTelegram();
+  const { createChannel, isLoading, error } = useTelegram();
 
   const handleCreateChannel = async () => {
     try {
-      await createChannel(channelName, channelDescription);
-      // The store already sets currentChannel on successful creation
-      if (currentChannel) {
-        onSuccess(currentChannel);
+      const newChannel = await createChannel(channelName, channelDescription);
+      if (newChannel) {
+        console.log("Channel created:", newChannel);
+        onSuccess(newChannel);
       } else {
         throw new Error("Channel was not created properly");
       }

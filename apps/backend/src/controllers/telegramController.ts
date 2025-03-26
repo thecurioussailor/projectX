@@ -399,7 +399,15 @@ export const getChannels = async (req: Request, res: Response) => {
             include: { 
                 telegramAccounts: {
                     include: {
-                        channels: true
+                        channels: {
+                            include: {
+                                telegramPlans: {
+                                    include: {
+                                        subscriptions: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -536,6 +544,64 @@ export const updateChannel = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const publishChannel = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to publish this channel"
+            });
+            return;
+        }
+
+        // Publish channel
+        const publishedChannel = await prismaClient.telegramChannel.update({
+            where: { id: channelId },
+            data: { status: "ACTIVE" }
+        });
+        
+        res.status(200).json({
+            status: "success",
+            message: "Channel published successfully",
+            data: publishedChannel
+        });
+        
+        
+    } catch (error) {
+        console.error("Publish channel error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to publish channel"
+        });
+    }
+}
 
 export const deleteChannel = async (req: Request, res: Response) => {
     try {

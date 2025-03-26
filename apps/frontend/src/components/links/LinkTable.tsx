@@ -2,6 +2,7 @@ import { FaTrash } from "react-icons/fa"
 import { GoCopy } from "react-icons/go"
 import { useLink } from "../../hooks/useLink";
 import { useState, useEffect } from "react";
+import LoadingSpinner from "../ui/LoadingSpinner";
 
 const LinkTable = () => {
     const { links, fetchLinks, isLoading } = useLink();
@@ -22,7 +23,7 @@ const LinkTable = () => {
     };
 
     if (isLoading) {
-        return <div className="text-center py-4">Loading...</div>;
+        return <LoadingSpinner />
     }
 
     return (

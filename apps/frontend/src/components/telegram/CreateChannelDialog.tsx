@@ -5,6 +5,7 @@ import VerifyTelegramCode from "./VerifyTelegramCode";
 import CreateChannelForm from "./CreateChannelForm";
 import CreatePlanForm from "./CreatePlanForm";
 import { useEffect, useState } from "react";
+import { TelegramChannel } from "../../store/useTelegramStore";
 
 // Define Plan interface
 interface Plan {
@@ -13,17 +14,24 @@ interface Plan {
     duration: number;
 }
 
-const CreateChannelDialog = ({ setOpen}: {setOpen: (open: boolean) => void}) => {
-    const { accounts, getAccounts } = useTelegram();
+interface CreateChannelDialogProps {
+    setOpen: (open: boolean) => void;
+    onChannelCreated?: () => void;
+}
+
+const CreateChannelDialog = ({ setOpen, onChannelCreated }: CreateChannelDialogProps) => {
+    const { accounts, getAccounts, fetchChannels, publishChannel } = useTelegram();
     const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
     const [step, setStep] = useState<"select" | "phone" | "code" | "create" | "plan">("select");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [newlyCreatedChannel, setNewlyCreatedChannel] = useState<TelegramChannel | null>(null);
 
     useEffect(() => {
         getAccounts();
     }, [getAccounts]);
 
-    const handleChannelCreated = () => {
+    const handleChannelCreated = (channel: TelegramChannel) => {
+        setNewlyCreatedChannel(channel);
         setStep("plan");
     };
 
@@ -33,13 +41,21 @@ const CreateChannelDialog = ({ setOpen}: {setOpen: (open: boolean) => void}) => 
     };
 
     const handlePublish = () => {
-        // Here you would typically save/publish all plans
-        // and close the dialog
+        // Refresh the channels list after publishing
+        if (newlyCreatedChannel) {
+            publishChannel(newlyCreatedChannel.id);
+            fetchChannels();
+        }
+        // Notify parent if callback exists
+        if (onChannelCreated) {
+            onChannelCreated();
+        }
+        // Close the dialog
         setOpen(false);
     };
 
     return (
-        <div className="fixed flex justify-center items-center inset-0 bg-black/50 w-full h-full overflow-hidden">
+        <div className="fixed flex justify-center items-center inset-0 bg-black/50 w-full h-full overflow-hidden z-50">
             <div className="bg-white w-1/2 max-h-[85vh] rounded-3xl shadow-md flex flex-col">
                 <div className="p-6 border-b border-gray-200 flex justify-between items-center">
                     <h2 className="text-xl font-semibold">Create Channel</h2>
@@ -109,9 +125,10 @@ const CreateChannelDialog = ({ setOpen}: {setOpen: (open: boolean) => void}) => 
                             />
                         )}
 
-                        {step === "plan" && (
+                        {step === "plan" && newlyCreatedChannel && (
                             <CreatePlanForm 
-                                onPlanCreated={handleAddPlan} 
+                                onPlanCreated={handleAddPlan}
+                                channel={newlyCreatedChannel}
                             />
                         )}
                     </div>
