@@ -366,7 +366,7 @@ export const createChannel = async (req: Request, res: Response) => {
                 }
             }
         });
-        
+
         res.status(201).json({
             status: "success",
             message: "Channel created successfully",

@@ -62,6 +62,18 @@ export const updateProfile = async (req: Request, res: Response) => {
     
     const { name, email, phone, profileImage, coverImage, location } = req.body;
     
+    const isPhoneUnique = await prismaClient.user.findUnique({
+      where: { phone }
+    });
+
+    if(isPhoneUnique) {
+      res.status(400).json({
+        success: false, 
+        message: 'Phone number already in use'
+      });
+      return;
+    }
+
     const updatedUser = await prismaClient.user.update({
       where: { id: req.user.id },
       data: {
