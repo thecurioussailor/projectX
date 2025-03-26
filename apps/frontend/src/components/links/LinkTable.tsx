@@ -12,8 +12,10 @@ const LinkTable = () => {
         fetchLinks();
     }, [fetchLinks]);
 
-    const copyToClipboard = (text: string, id: string) => {
-        navigator.clipboard.writeText(text);
+    const copyToClipboard = (id: string) => {
+        const baseUrl = window.location.origin; // Gets the current domain
+        const shareableLink = `${baseUrl}/c/${id}`;
+        navigator.clipboard.writeText(shareableLink);
         setCopied(id);
         
         // Reset the "Copied" state after 2 seconds
@@ -57,7 +59,7 @@ const LinkTable = () => {
                                     <td>
                                         <button 
                                             className="relative flex items-center gap-2 hover:text-[#7F37D8]"
-                                            onClick={() => copyToClipboard(link.shortUrl, link.id)}
+                                            onClick={() => copyToClipboard(link.id)}
                                         >
                                             <span>{link.shortUrl.split('/').pop()}</span>
                                             <span className="px-4"><GoCopy size={20}/></span>
