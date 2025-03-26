@@ -20,7 +20,7 @@ const LinkTable = () => {
         
         // Reset the "Copied" state after 2 seconds
         setTimeout(() => {
-          setCopied(null);
+          setCopied("copied");
         }, 1000);
     };
 
