@@ -44,7 +44,7 @@ enum Role {
 
 model TelegramAccount {
   id              String      @id @default(cuid())
-  userId          Int         @unique
+  userId          Int         
   user            User        @relation(fields: [userId], references: [id])
   telegramNumber  String      @unique
   session         String?
