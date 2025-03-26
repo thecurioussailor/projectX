@@ -6,7 +6,7 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import { TelegramChannel } from "../../store/useTelegramStore";
 
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
-
+console.log("PUBLIC_APP_URL", PUBLIC_APP_URL);
 const ChannelTable = () => {
     const { channels, fetchChannels, isLoading } = useTelegram();
     const [hasFetched, setHasFetched] = useState(false);
@@ -24,7 +24,7 @@ const ChannelTable = () => {
             <LoadingSpinner />
         </div>
     }
-    
+
     return (
         <div className="flex justify-between gap-4 bg-white rounded-3xl">
             <div className="flex flex-col gap-4 w-full">
@@ -59,6 +59,7 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
     const [copied, setCopied] = useState(false);
     const handleShare = (channelId: string) => {
         const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
+        console.log(shareableLink);
         window.open(shareableLink, '_blank');
     };
     const handleCopy = (channelId: string) => {
