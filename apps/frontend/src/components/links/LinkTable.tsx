@@ -59,9 +59,9 @@ const LinkTable = () => {
                                     <td>
                                         <button 
                                             className="relative flex items-center gap-2 hover:text-[#7F37D8]"
-                                            onClick={() => copyToClipboard(link.id)}
+                                            onClick={() => copyToClipboard(link.shortId)}
                                         >
-                                            <span>{link.shortUrl.split('/').pop()}</span>
+                                            <span>{link.shortId}</span>
                                             <span className="px-4"><GoCopy size={20}/></span>
                                             {copied === link.id && <span className="absolute -top-4 -right-2 text-xs">Copied!</span>}
                                         </button>
