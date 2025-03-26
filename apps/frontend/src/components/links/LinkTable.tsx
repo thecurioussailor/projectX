@@ -3,7 +3,7 @@ import { GoCopy } from "react-icons/go"
 import { useLink } from "../../hooks/useLink";
 import { useState, useEffect } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
-
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const LinkTable = () => {
     const { links, fetchLinks, isLoading } = useLink();
     const [copied, setCopied] = useState<string | null>(null);
@@ -13,8 +13,8 @@ const LinkTable = () => {
     }, [fetchLinks]);
 
     const copyToClipboard = (id: string) => {
-        const baseUrl = window.location.origin; // Gets the current domain
-        const shareableLink = `${baseUrl}/c/${id}`;
+        const shareableLink = `${BACKEND_URL}/api/v1/links/${id}`;
+        
         navigator.clipboard.writeText(shareableLink);
         setCopied(id);
         
