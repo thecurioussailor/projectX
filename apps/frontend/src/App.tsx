@@ -17,7 +17,7 @@ import Audience from './pages/Audience'
 import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicChannelPage from './pages/PublicChannelPage'
-
+import PublicDigitalProductPage from './pages/PublicDigitalProductPage'
 export default function App() {
   return (
     <AuthProvider>
@@ -28,6 +28,7 @@ export default function App() {
           <Route path="/signin" element={<Signin />} />
           <Route element={<PublicLayout />}>
             <Route path="/c/:slug" element={<PublicChannelPage />} />
+            <Route path="/d/:slug" element={<PublicDigitalProductPage />} />
           </Route>
 
           {/* Protected Routes with AuthLayout */}
