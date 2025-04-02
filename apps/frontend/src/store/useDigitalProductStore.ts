@@ -165,8 +165,7 @@ api.interceptors.request.use((config) => {
 
 // Helper to safely update the current product
 const safelyUpdateCurrentProduct = (
-  get: () => DigitalProductState, 
-  set: (fn: (state: DigitalProductState) => Partial<DigitalProductState>) => void,
+  get: () => DigitalProductState,
   updateFn: (product: NonNullable<DigitalProductState['currentProduct']>) => void
 ) => {
   const currentProduct = get().currentProduct;
@@ -398,7 +397,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       await api.delete(`/api/v1/digital-products/${productId}/files/${fileId}`);
       
       // Update currentProduct if it exists and matches the productId
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         if (currentProduct.id === productId) {
           const updatedFiles = currentProduct.files.filter(file => file.id !== fileId);
           set(() => ({
@@ -430,7 +429,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       console.log(newTestimonial);
       
       // Update currentProduct if it exists and matches the productId
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         if (currentProduct.id === productId) {
           set(() => ({
             currentProduct: {
@@ -476,7 +475,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const updatedTestimonial = response.data.data;
       
       // Update currentProduct if it exists and contains this testimonial
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const testimonialIndex = currentProduct.testimonials.findIndex(
           t => t.id === testimonialId
         );
@@ -511,7 +510,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       await api.delete(`/api/v1/digital-products/testimonials/${testimonialId}`);
       
       // Update currentProduct if it exists and contains this testimonial
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const updatedTestimonials = currentProduct.testimonials.filter(
           t => t.id !== testimonialId
         );
@@ -542,7 +541,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const newFaq = response.data.data;
       
       // Update currentProduct if it exists and matches the productId
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         if (currentProduct.id === productId) {
           set(() => ({
             currentProduct: {
@@ -588,7 +587,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const updatedFaq = response.data.data;
       
       // Update currentProduct if it exists and contains this FAQ
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const faqIndex = currentProduct.faqs.findIndex(f => f.id === faqId);
         
         if (faqIndex !== -1) {
@@ -621,7 +620,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       await api.delete(`/api/v1/digital-products/faqs/${faqId}`);
       
       // Update currentProduct if it exists and contains this FAQ
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const updatedFaqs = currentProduct.faqs.filter(f => f.id !== faqId);
         
         set(() => ({
@@ -650,7 +649,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const newQuestion = response.data.data;
       
       // Update currentProduct if it exists and matches the productId
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         if (currentProduct.id === productId) {
           set(() => ({
             currentProduct: {
@@ -696,7 +695,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const updatedQuestion = response.data.data;
       
       // Update currentProduct if it exists and contains this question
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const questionIndex = currentProduct.registrationQns.findIndex(
           q => q.id === questionId
         );
@@ -731,7 +730,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       await api.delete(`/api/v1/digital-products/registration-questions/${questionId}`);
       
       // Update currentProduct if it exists and contains this question
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const updatedQuestions = currentProduct.registrationQns.filter(
           q => q.id !== questionId
         );
@@ -762,7 +761,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const newDetail = response.data.data;
       
       // Update currentProduct if it exists and matches the productId
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         if (currentProduct.id === productId) {
           set(() => ({
             currentProduct: {
@@ -808,7 +807,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const updatedDetail = response.data.data;
       
       // Update currentProduct if it exists and contains this detail
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const detailIndex = currentProduct.supportDetails.findIndex(
           d => d.id === detailId
         );
@@ -843,7 +842,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       await api.delete(`/api/v1/digital-products/support-details/${detailId}`);
       
       // Update currentProduct if it exists and contains this detail
-      safelyUpdateCurrentProduct(get, set, (currentProduct) => {
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
         const updatedDetails = currentProduct.supportDetails.filter(
           d => d.id !== detailId
         );

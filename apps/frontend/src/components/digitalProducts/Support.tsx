@@ -1,4 +1,4 @@
-const Support = ({ productId }: { productId: string }) => {
+const Support = () => {
   return (
     <div>
         <div>
