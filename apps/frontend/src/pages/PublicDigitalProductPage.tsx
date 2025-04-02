@@ -1,196 +1,125 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useTelegramStore } from '../store/useTelegramStore';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
-
-interface PublicPlan {
-  id: string;
-  name: string;
-  price: number;
-  duration: number;
-}
-
-interface PublicChannel {
-  id: string;
-  channelName: string;
-  channelDescription: string;
-  createdAt: string;
-  plans: PublicPlan[];
-}
+import { useParams, useNavigate } from "react-router-dom";
+import Bali from "../assets/images/bali.jpg";
+import { useDigitalProduct } from "../hooks/useDigitalProduct";
+import { useEffect, useState } from "react";
+import { PublicDigitalProduct } from "../store/useDigitalProductStore";
+import { useAuth } from "../hooks/useAuth";
 
 const PublicDigitalProductPage = () => {
-  const { slug } = useParams<{ slug: string }>();
-  const { fetchPublicChannelBySlug, isLoading, error } = useTelegramStore();
-  const [channel, setChannel] = useState<PublicChannel | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+  const { fetchPublicProductBySlug } = useDigitalProduct();
+  const { slug } = useParams();
+  const [product, setProduct] = useState<PublicDigitalProduct | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadChannel = async () => {
-      try {
-        if (slug) {
-          const channelData = await fetchPublicChannelBySlug(slug);
-          setChannel(channelData);
-          if (channelData.plans.length > 0) {
-            setSelectedPlan(channelData.plans[0].id);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load channel:", err);
-      }
+    const fetchProduct = async () => {
+      const product = await fetchPublicProductBySlug(slug as string);
+      setProduct(product);
     };
-
-    loadChannel();
-  }, [slug, fetchPublicChannelBySlug]);
-
-  const handleSubscribe = () => {
-    if (!selectedPlan) return;
-    
-    // Here you would implement the payment logic
-    // This could redirect to a payment gateway or show a payment form
-    console.log(`Subscribe to plan: ${selectedPlan}`);
-    
-    // For now, we'll just alert
-    alert(`Subscription request for plan: ${selectedPlan}`);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner/>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-50 p-6 rounded-lg max-w-lg text-center">
-          <h2 className="text-xl font-bold text-red-700 mb-2">Error</h2>
-          <p className="text-red-600">{error}</p>
-          <Link to="/" className="mt-4 inline-block bg-[#7F37D8] text-white px-4 py-2 rounded-lg">
-            Return to Home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (!channel) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-yellow-50 p-6 rounded-lg max-w-lg text-center">
-          <h2 className="text-xl font-bold text-yellow-700 mb-2">Channel Not Found</h2>
-          <p className="text-yellow-600">The channel you're looking for doesn't exist or isn't published yet.</p>
-          <Link to="/" className="mt-4 inline-block bg-[#7F37D8] text-white px-4 py-2 rounded-lg">
-            Return to Home
-          </Link>
-        </div>
-      </div>
-    );
-  }
+    fetchProduct();
+  }, [slug, fetchPublicProductBySlug]);
 
   return (
-    <div className="bg-gray-50 w-full">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col gap-6 max-w-4xl mx-auto">
-          <div className="flex flex-col gap-6 bg-white p-6 rounded-3xl shadow-sm">
-            <header className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-800">{channel.channelName}</h1>
-                <Link to="/" className="text-[#7F37D8] hover:underline">projectX</Link>
-              </div>
-              <p className="mt-2 text-gray-600">{channel.channelDescription}</p>
-            </header>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-              <h2 className="text-xl font-semibold mb-4">Subscription Plans</h2>
-              
-              {channel.plans.length === 0 ? (
-                <p className="text-gray-500">No subscription plans available at the moment.</p>
-              ) : (
-                <div className="space-y-4">
-                  {channel.plans.map((plan) => (
-                    <div 
-                      key={plan.id} 
-                      className={`p-4 border rounded-3xl cursor-pointer transition-all ${
-                        selectedPlan === plan.id ? 'border-purple-200 bg-purple-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setSelectedPlan(plan.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium">{plan.name}</h3>
-                          <p className="text-gray-600">{plan.duration} days access</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold">${plan.price}</p>
-                          <input
-                            type="radio"
-                            name="plan"
-                            checked={selectedPlan === plan.id}
-                            onChange={() => setSelectedPlan(plan.id)}
-                            className="ml-2"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="mt-6 flex justify-center">
-                    <button
-                      onClick={handleSubscribe}
-                      disabled={!selectedPlan}
-                      className="bg-[#7F37D8] text-white py-2 px-8 rounded-full hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                    >
-                      Subscribe Now
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="bg-white p-6">
-              <h2 className="text-xl font-semibold mb-4">Disclaimer</h2>
-              <p className="text-gray-600">
-                This disclaimer outlines that POLMI SOFTWARE SERVICES TECHNOLOGIES PRIVATE LIMITED, as an organization, shall not be held accountable for any content or materials disseminated by a content creator on or via any app or website affiliated with us. By utilizing our services, you acknowledge and agree to the terms set forth in this disclaimer. Learn more.
-              </p>
-            </div>
-            <div className="p-6 rounded-3xl bg-purple-50">
-              <h1 className="text-xl font-semibold mb-4 py-8">Frequently Asked Questions</h1>
-              <Accordion title="Can I receive a refund for my subscription?" content="There would not be any refunds for the subscription service. Subscribers should carefully consider their needs and goals before subscribing, and understand that the creator is not responsible for any gains or losses." />
-              <Accordion title="I have made the payment but it's not reflecting?" content="Please contact the customer support team with payment & contact details on support@projectx.vercel.in"/>
-              <Accordion title="How I will get confirmation I have been added to the telegram subscription?" content="You will receive a confirmation message on your telegram account after the payment is made." />
-              <Accordion title="Which mobile number will be added to telegram?" content="You will Join Now button arfter the payment, make sure you have logged in to proper telegram account before join. selected account will be telgram account." />
-            </div>
-            <div className="mt-4 text-sm px-6 py-4 border-t border-gray-200 text-gray-500">
-              <p>Channel created on: {new Date(channel.createdAt).toLocaleDateString()}</p>
+    <div className="relative w-full h-[calc(100vh-100px)]">
+      <div className="p-16 px-32 w-3/5">
+          <div className="flex items-center gap-4">
+            <img src={Bali} alt="Digital Product" className="w-20 h-20 rounded-full" />
+            <div className="flex flex-col gap-1">
+              <p className="text-gray-500">Created by</p>
+              <p className="font-semibold text-zinc-900 uppercase">{product?.creator?.name}</p>
             </div>
           </div>
-        </div>
+          <div className="flex flex-col gap-4 mt-10 gap-y-6">
+            <h1 className="text-4xl font-semibold">{product?.title}</h1>
+            <img src={Bali} alt="Digital Product" className="w-full rounded-3xl" />
+            <div className="flex flex-col gap-2">
+              <p className="text-zinc-900 font-semibold">Description</p>
+              <p className="text-gray-500">{product?.description}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-zinc-900 font-semibold">Testimonials</p>
+              <p className="text-gray-500">{product?.testimonials[0]?.description}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-zinc-900 font-semibold">Frequently Asked Questions</p>
+              <p className="text-gray-500">{product?.faqs[0]?.answer}</p>
+            </div>
+            <div className="flex flex-col gap-6">
+              <p className="text-zinc-900 font-semibold">Gallery</p>
+              <div className="flex justify-between gap-4">
+                <img src={Bali} alt="Digital Product" className="w-32 h-32 rounded-3xl" />
+                <img src={Bali} alt="Digital Product" className="w-32 h-32 rounded-3xl" />
+                <img src={Bali} alt="Digital Product" className="w-32 h-32 rounded-3xl" />
+                <img src={Bali} alt="Digital Product" className="w-32 h-32 rounded-3xl" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-zinc-900 font-semibold">Contact</p>
+              <div className="flex flex-col gap-2">
+                <p className="text-gray-500">Email</p>
+                <p className="text-gray-500">Phone</p>
+                <p className="text-gray-500">Address</p>
+              </div>
+            </div>
+            <div className="text-gray-500 rounded-3xl p-4 bg-purple-100">
+              <p className="font-semibold">Terms and Conditions</p>
+              <p>You agree to share information entered on this page with Ashutosh Sagar (owner of this page) and Cosmofeed, adhering to applicable laws.</p>
+            </div>
+            <div className="text-gray-500 rounded-3xl p-4 bg-purple-100 mb-6">
+              <p className="font-semibold">Disclaimer</p>
+              <p>Polmi Software Services Technologies Pvt. Ltd. shall not be held liable for any content or materials published, sold, or distributed by content creators on our associated apps or websites.Learn more</p>
+            </div>
+            <div className="flex flex-col gap-2 border-t border-gray-200 pt-4">
+              <h1 className="text-2xl font-semibold">projectX</h1>
+              <p className="text-gray-500">Want to create your own payment page? Experience hassle-free payouts and premium support.Get started now!</p>
+            </div>
+          </div>
       </div>
-    </div>
-  );
-};
-
-export default PublicDigitalProductPage; 
-
-const Accordion = ({title, content}: {title: string, content: string}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="mb-4">
-      <h2 className="bg-[#7F37D8] rounded-t-3xl text-sm text-white font-semibold px-8 py-4">
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          type="button" 
-          className="flex items-center justify-between w-full">
-          {title}
-        </button>
-      </h2>
-      {isOpen && (
-        <div className="py-6 text-sm px-8 rounded-b-3xl transition-all duration-300 ease-in-out bg-white">
-          {content}
-        </div>
-      )}
+      <div className="fixed top-32 right-32 shadow-lg rounded-3xl w-1/3">
+          <div className="flex justify-between items-center px-4 py-8 border-b border-gray-200">
+            <h1 className="text-2xl font-semibold">Payment Details</h1>
+          </div>
+          <div className="p-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="name">Name</label>
+              <input 
+                className="border border-gray-300 rounded-md p-2"
+                type="text" id="name" required/>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="email">Email</label>
+              <input 
+                className="border border-gray-300 rounded-md p-2"
+                type="email" id="email" required/>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="phone">Phone</label>
+              <input 
+                className="border border-gray-300 rounded-md p-2"
+                type="text" id="phone" required/>
+            </div>
+            <div className="flex justify-between items-center gap-2 px-4">
+              <label htmlFor="amount">Total Amount</label>
+              <p className="text-2xl font-semibold">₹ {product?.price}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => {
+                  if (isAuthenticated) {
+                    navigate(`/checkout/${product?.id}`);
+                  } else {
+                    navigate('/signup');
+                  }
+                }}  
+                className="bg-blue-500 text-white rounded-3xl p-2">
+                  { product?.ctaButtonText || "Pay Now"}
+                </button>
+            </div>
+          </div>
+      </div>
     </div>
   )
 }
+
+export default PublicDigitalProductPage

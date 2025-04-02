@@ -58,11 +58,11 @@ export const useTelegram = () => {
     return storeGetAccounts();
   }, [token, storeGetAccounts]);
   // Channel methods with authentication check
-  const createChannel = useCallback(async (channelName: string, channelDescription: string) => {
+  const createChannel = useCallback(async (channelName: string, channelDescription: string, telegramNumber: string) => {
     if (!token) {
       throw new Error('You must be logged in to create a channel');
     }
-    return storeCreateChannel(channelName, channelDescription);
+    return storeCreateChannel(channelName, channelDescription, telegramNumber);
   }, [token, storeCreateChannel]);
   
   const fetchChannels = useCallback(async () => {

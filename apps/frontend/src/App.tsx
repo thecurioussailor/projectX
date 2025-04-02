@@ -11,6 +11,7 @@ import Payments from './pages/Payments'
 import Telegram from './pages/Telegram'
 import LinkShort from './pages/LinkShort'
 import DigitalProduct from './pages/DigitalProduct'
+import EditDigitalProduct from './pages/EditDigitalProduct'
 import Settings from './pages/Settings'
 import { SidebarProvider } from './context/SidebarContext'
 import Audience from './pages/Audience'
@@ -18,6 +19,7 @@ import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicChannelPage from './pages/PublicChannelPage'
 import PublicDigitalProductPage from './pages/PublicDigitalProductPage'
+
 export default function App() {
   return (
     <AuthProvider>
@@ -34,11 +36,11 @@ export default function App() {
           {/* Protected Routes with AuthLayout */}
           <Route
             element={
-                <SidebarProvider>
-                  <ProtectedRoute>
-                    <AuthLayout />
-                  </ProtectedRoute>
-                </SidebarProvider>
+              <SidebarProvider>
+                <ProtectedRoute>
+                  <AuthLayout />
+                </ProtectedRoute>
+              </SidebarProvider>
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
@@ -49,7 +51,8 @@ export default function App() {
             <Route path="/payments" element={<Payments />} />
             <Route path="/telegram" element={<Telegram />} />
             <Route path="/link-short" element={<LinkShort />} />
-            <Route path="/digital-product" element={<DigitalProduct />} />
+            <Route path='/digital-products' element={<DigitalProduct />} />
+            <Route path='/digital-products/:id/edit' element={<EditDigitalProduct />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>

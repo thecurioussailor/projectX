@@ -4,6 +4,7 @@ declare module 'telegram' {
     connect(): Promise<void>;
     invoke(request: any): Promise<any>;
     isUserAuthorized(): Promise<boolean>;
+    disconnect(): Promise<void>;
   }
   
   export namespace Api {

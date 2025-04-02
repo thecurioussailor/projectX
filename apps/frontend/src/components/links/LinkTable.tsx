@@ -1,5 +1,5 @@
 import { FaTrash } from "react-icons/fa"
-import { GoCopy } from "react-icons/go"
+import { GoCheck, GoCopy } from "react-icons/go"
 import { useLink } from "../../hooks/useLink";
 import { useState, useEffect } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
@@ -20,7 +20,7 @@ const LinkTable = () => {
         
         // Reset the "Copied" state after 2 seconds
         setTimeout(() => {
-          setCopied("copied");
+          setCopied(null);
         }, 1000);
     };
 
@@ -62,9 +62,10 @@ const LinkTable = () => {
                                             onClick={() => copyToClipboard(link.shortId)}
                                         >
                                             <span>{link.shortId}</span>
-                                            <span className="px-4"><GoCopy size={20}/></span>
-                                            {copied === link.id && <span className="absolute -top-4 -right-2 text-xs">Copied!</span>}
-                                        </button>
+                                            <button 
+                                                onClick={() => copyToClipboard(link.shortId)}
+                                                className="px-4 py-2 rounded-r-3xl w-1/3">{copied === link.shortId ? <GoCheck size={20} /> : <GoCopy size={20} />}</button>
+                                            </button>
                                     </td>
                                     <td className="text-[#7F37D8] pl-5">
                                         <button onClick={() => deleteLink(link.id)}>

@@ -27,8 +27,8 @@ telegramRouter.delete("/plans/:planId", authenticate, telegramController.deleteP
 // Public routes (no authentication required)
 telegramRouter.get("/public/channels/:slug", telegramController.getPublicChannelBySlug);
 
-
-
+//subscription management
+telegramRouter.post("/channels/:channelId/plans/:planId/subscribe", authenticate, telegramController.subscribeToPlan);
 
 
 

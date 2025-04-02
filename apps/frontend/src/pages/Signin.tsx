@@ -1,7 +1,7 @@
 import { useState } from "react"
 import SigninComponent from "../components/auth/SigninComponent"
 import SignupComponent from "../components/auth/SignupComponent"
-import logo from "../../public/bali.jpg"
+import logo from "../assets/images/bali.jpg"
 
 const Signin = () => {
   const [showSignup, setShowSignup] = useState(false);

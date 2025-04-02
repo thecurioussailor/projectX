@@ -16,7 +16,7 @@ const Sidebar = () => {
     { name: 'Purchased', icon: <IoPeopleOutline size={20}/>, path: '/purchased' },
     { name: 'Links', icon: <FaLink size={20}/>, path: '/link-short' },
     { name: 'Telegram', icon: <FaTelegram size={20}/>, path: '/telegram' },
-    { name: 'Products', icon: <FaProductHunt size={20}/>, path: '/digital-product' },
+    { name: 'Products', icon: <FaProductHunt size={20}/>, path: '/digital-products' },
     { name: 'Settings', icon: <IoSettingsOutline size={20}/>, path: '/settings' }
   ];
 

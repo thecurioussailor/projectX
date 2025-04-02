@@ -3,7 +3,7 @@ import { CiSearch } from "react-icons/ci";
 import { FaUser } from "react-icons/fa";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 
 const Navbar = () => {
@@ -12,7 +12,9 @@ const Navbar = () => {
   return (
     <nav className="flex justify-between items-center px-8 py-6 shadow-sm">
       <div className="flex w-1/3 items-center gap-4">
-        <h1 className="text-3xl font-bold">projectX</h1>
+        <Link to="/">
+          <h1 className="text-3xl font-bold">projectX</h1>
+        </Link>
         <button 
           onClick={toggleSidebar}
           className={`rounded-full p-2 mt-2 transition-colors ${

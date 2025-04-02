@@ -1,4 +1,4 @@
-import PurchasedTable from "../components/purchased/PurchasedTable"
+import PurchasedTable from "../components/purchased/PurchasedItemsTable"
 
 const Purchased = () => {
   return (

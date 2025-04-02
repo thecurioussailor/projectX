@@ -18,6 +18,7 @@ export interface TelegramChannel {
   channelId: string;
   channelName: string;
   channelDescription: string;
+  telegramNumber: string;
   botAdded: boolean;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
@@ -43,12 +44,12 @@ export interface TelegramSubscription {
   planId: string;
   userId: string;
   telegramUsername: string;
+  planName: string;
   planPrice: number;
+  planDuration: number;
   expiryDate: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: 'ACTIVE' | 'EXPIRED';
   createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
 }
 
 // Define PublicChannel interface for shareable page
@@ -80,7 +81,7 @@ interface TelegramState {
   verifyOtp: (code: string, phoneNumber: string) => Promise<void>;
   getAccounts: () => Promise<void>;
   // Channel methods
-  createChannel: (channelName: string, channelDescription: string) => Promise<TelegramChannel>;
+  createChannel: (channelName: string, channelDescription: string, telegramNumber: string) => Promise<TelegramChannel>;
   fetchChannels: () => Promise<void>;
   fetchChannelById: (channelId: string) => Promise<void>;
   fetchPublicChannelBySlug: (slug: string) => Promise<PublicChannel>;
@@ -166,7 +167,6 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.get('/api/v1/telegram/accounts');
-      console.log(response.data.data);
       set({ 
         accounts: response.data.data, 
         isLoading: false 
@@ -177,10 +177,10 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
   },
   
   // Channel methods
-  createChannel: async (channelName: string, channelDescription: string) => {
+  createChannel: async (channelName: string, channelDescription: string, telegramNumber: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/api/v1/telegram/channels', { channelName, channelDescription });
+      const response = await api.post('/api/v1/telegram/channels', { channelName, channelDescription, telegramNumber });
       const newChannel = response.data.data;
       set(state => ({ 
         channels: [...state.channels, newChannel],

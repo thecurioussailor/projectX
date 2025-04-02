@@ -15,9 +15,8 @@ const CreateChannelForm = ({ onSuccess, onError, selectedAccount }: CreateChanne
 
   const handleCreateChannel = async () => {
     try {
-      const newChannel = await createChannel(channelName, channelDescription);
+      const newChannel = await createChannel(channelName, channelDescription, selectedAccount || '');
       if (newChannel) {
-        console.log("Channel created:", newChannel);
         onSuccess(newChannel);
       } else {
         throw new Error("Channel was not created properly");

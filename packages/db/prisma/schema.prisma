@@ -29,7 +29,7 @@ model User {
   wallet            Decimal    @default(0.0)
   createdAt         DateTime   @default(now())
 
-  telegramAccounts       TelegramAccount[]
+  telegramAccounts      TelegramAccount[]
   products              DigitalProduct[]
   orders                Order[]
   transactions          Transaction[]
@@ -114,18 +114,133 @@ enum TelegramSubscriptionStatus {
 }
 
 model DigitalProduct {
-  id          String    @id @default(cuid())
-  user        User      @relation(fields: [userId], references: [id])
-  userId      Int
-  name        String
-  description String?
-  price       Decimal
-  status      String    @default("ACTIVE") // ACTIVE, INACTIVE
-  image       String?
-  documents   String[]  // Store URLs for PDFs, images, videos
-  createdAt   DateTime  @default(now())
+  id              String    @id @default(cuid())
+  creator         User      @relation(fields: [creatorId], references: [id])
+  creatorId       Int
+  title           String
+  description     String?
+  category        String?
+  coverImage      String?
+  themeColor      String?    @default("#000000")
+  priceType       PriceType? @default(FIXED)
+  price           Decimal
+  discountedPrice Decimal?
+  hasDiscount     Boolean   @default(false)
+  ctaButtonText   String?
+  status          ProductStatus @default(PENDING)
+  isLimitedQuantityEnabled   Boolean      @default(false)
+  quantity        Int?
+  image           String?
+  files           DigitalFile[]
+  testimonials    Testimonial[]
+  faqs            FAQ[]
+  galleryImages   GalleryImage[]
+  registrationQns RegistrationQuestion[]
+  orders          Order[]
+  supportDetails  SupportDetail[]  // Store URLs for PDFs, images, videos
+  createdAt       DateTime  @default(now())
+}
 
-  orders      Order[]
+enum PriceType {
+  FIXED
+  FLEXIBLE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+model DigitalFile {
+  id            String          @id @default(cuid())
+  product       DigitalProduct  @relation(fields: [productId], references: [id])
+  productId     String
+  fileType      FileType
+  fileUrl       String
+  fileName      String
+  fileSize      Int
+  s3Key         String
+  createdAt     DateTime        @default(now())
+}
+
+enum FileType {
+  PDF
+  IMAGE
+  VIDEO
+  LINK
+  DOCUMENT
+  AUDIO
+  OTHER
+}
+
+model Testimonial {
+  id          String         @id @default(cuid())
+  product     DigitalProduct @relation(fields: [productId], references: [id])
+  productId   String
+  name        String
+  image       String?
+  description String
+  rating      Int @default(5)  // 1 to 5 stars
+  createdAt   DateTime       @default(now())
+}
+
+model FAQ {
+  id          String         @id @default(cuid())
+  product     DigitalProduct @relation(fields: [productId], references: [id])
+  productId   String
+  question    String
+  answer      String
+  createdAt   DateTime       @default(now())
+}
+
+model GalleryImage {
+  id          String         @id @default(cuid()) 
+  product     DigitalProduct @relation(fields: [productId], references: [id])
+  productId   String
+  imageUrl    String
+  imageOrder  Int?
+  imageType   ImageType
+  imageName   String?
+  createdAt   DateTime       @default(now())
+} 
+
+enum ImageType {
+  IMAGE
+  VIDEO
+}
+
+model RegistrationQuestion {
+  id          String         @id @default(cuid())
+  product     DigitalProduct @relation(fields: [productId], references: [id])
+  productId   String
+  question    String
+  fieldType   FieldType
+  fieldOptions String[]
+  isRequired  Boolean      @default(false)
+  createdAt   DateTime       @default(now())
+} 
+
+enum FieldType {
+  TEXT
+  DROPDOWN
+  RADIO
+  CHECKBOX
+  DATE
+  EMAIL
+  PHONE
+  NUMBER
+}
+
+model SupportDetail {
+  id          String         @id @default(cuid())
+  product     DigitalProduct @relation(fields: [productId], references: [id])
+  productId   String
+  email       String?
+  phone       String?
+  whatsapp    String?
+  telegram    String?
+  createdAt   DateTime       @default(now())
 }
 
 model Order {
