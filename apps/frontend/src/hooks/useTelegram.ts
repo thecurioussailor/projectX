@@ -33,7 +33,8 @@ export const useTelegram = () => {
     fetchPlanById: storeFetchPlanById,
     updatePlan: storeUpdatePlan,
     deletePlan: storeDeletePlan,
-    setCurrentPlan
+    setCurrentPlan,
+    subscribeToPlan: storeSubscribeToPlan
   } = useTelegramStore();
   
   // Auth methods with authentication check
@@ -135,6 +136,14 @@ export const useTelegram = () => {
     }
     return storeDeletePlan(planId);
   }, [token, storeDeletePlan]);
+
+  // Subscription methods with authentication check
+  const subscribeToPlan = useCallback(async (channelId: string, planId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to subscribe to a plan');
+    }
+    return storeSubscribeToPlan(channelId, planId);
+  }, [token, storeSubscribeToPlan]);  
   
   return {
     // State
@@ -165,6 +174,7 @@ export const useTelegram = () => {
     fetchPlanById,
     updatePlan,
     deletePlan,
-    setCurrentPlan
+    setCurrentPlan,
+    subscribeToPlan   
   };
 }; 

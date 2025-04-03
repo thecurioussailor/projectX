@@ -97,6 +97,9 @@ interface TelegramState {
   updatePlan: (planId: string, data: { name?: string, price?: number, duration?: number, status?: 'ACTIVE' | 'INACTIVE' }) => Promise<void>;
   deletePlan: (planId: string) => Promise<void>;
   setCurrentPlan: (plan: TelegramPlan | null) => void;
+
+  // Subscription method
+  subscribeToPlan: (channelId: string, planId: string) => Promise<void>;
 }
 
 // Create axios instance with default config
@@ -412,5 +415,19 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
   
   setCurrentPlan: (plan) => {
     set({ currentPlan: plan });
+  },
+
+  // Subscription methods
+  subscribeToPlan: async (channelId: string, planId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post(`/api/v1/telegram/channels/${channelId}/plans/${planId}/subscribe`);
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to subscribe to plan', 
+        isLoading: false 
+      });
+      throw error;
+    }
   }
 })); 

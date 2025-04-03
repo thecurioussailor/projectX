@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTelegramStore } from '../store/useTelegramStore';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -20,9 +20,10 @@ interface PublicChannel {
 
 const PublicChannelPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { fetchPublicChannelBySlug, isLoading, error } = useTelegramStore();
+  const { fetchPublicChannelBySlug, isLoading, error, subscribeToPlan } = useTelegramStore();
   const [channel, setChannel] = useState<PublicChannel | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadChannel = async () => {
@@ -44,13 +45,13 @@ const PublicChannelPage = () => {
 
   const handleSubscribe = () => {
     if (!selectedPlan) return;
-    
-    // Here you would implement the payment logic
-    // This could redirect to a payment gateway or show a payment form
     console.log(`Subscribe to plan: ${selectedPlan}`);
-    
-    // For now, we'll just alert
-    alert(`Subscription request for plan: ${selectedPlan}`);
+    if (channel?.id) {
+      subscribeToPlan(channel.id, selectedPlan);
+      navigate('/purchased');
+    } else {
+      console.error("Channel ID is undefined");
+    }
   };
 
   if (isLoading) {
