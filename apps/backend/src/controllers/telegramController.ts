@@ -3,6 +3,7 @@ import { StringSession } from "telegram/sessions/index.js";
 import { TelegramClient, Api } from "telegram";
 import { prismaClient } from "@repo/db";
 import dotenv from "dotenv";
+import { addBotToChannel, addUserToChannel } from "../utils/helper.js";
 
 dotenv.config();
 const apiId: number = Number(process.env.TELEGRAM_API_ID);
@@ -355,8 +356,9 @@ export const createChannel = async (req: Request, res: Response) => {
                     megagroup: false
                 })
             );
+            console.log("channel created", result);
             const channelData = (result as any).chats?.[0];
-            
+            console.log("channel data", channelData);
             if (!channelData || !channelData.id) {
                 res.status(400).json({
                     status: "error",
@@ -366,6 +368,7 @@ export const createChannel = async (req: Request, res: Response) => {
             }
             
             // Create new channel
+            console.log("creating new channel");
             const newChannel = await prismaClient.telegramChannel.create({
                 data: {
                     telegramChannelId: channelData.id,
@@ -378,6 +381,21 @@ export const createChannel = async (req: Request, res: Response) => {
                     }
                 }
             });
+            console.log("channel created", newChannel);
+            console.log("adding bot to channel");
+            const { success, message, channel } = await addBotToChannel(channelData.id.toString(), "@NetlySuperBot", client);
+            console.log("bot added to channel", success, message, channel);
+            if(!success) {
+                res.status(400).json({
+                    status: "error",
+                    message: message
+                });
+            } else {
+                await prismaClient.telegramChannel.update({
+                    where: { id: newChannel.id },
+                    data: { botAdded: true, telegramChannelId: channel.id }
+                });
+            }
 
             res.status(201).json({
                 status: "success",
@@ -1187,5 +1205,3 @@ export const subscribeToPlan = async (req: Request, res: Response) => {
         });
     }
 };
-
-

@@ -17,24 +17,25 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
     updateProduct(currentProduct.id, formData);
   }
   return (
-    <div>
+    <div className="flex flex-col gap-6 w-full">
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-2">
             <label htmlFor="ctaButtonText">Button Text</label>
             <input 
-              className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
+              className="w-fit border px-4 py-2 outline-none"
               name="ctaButtonText"
               type="text" 
               id="ctaButtonText" 
               value={formData?.ctaButtonText}
+              placeholder="Buy Now"
               onChange={(e) => setFormData({...formData, ctaButtonText: e.target.value})}
             />
         </div>
-        <div>
-          <div>
+        <div className="flex flex-col gap-2 mt-4">
+          <div className="flex items-center gap-4">
             <label htmlFor="isLimitedQuantityEnabled">Limit Number of Purchases</label>
             <input 
-              className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
+              className="border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
               name="isLimitedQuantityEnabled"
               type="checkbox" 
               id="isLimitedQuantityEnabled" 
@@ -43,10 +44,10 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
             />
           </div>
           {formData?.isLimitedQuantityEnabled && (
-            <div>
+            <div className="flex items-center gap-4">
               <label htmlFor="isLimitedQuantityEnabled">Quantity</label>
               <input 
-                className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
+                className="border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
                 name="quantity"
                 type="number" 
                 id="quantity" 

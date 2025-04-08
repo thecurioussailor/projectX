@@ -9,6 +9,7 @@ const FileType = {
     OTHER: "OTHER"
 };
 const getFileType = (mimeType: string) => {
+    console.log("getFileType", mimeType);
     if (mimeType.startsWith("image/")) return FileType.IMAGE;
     if (mimeType === "application/pdf") return FileType.PDF;
     if (mimeType.startsWith("video/")) return FileType.VIDEO;
@@ -40,6 +41,8 @@ export const useDigitalProduct = () => {
         // File methods
         getFileUploadUrl,
         uploadFileToS3,
+        uploadDigitalProductFile,
+        getDigitalProductFiles, 
         deleteFile,
         
         // Testimonial methods
@@ -70,16 +73,19 @@ export const useDigitalProduct = () => {
     // Helper for complete file upload process
     const uploadFile = async (productId: string, file: File) => {
         try {
-            const fileType = getFileType(file.name);
-            // Step 1: Get presigned URL
-            const { uploadUrl, file: fileRecord } = await getFileUploadUrl(
+            console.log("uploadFile", productId, file);
+            const mimeType = getFileType(file.type);
+            const { uploadUrl, s3Key, fileType } = await getFileUploadUrl(
                 productId, 
                 file.name, 
-                fileType
+                mimeType
             );
             
             // Step 2: Upload file to S3
             await uploadFileToS3(uploadUrl, file);
+            
+            // Step 3: Upload file to database
+            const fileRecord = await uploadDigitalProductFile(productId, s3Key, fileType);
             
             // Return the file record from the database
             return fileRecord;
@@ -109,6 +115,7 @@ export const useDigitalProduct = () => {
         
         // File methods
         uploadFile, // Custom helper that combines getUploadUrl and uploadToS3
+        getDigitalProductFiles,
         deleteFile,
         
         // Testimonial methods

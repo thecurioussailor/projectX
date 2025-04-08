@@ -6,16 +6,17 @@ interface CreateChannelFormProps {
   onSuccess: (channel: TelegramChannel) => void;
   onError: () => void;
   selectedAccount: string | null;
+  phoneNumber: string;
 }
 
-const CreateChannelForm = ({ onSuccess, onError, selectedAccount }: CreateChannelFormProps) => {
+const CreateChannelForm = ({ onSuccess, onError, selectedAccount, phoneNumber }: CreateChannelFormProps) => {
   const [channelName, setChannelName] = useState("");
   const [channelDescription, setChannelDescription] = useState("");
   const { createChannel, isLoading, error } = useTelegram();
 
   const handleCreateChannel = async () => {
     try {
-      const newChannel = await createChannel(channelName, channelDescription, selectedAccount || '');
+      const newChannel = await createChannel(channelName, channelDescription, selectedAccount ? selectedAccount : phoneNumber);
       if (newChannel) {
         onSuccess(newChannel);
       } else {

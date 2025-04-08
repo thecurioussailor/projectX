@@ -1,9 +1,11 @@
 declare module 'telegram' {
   export class TelegramClient {
     constructor(session: any, apiId: number, apiHash: string, options: any);
+    connected: boolean;
     connect(): Promise<void>;
     invoke(request: any): Promise<any>;
     isUserAuthorized(): Promise<boolean>;
+    getDialogs({}): Promise<any>;
     disconnect(): Promise<void>;
   }
   
@@ -36,8 +38,44 @@ declare module 'telegram' {
           megagroup: boolean;
         });
       }
+
+      export class InviteToChannel {
+        constructor(options: {
+          channel: any;
+          users: any[];
+        });
+      }
+
+      export class EditAdmin {
+        constructor(options: {
+          channel: any;
+          userId: any;
+          adminRights: any;
+          rank: string;
+        });
+      }
+    }
+
+    export namespace contacts {
+      export class ResolveUsername {
+        constructor(options: {
+          username: string;
+        });
+      }
     }
     
+
+    export class InputUser {
+      constructor(options: {
+        userId: number;
+        accessHash: string;
+      });
+    }
+
+    export class ChatAdminRights {
+      constructor(options: any);
+    }
+
     export class CodeSettings {
       constructor(options: any);
     }

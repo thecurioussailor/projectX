@@ -27,17 +27,38 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
     <div className="p-4 w-full">
         <div className="flex flex-col gap-4">
             <form onSubmit={handleSubmit}>
-                <div className="flex flex-wrap gap-4"> 
-                    <div>
-                        <label htmlFor="title">Title</label>
-                        <input 
-                            className="w-full border border-gray-300 rounded-md p-2"
-                            type="text" 
-                            id="title" 
-                            name="title" 
-                            value={formData?.title}
-                            onChange={(e) => setFormData({...formData, title: e.target.value})}
-                        />
+                <div className="flex flex-col gap-4">
+                    <div className="flex gap-4 w-full"> 
+                        <div className="w-1/2 flex flex-col gap-1">
+                            <label htmlFor="title">Title</label>
+                            <input 
+                                className="w-full border border-gray-300 rounded-md p-2"
+                                type="text" 
+                                id="title" 
+                                name="title" 
+                                value={formData?.title}
+                                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                            />
+                        </div>
+                        <div className="relative flex flex-col gap-1 w-1/2">
+                            <label htmlFor="category">Category</label>
+                            <select 
+                                id="category" 
+                                name="category"
+                                value={formData?.category}
+                                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                className="w-full border border-gray-300 rounded-md p-2 appearance-none outline-none focus-within:ring-purple-500 focus-within:ring-2"
+                            >
+                                <option value="Education">Education</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Productivity">Productivity</option>
+                                <option value="Lifestyle">Lifestyle</option>
+                                <option value="Health">Health</option>
+                                <option value="Business">Business</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <IoIosArrowDown size={20} className="absolute z-50 top-12 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
+                        </div>
                     </div>
                     <div>
                         <label htmlFor="description">Description</label>
@@ -48,25 +69,6 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                             value={formData?.description}
                             onChange={(e) => setFormData({...formData, description: e.target.value})}
                         />
-                    </div>
-                    <div className="relative flex flex-col gap-2 w-1/2">
-                        <label htmlFor="category">Category</label>
-                        <select 
-                            id="category" 
-                            name="category"
-                            value={formData?.category}
-                            onChange={(e) => setFormData({...formData, category: e.target.value})}
-                            className="w-full border border-gray-300 rounded-md p-2 appearance-none outline-none focus-within:ring-purple-500 focus-within:ring-2"
-                        >
-                            <option value="Education">Education</option>
-                            <option value="Entertainment">Entertainment</option>
-                            <option value="Productivity">Productivity</option>
-                            <option value="Lifestyle">Lifestyle</option>
-                            <option value="Health">Health</option>
-                            <option value="Business">Business</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <IoIosArrowDown size={20} className="absolute z-50 top-6 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -119,7 +121,7 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
             </form>
             <div className="flex flex-col gap-4">
                 <Testimonials currentProduct={currentProduct} />
-                <Gallery currentProduct={currentProduct} />
+                <Gallery />
                 <Faq currentProduct={currentProduct} productId={currentProduct.id} />
             </div>
         </div>

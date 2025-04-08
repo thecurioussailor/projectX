@@ -88,6 +88,9 @@ export interface DigitalProduct {
   isLimitedQuantityEnabled: boolean;
   quantity?: number;
   image?: string;
+  _count: {
+    orders: number;
+  };
   files: DigitalFile[];
   testimonials: Testimonial[];
   faqs: FAQ[];
@@ -117,10 +120,12 @@ interface DigitalProductState {
   // File Methods
   getFileUploadUrl: (productId: string, fileName: string, fileType: string) => Promise<{
     uploadUrl: string;
-    fileKey: string;
-    file: DigitalFile;
+    s3Key: string;
+    fileType: string;
   }>;
   uploadFileToS3: (url: string, file: File) => Promise<void>;
+  uploadDigitalProductFile: (productId: string, s3Key: string, fileType: string) => Promise<void>;
+  getDigitalProductFiles: (productId: string) => Promise<DigitalFile[]>;
   deleteFile: (productId: string, fileId: string) => Promise<void>;
   
   // Testimonial Methods
@@ -187,7 +192,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       const response = await api.post('/api/v1/digital-products', data);
       const newProduct = response.data.data;
       set(state => ({
-        products: [...state.products, newProduct],
+        products: [newProduct,...state.products],
         currentProduct: newProduct,
         isLoading: false
       }));
@@ -354,7 +359,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
   getFileUploadUrl: async (productId: string, fileName: string, fileType: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post(`/api/v1/digital-products/${productId}/upload-file`, {
+      const response = await api.post(`/api/v1/digital-products/${productId}/uploadUrl`, {
         fileName,
         fileType
       });
@@ -390,6 +395,39 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       throw error;
     }
   },
+
+  uploadDigitalProductFile: async (productId: string, s3Key: string, fileType: string) => { 
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/api/v1/digital-products/${productId}/uploadFile`, {
+        s3Key,
+        fileType
+      });
+
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to upload digital product file', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  getDigitalProductFiles: async (productId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/digital-products/${productId}/files`);
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get digital product files', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },  
 
   deleteFile: async (productId: string, fileId: string) => {
     set({ isLoading: true, error: null });

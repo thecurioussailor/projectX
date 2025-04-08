@@ -22,7 +22,9 @@ digitalProductRouter.post("/:productId/unpublish", authenticate, digitalProductC
 digitalProductRouter.get("/public/:slug", digitalProductController.getPublicDigitalProductBySlug);
 
 // File upload routes
-digitalProductRouter.post("/:productId/upload-file", authenticate, fileUploadController.getUploadUrl);
+digitalProductRouter.post("/:productId/uploadUrl", authenticate, fileUploadController.getUploadUrl);
+digitalProductRouter.post("/:productId/uploadFile", authenticate, fileUploadController.uploadDigitalProductFile);
+digitalProductRouter.get("/:productId/files", authenticate, fileUploadController.getDigitalProductFiles);
 digitalProductRouter.delete("/:productId/files/:fileId", authenticate, fileUploadController.deleteFile);
 
 // Testimonial routes

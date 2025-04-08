@@ -62,7 +62,12 @@ export const createDigitalProduct = async (req: Request, res: Response) => {
                 faqs: true,
                 galleryImages: true,
                 registrationQns: true,
-                supportDetails: true
+                supportDetails: true,
+                _count: {
+                    select: {
+                        orders: true
+                    }
+                }
             }
         });
 
@@ -97,7 +102,12 @@ export const getDigitalProducts = async (req: Request, res: Response) => {
                 faqs: true,
                 galleryImages: true,
                 registrationQns: true,
-                supportDetails: true
+                supportDetails: true,                
+                _count: {
+                    select: {
+                        orders: true
+                    }
+                }
             },
             orderBy: {
                 createdAt: 'desc'

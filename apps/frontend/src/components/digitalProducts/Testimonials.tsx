@@ -2,6 +2,7 @@ import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import { useState } from "react";
 import { DigitalProduct } from "../../store/useDigitalProductStore";
 import { IoIosAdd } from "react-icons/io";
+import TesminonialCard from "../ui/TesminonialCard";
 
 interface TestimonialsProps {
     currentProduct: DigitalProduct;
@@ -27,12 +28,11 @@ const Testimonials = ({ currentProduct }: TestimonialsProps) => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <h1 className="text-2xl font-bold">Testimonials</h1>
-                <input type="checkbox" className="mt-2 w-5 h-5" />
+        <div className="flex flex-col gap-4 border rounded-3xl">
+            <div className="flex items-center gap-4 border-b py-8 px-8">
+                <h1 className="text-2xl font-semibold text-purple-600">Testimonials</h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 px-6 pt-4">
                 <button 
                     onClick={() => setShowForm(true)}
                     className="text-zinc-500 flex items-center gap-2 border border-dashed border-zinc-500 rounded-full pl-2 pr-4 py-1"
@@ -49,37 +49,14 @@ const Testimonials = ({ currentProduct }: TestimonialsProps) => {
                 />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 px-4 py-4">
                 {testimonials.map((testimonial) => (
-                    <div key={testimonial.id} className="bg-white p-6 rounded-3xl shadow-sm">
-                        <div className="flex items-center gap-4 mb-4">
-                            {testimonial.image && (
-                                <img 
-                                    src={testimonial.image} 
-                                    alt={testimonial.name}
-                                    className="w-12 h-12 rounded-full object-cover"
-                                />
-                            )}
-                            <div>
-                                <h2 className="font-semibold">{testimonial.name}</h2>
-                                <div className="flex gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                        <span key={i} className={`text-${i < testimonial.rating ? 'yellow-400' : 'gray-300'}`}>
-                                            ★
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <p className="text-gray-600">{testimonial.description}</p>
-                        <button 
-                            onClick={() => handleDeleteTestimonial(testimonial.id)}
-                            disabled={isDeleting === testimonial.id}
-                            className="mt-4 text-red-500 hover:text-red-700 disabled:opacity-50"
-                        >
-                            {isDeleting === testimonial.id ? 'Deleting...' : 'Delete'}
-                        </button>
-                    </div>
+                    <TesminonialCard 
+                        key={testimonial.id}
+                        testimonial={testimonial}
+                        handleDeleteTestimonial={handleDeleteTestimonial}
+                        isDeleting={isDeleting}
+                    />
                 ))}
             </div>
         </div>

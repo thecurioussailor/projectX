@@ -33,8 +33,23 @@ interface ProfileState {
   profile: ProfileData | null;
   isLoading: boolean;
   error: string | null;
+  profilePictureUrl: string | null;
+  coverPictureUrl: string | null; 
   fetchProfile: () => Promise<void>;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
+
+  getProfileUploadUrl: () => Promise<{uploadUrl: string, s3key: string} | null>;
+  getCoverUploadUrl: () => Promise<{uploadUrl: string, s3key: string} | null>;
+
+  updateProfilePicture: (s3key: string) => Promise<void>;
+  updateCoverPicture: (s3key: string) => Promise<void>;
+
+  getProfilePicture: () => Promise<string | null>;
+  getCoverPicture: () => Promise<string | null>;
+
+  deleteProfilePicture: () => Promise<void>;
+  deleteCoverPicture: () => Promise<void>;
+
 }
 
 // Create axios instance with default config
@@ -59,6 +74,9 @@ export const useProfileStore = create<ProfileState>((set) => ({
   profile: null,
   isLoading: false,
   error: null,
+  profilePictureUrl: null,
+  coverPictureUrl: null,
+
 
   // Fetch profile data
   fetchProfile: async () => {
@@ -92,5 +110,91 @@ export const useProfileStore = create<ProfileState>((set) => ({
         isLoading: false 
       });
     }
-  }
+  },
+  getProfileUploadUrl: async () => {
+    try {
+      const response = await api.post('/api/v1/users/profilepicture');
+      return {
+        uploadUrl: response.data.data.url,
+        s3key: response.data.data.key
+      };
+    } catch (error) {
+      console.error('Error fetching profile upload URL:', error);
+      return null;
+    }
+  },
+  getCoverUploadUrl: async () => {
+    try {
+      const response = await api.post('/api/v1/users/coverpicture');
+      return {
+        uploadUrl: response.data.data.url,
+        s3key: response.data.data.key
+      };
+    } catch (error) {
+      console.error('Error fetching cover upload URL:', error);
+      return null;
+    }
+  },
+  updateProfilePicture: async (s3key: string) => {
+    try {
+      const response = await api.post('/api/v1/users/profilepicture/update', {
+        s3key
+      });
+      return response.data.data.message;
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+      return null;
+    }
+  },
+  updateCoverPicture: async (s3key: string) => {
+    try {
+      const response = await api.post('/api/v1/users/coverpicture/update', {
+        s3key
+      });
+      return response.data.data.message;
+    } catch (error) {
+      console.error('Error updating cover picture:', error);
+      return null;
+    }
+  },
+  getProfilePicture: async () => {
+    try {
+      const response = await api.get('/api/v1/users/profilepicture');
+      set({ profilePictureUrl: response.data.data.url });
+      return response.data.data.url;
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);  
+      return null;
+    }
+  },
+  getCoverPicture: async () => {
+    try {
+      const response = await api.get('/api/v1/users/coverpicture');
+      console.log(response.data.data.url);
+      set({ coverPictureUrl: response.data.data.url });
+      return response.data.data.url;
+    } catch (error) {
+      console.error('Error fetching cover picture:', error);
+      return null;
+    }
+  },
+  deleteProfilePicture: async () => {
+    try {
+      const response = await api.post('/api/v1/users/profilepicture/delete');
+      return response.data.data.url;  
+    } catch (error) {
+      console.error('Error deleting profile picture:', error);
+      return null;
+    }
+  },
+  deleteCoverPicture: async () => {
+    try { 
+      const response = await api.post('/api/v1/users/coverpicture/delete');
+      return response.data.data.url;
+    } catch (error) {
+      console.error('Error deleting cover picture:', error);
+      return null;
+    }
+  } 
+  
 })); 

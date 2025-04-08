@@ -121,6 +121,7 @@ const CreateChannelDialog = ({ setOpen, onChannelCreated }: CreateChannelDialogP
                             <CreateChannelForm 
                                 onSuccess={handleChannelCreated}
                                 onError={() => setStep("phone")}
+                                phoneNumber={phoneNumber}
                                 selectedAccount={selectedAccount}
                             />
                         )}

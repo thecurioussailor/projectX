@@ -45,7 +45,6 @@ const PublicChannelPage = () => {
 
   const handleSubscribe = () => {
     if (!selectedPlan) return;
-    console.log(`Subscribe to plan: ${selectedPlan}`);
     if (channel?.id) {
       subscribeToPlan(channel.id, selectedPlan);
       navigate('/purchased');
