@@ -130,10 +130,10 @@ export const sendOtp = async (req: Request, res: Response) => {
 export const verifyOtp = async (req: Request, res: Response) => {
     try {
         const { code, phoneNumber } = req.body;
-    const userId = req.user?.id;
+        const userId = req.user?.id;
     
         if(!code || !phoneNumber) {
-        res.status(400).json({
+            res.status(400).json({
                 status: "error",
                 message: "Verification code and phone number are required"
             });
@@ -150,12 +150,12 @@ export const verifyOtp = async (req: Request, res: Response) => {
         
         // Get user data with telegram account
         const userWithTelegramAccounts = await prismaClient.user.findUnique({
-        where: {
-            id: userId
-            },
-            include: {
-                telegramAccounts: true
-            }
+            where: {
+                id: userId
+                },
+                include: {
+                    telegramAccounts: true
+                }
         });
         
         if(!userWithTelegramAccounts || !userWithTelegramAccounts.telegramAccounts) {
@@ -168,16 +168,15 @@ export const verifyOtp = async (req: Request, res: Response) => {
         
         const telegramAccount = userWithTelegramAccounts.telegramAccounts.find(account => account.telegramNumber === phoneNumber);
         
-        if(!telegramAccount?.session || !telegramAccount?.phoneCodeHash) {
+    if(!telegramAccount?.session || !telegramAccount?.phoneCodeHash || !telegramAccount.telegramNumber) {
         res.status(400).json({
                 status: "error",
                 message: "Please request a new OTP"
         });
-            return;
+        return;
     }
-    
     // Create client with saved session
-        const stringSession = new StringSession(telegramAccount.session);
+    const stringSession = new StringSession(telegramAccount.session);
     const client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
     await client.connect();
     
