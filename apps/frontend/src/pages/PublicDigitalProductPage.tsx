@@ -2,27 +2,30 @@ import { useParams, useNavigate } from "react-router-dom";
 import Bali from "../assets/images/bali.jpg";
 import { useDigitalProduct } from "../hooks/useDigitalProduct";
 import { useEffect, useState } from "react";
-import { PublicDigitalProduct } from "../store/useDigitalProductStore";
+import { PublicDigitalProduct, Testimonial } from "../store/useDigitalProductStore";
 import { useAuth } from "../hooks/useAuth";
-import TesminonialCard from "../components/ui/TesminonialCard";
 import FaqCard from "../components/ui/FaqCard";
+import { FaStar } from "react-icons/fa";
 
 const PublicDigitalProductPage = () => {
   const { isAuthenticated } = useAuth();
-  const { fetchPublicProductBySlug } = useDigitalProduct();
+  const { fetchPublicProductBySlug, getCoverImage } = useDigitalProduct();
   const { slug } = useParams();
   const [product, setProduct] = useState<PublicDigitalProduct | null>(null);
   const navigate = useNavigate();
   const [amount, setAmount] = useState<number>(0);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
       const product = await fetchPublicProductBySlug(slug as string);
       setProduct(product);
       setAmount(product?.price || 0);
+      const coverImage = await getCoverImage(product?.id);
+      setCoverImage(coverImage);
     };
     fetchProduct();
-  }, [slug, fetchPublicProductBySlug]);
+  }, [slug, fetchPublicProductBySlug, getCoverImage]);
 
   return (
     <div className="relative w-full h-[calc(100vh-100px)]">
@@ -36,7 +39,7 @@ const PublicDigitalProductPage = () => {
           </div>
           <div className="flex flex-col gap-4 mt-10 gap-y-6">
             <h1 className="text-4xl font-semibold">{product?.title}</h1>
-            <img src={Bali} alt="Digital Product" className="w-full rounded-3xl" />
+            {coverImage && <img src={coverImage} alt="Digital Product" className="w-full rounded-3xl" />}
             <div className="flex flex-col gap-2">
               <p className="text-zinc-900 font-semibold text-2xl mb-4">Description</p>
               <p className="text-gray-500">{product?.description}</p>
@@ -48,8 +51,6 @@ const PublicDigitalProductPage = () => {
                   <TesminonialCard 
                     key={testimonial.id} 
                     testimonial={testimonial} 
-                    handleDeleteTestimonial={() => {}} 
-                    isDeleting={null} 
                   />
                 ))}
               </div>
@@ -180,3 +181,35 @@ const PublicDigitalProductPage = () => {
 }
 
 export default PublicDigitalProductPage
+
+const TesminonialCard = ({ testimonial }: { testimonial: Testimonial }) => {
+  return (
+    <div key={testimonial.id} className="bg-white py-6 rounded-3xl shadow-sm border">
+        <div className="flex items-center gap-4 mb-4 justify-between border-b pb-4 px-6">
+            <div className="flex items-center justify-between gap-4">
+                {/* {testimonial.image && (
+                    <img 
+                        src={testimonial.image} 
+                        alt={testimonial.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                    />
+                )} */}
+                <div>
+                    <h2 className="font-semibold text-2xl">{testimonial.name}</h2>
+                </div>
+            </div>
+
+        </div>
+        <div className="px-6">
+            <div className="flex gap-1">
+                {[...Array(5)].map((_, i) => (
+                    <span key={i} className={`text-purple-600`}>
+                        <FaStar size={30}/>
+                    </span>
+                ))}
+            </div>
+            <p className="text-gray-600 py-4">{testimonial.description}</p>
+        </div>
+    </div>
+  )
+}

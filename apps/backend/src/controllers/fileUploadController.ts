@@ -49,7 +49,7 @@ export const getUploadUrl = async (req: Request, res: Response) => {
         const timestamp = Date.now();
         const uniqueId = crypto.randomUUID();
 
-        const s3Key = `${userId}/products/${productId}/${timestamp}-${uniqueId}.${fileExtension}`;
+        const s3Key = `${userId}/products/${productId}/files/${timestamp}-${uniqueId}.${fileExtension}`;
 
         // Create the command to put the object
         const command = new PutObjectCommand({
@@ -145,15 +145,14 @@ export const getDigitalProductFiles = async (req: Request, res: Response) => {
             });
 
             const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-
+            
             return {
                 ...file,
                 presignedUrl
             }
         }));
 
-        res.json({
+        res.status(200).json({
             success: true,
             data: files
         });
@@ -213,3 +212,179 @@ export const deleteFile = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to delete file" });
     }
 }; 
+
+//cover image for digital product
+export const getUploadCoverUrl = async (req: Request, res: Response) => {
+    try {
+        const { productId } = req.params;
+        const { fileName, fileType } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({ 
+                success: false,
+                message: "Unauthorized"
+            });
+            return;
+        }
+
+        if(fileType !== "IMAGE") {
+            res.status(400).json({ 
+                success: false,
+                message: "Invalid file type" 
+            });
+            return;
+        }
+        // Verify product ownership
+        const product = await prismaClient.digitalProduct.findUnique({
+            where: {
+                id: productId,
+                creatorId: userId
+            }
+        });
+
+        if (!product) {
+            res.status(404).json({ error: "Product not found" });
+            return;
+        }
+
+        // Generate a unique file key
+        const fileExtension = fileName.split('.').pop();
+        const timestamp = Date.now();
+        const uniqueId = crypto.randomUUID();
+
+        const s3Key = `${userId}/products/${productId}/cover/${timestamp}-${uniqueId}.${fileExtension}`;
+
+        // Create the command to put the object
+        const command = new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: s3Key,
+            ContentType: fileType
+        });
+
+        // Generate the presigned URL
+        const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+
+        res.json({
+            success: true,
+            data: {
+                uploadUrl: presignedUrl,
+                s3Key: s3Key,
+                fileType
+            }
+        });
+    } catch (error) {
+        console.error('Error generating upload URL:', error);
+        res.status(500).json({ error: "Failed to generate upload URL" });
+    }
+}   
+
+export const uploadCoverImage = async (req: Request, res: Response) => {
+    try {
+        const { productId } = req.params;
+        const { s3Key } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({ 
+                success: false,
+                message: "Unauthorized"
+            });
+            return;
+        }   
+
+        const command = new HeadObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: s3Key,
+        });
+
+        await s3Client.send(command);
+
+        const digitalProduct = await prismaClient.digitalProduct.update({
+            where: {
+                id: productId
+            },
+            data: {
+                coverImage: s3Key
+            }
+        });
+
+        res.json({
+            success: true,
+            message: "File uploaded successfully",
+            data: digitalProduct
+        });
+    } catch (error) {
+        console.error('Error uploading cover image:', error);
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to upload cover image"
+         });
+    }
+};
+
+export const getCoverImage = async (req: Request, res: Response) => {
+    try {
+        const { productId } = req.params;
+        const userId = req.user?.id;
+        if (!userId) {
+            res.status(401).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+            return;
+        }
+        const user = await prismaClient.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!user) {
+            res.status(404).json({
+                success: false, 
+                message: 'User not found'
+            });
+            return;
+        }
+
+        const product = await prismaClient.digitalProduct.findUnique({
+            where: {
+                id: productId
+            }
+        });
+
+        if (!product || !product.coverImage) {
+        res.status(404).json({
+            success: false,
+            message: 'Cover picture not found'
+        });
+        return;
+        }
+
+        const command = new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: product.coverImage
+        });
+
+        const signedUrl = await getSignedUrl(s3Client, command, {
+            expiresIn: 3600 // 1 hour
+        }); 
+
+        res.status(200).json({
+            success: true,
+            data: {
+                url: signedUrl
+            }
+        }); 
+    } catch (error) {
+        console.error('Error getting cover image:', error);
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to get cover image"
+        });
+    }
+};  
+
+
+
+

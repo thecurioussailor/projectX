@@ -14,12 +14,14 @@ import DigitalProduct from './pages/DigitalProduct'
 import EditDigitalProduct from './pages/EditDigitalProduct'
 import Settings from './pages/Settings'
 import { SidebarProvider } from './context/SidebarContext'
-import Audience from './pages/Audience'
 import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicChannelPage from './pages/PublicChannelPage'
 import PublicDigitalProductPage from './pages/PublicDigitalProductPage'
-
+import EditTelegramChannel from './pages/EditTelegramChannel'
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentFailed from './pages/PaymentFailed'
+import PaymentCallback from './pages/PaymentCallback'
 export default function App() {
   return (
     <AuthProvider>
@@ -28,6 +30,9 @@ export default function App() {
           {/* Public Routes with PublicLayout */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/signin" element={<Signin />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-failed" element={<PaymentFailed />} />
+          <Route path="/payment-callback" element={<PaymentCallback />} />
           <Route element={<PublicLayout />}>
             <Route path="/c/:slug" element={<PublicChannelPage />} />
             <Route path="/d/:slug" element={<PublicDigitalProductPage />} />
@@ -46,10 +51,10 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/sales" element={<Sales />} />
-            <Route path="/audience" element={<Audience />} />
             <Route path="/purchased" element={<Purchased />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/telegram" element={<Telegram />} />
+            <Route path="/telegram/:id/edit" element={<EditTelegramChannel />} />
             <Route path="/link-short" element={<LinkShort />} />
             <Route path='/digital-products' element={<DigitalProduct />} />
             <Route path='/digital-products/:id/edit' element={<EditDigitalProduct />} />

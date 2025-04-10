@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { usePurchasedItems } from "../../hooks/usePurchasedItems";
 import { TelegramSubscription } from "../../store/useTelegramStore";
 import LoadingSpinner from "../ui/LoadingSpinner";
-
+import Error from "../ui/Error";
 const PurchasedItemsTable = () => {
     const { telegramSubscriptions, isLoading, error, getPurchasedItems } = usePurchasedItems();
 
@@ -11,23 +11,23 @@ const PurchasedItemsTable = () => {
     }, [getPurchasedItems]);  
     
     if (isLoading) {
-        return <LoadingSpinner />;
+        return (
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <LoadingSpinner />
+            </div>
+        );
     }
 
     if (error) {
         return (
-            <div className="bg-red-50 p-6 rounded-lg max-w-lg text-center">
-                <h2 className="text-xl font-bold text-red-700 mb-2">Error</h2>
-                <p className="text-red-600">{error}</p>
-            </div>
+            <Error error={"error"} />
         );
     }
 
     if (!telegramSubscriptions || telegramSubscriptions.length === 0) {
         return (
-            <div className="bg-white p-6 rounded-lg text-center">
-                <h2 className="text-xl font-semibold text-gray-700 mb-2">No Purchased Items</h2>
-                <p className="text-gray-600">You haven't purchased any subscriptions yet.</p>
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <p className="text-gray-600">No purchased items found</p>
             </div>
         );
     }
@@ -42,7 +42,7 @@ const PurchasedItemsTable = () => {
                             <th className="w-1/12 px-8">#</th>
                             <th className="w-2/12">Plan Name</th>
                             <th className="w-1/12">Status</th>
-                            <th className="w-1/12">Price</th>
+                            <th className="w-1/12">Price (INR)</th>
                             <th className="w-1/12">Duration</th>
                             <th className="w-1/12">Expiry Date</th>
                             <th className="w-1/12">Actions</th>
@@ -74,7 +74,7 @@ const PurchasedItemRow = ({ subscription, index }: { subscription: TelegramSubsc
                     {subscription.status}
                 </span>
             </td>
-            <td>${subscription.planPrice}</td>
+            <td>{subscription.planPrice}</td>
             <td>{subscription.planDuration} days</td>
             <td>{new Date(subscription.expiryDate).toLocaleDateString()}</td>
             <td>

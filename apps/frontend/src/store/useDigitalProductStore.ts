@@ -151,6 +151,12 @@ interface DigitalProductState {
   getSupportDetails: (productId: string) => Promise<SupportDetail[]>;
   updateSupportDetail: (detailId: string, data: Partial<SupportDetail>) => Promise<SupportDetail>;
   deleteSupportDetail: (detailId: string) => Promise<void>;
+
+  //Cover Image for Digital Product
+  getUploadCoverUrl: (productId: string, fileName: string, fileType: string) => Promise<{uploadUrl: string, s3Key: string}>
+  uploadCoverImage: (productId: string, s3Key: string) => Promise<void>
+  getCoverImage: (productId: string) => Promise<string | null>
+  
 }
 
 const api = axios.create({
@@ -901,5 +907,71 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       });
       throw error;
     }
+  },
+  
+  // Cover Image Methods
+  getUploadCoverUrl: async (productId: string, fileName: string, fileType: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/api/v1/digital-products/${productId}/coverUrl`, {
+        fileName,
+        fileType
+      });
+      
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get cover upload URL', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  uploadCoverImage: async (productId: string, s3Key: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/api/v1/digital-products/${productId}/uploadCoverImage`, {
+        s3Key
+      });
+
+      // Update currentProduct if it exists
+      safelyUpdateCurrentProduct(get, (currentProduct) => {
+        if (currentProduct.id === productId) {
+          set(() => ({
+            currentProduct: {
+              ...currentProduct,
+              coverImage: response.data.data.coverImage
+            }
+          }));
+        }
+      });
+
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to upload cover image', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  getCoverImage: async (productId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/digital-products/${productId}/coverImage`);
+      set({ isLoading: false });
+      return response.data.data.url;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get cover image', 
+        isLoading: false 
+      });
+      return null;
+    }
   }
+  
 })); 

@@ -7,6 +7,7 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { FaEdit, FaTrash, FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import Error from "../ui/Error";
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 const DigitalProductTable = () => {
     const { products, isLoading, error, fetchProducts } = useDigitalProduct();
@@ -16,16 +17,21 @@ const DigitalProductTable = () => {
 
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center w-full h-full">
-                <LoadingSpinner/>
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <LoadingSpinner />
             </div>
-        )
+        );
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return <Error error={error} />;
     }
 
+    if(products.length === 0) {
+        return <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+            <p className="text-gray-600">No products found</p>
+        </div>
+    }
   return (
     <div className="flex justify-between gap-4 bg-white rounded-3xl w-full">
             <div className="flex flex-col gap-4 w-full">

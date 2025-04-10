@@ -3,11 +3,13 @@ import { GoCheck, GoCopy } from "react-icons/go"
 import { useLink } from "../../hooks/useLink";
 import { useState, useEffect } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
+import Error from "../ui/Error";
+import { IoAlertCircleOutline } from "react-icons/io5";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const LinkTable = () => {
-    const { links, fetchLinks, isLoading, deleteLink } = useLink();
+    const { links, fetchLinks, isLoading, deleteLink, error } = useLink();
     const [copied, setCopied] = useState<string | null>(null);
-
+    const [open, setOpen] = useState(false);
     useEffect(() => {
         fetchLinks();
     }, [fetchLinks]);
@@ -25,16 +27,35 @@ const LinkTable = () => {
     };
 
     if (isLoading) {
-        return <LoadingSpinner />
+        return (
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <LoadingSpinner />
+            </div>
+        )
     }
 
+    if (error) {
+        return (
+            <Error error={error} />
+        )
+    }
+
+    if(links.length === 0) {
+        return (
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <p className="text-gray-500">You haven't created any shortened links yet.</p>
+            </div>
+        )
+    }
     return (
         <div className="flex justify-between gap-4 bg-white rounded-3xl">
             <div className="flex flex-col gap-4 w-full">
                 <h1 className="text-xl py-10 font-semibold px-8">Your Links</h1>
                 {/* tabular view */}
                 {links.length === 0 ? (
-                    <p className="text-gray-500">You haven't created any shortened links yet.</p>
+                    <div className="w-full h-[calc(100vh-450px)] flex justify-center items-center">
+                        <p className="text-gray-500">You haven't created any shortened links yet.</p>
+                    </div>
                 ) : (
                     <table className="w-full text-left">
                         <thead className="border-gray-300 h-20">
@@ -68,9 +89,15 @@ const LinkTable = () => {
                                             </button>
                                     </td>
                                     <td className="text-[#7F37D8] pl-5">
-                                        <button onClick={() => deleteLink(link.id)}>
+                                        <button onClick={() => setOpen(true)}>
                                             <FaTrash size={20}/>
                                         </button>
+                                        {open && (
+                                            <Alert onCancel={() => setOpen(false)} onDelete={() => {
+                                                deleteLink(link.id);
+                                                setOpen(false);
+                                            }}/>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -83,3 +110,21 @@ const LinkTable = () => {
 };
 
 export default LinkTable;
+
+const Alert = ({ onCancel, onDelete }: { onCancel: () => void, onDelete: () => void }) => {
+    return (
+      <div className="absolute inset-0 flex justify-center items-center bg-black/50">
+          <div className="flex flex-col gap-2 bg-white p-8 items-center rounded-3xl border border-gray-200">
+              <div className="flex justify-center items-center">
+                  <IoAlertCircleOutline size={100} />
+              </div>
+              <p className="text-2xl font-bold">Are you sure?</p>
+              <p className="text-gray-500">Once deleted, you will not be able to recover this link or any related data!</p>
+              <div className="flex gap-4 justify-between mt-6">
+                  <button className="border border-gray-300 text-gray-500 px-8 py-2 rounded-3xl" onClick={onCancel}>Cancel</button>
+                  <button className="bg-[#7F37D8] text-white px-8 py-2 rounded-3xl" onClick={onDelete}>Delete</button>
+              </div>
+          </div>
+      </div>
+    )
+  }

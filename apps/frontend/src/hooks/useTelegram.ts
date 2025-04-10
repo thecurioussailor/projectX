@@ -24,8 +24,10 @@ export const useTelegram = () => {
     createChannel: storeCreateChannel,
     fetchChannels: storeFetchChannels,
     fetchChannelById: storeFetchChannelById,
+    fetchPublicChannelBySlug: storeFetchPublicChannelBySlug,    
     updateChannel: storeUpdateChannel,
     publishChannel: storePublishChannel,
+    unpublishChannel: storeUnpublishChannel,
     deleteChannel: storeDeleteChannel,
     setCurrentChannel,
     createPlan: storeCreatePlan,
@@ -34,7 +36,10 @@ export const useTelegram = () => {
     updatePlan: storeUpdatePlan,
     deletePlan: storeDeletePlan,
     setCurrentPlan,
-    subscribeToPlan: storeSubscribeToPlan
+    subscribeToPlan: storeSubscribeToPlan,
+    initiateSubscription: storeInitiateSubscription,
+    getOrderStatus: storeGetOrderStatus,
+    handlePaymentCallback: storeHandlePaymentCallback
   } = useTelegramStore();
   
   // Auth methods with authentication check
@@ -80,6 +85,13 @@ export const useTelegram = () => {
     return storeFetchChannelById(channelId);
   }, [token, storeFetchChannelById]);
   
+  const fetchPublicChannelBySlug = useCallback(async (slug: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to fetch a public channel');
+    }
+    return storeFetchPublicChannelBySlug(slug);
+  }, [token, storeFetchPublicChannelBySlug]);
+  
   const updateChannel = useCallback(async (channelId: string, data: { botAdded: boolean }) => {
     if (!token) {
       throw new Error('You must be logged in to update a channel');
@@ -93,6 +105,13 @@ export const useTelegram = () => {
     }
     return storePublishChannel(channelId);
   }, [token, storePublishChannel]);
+
+  const unpublishChannel = useCallback(async (channelId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to unpublish a channel');
+    }
+    return storeUnpublishChannel(channelId);
+  }, [token, storeUnpublishChannel]);
   
   const deleteChannel = useCallback(async (channelId: string) => {
     if (!token) {
@@ -143,7 +162,28 @@ export const useTelegram = () => {
       throw new Error('You must be logged in to subscribe to a plan');
     }
     return storeSubscribeToPlan(channelId, planId);
-  }, [token, storeSubscribeToPlan]);  
+  }, [token, storeSubscribeToPlan]); 
+  
+  const initiateSubscription = useCallback(async (channelId: string, planId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to subscribe to a plan');
+    }
+    return storeInitiateSubscription(channelId, planId);
+  }, [token, storeInitiateSubscription]);  
+  
+  const getOrderStatus = useCallback(async (orderId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to check order status');
+    }
+    return storeGetOrderStatus(orderId);
+    }, [token, storeGetOrderStatus]);
+
+  const handlePaymentCallback = useCallback(async (orderId: string, productType: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to handle payment callback');
+    }
+    return storeHandlePaymentCallback(orderId, productType);
+  }, [token, storeHandlePaymentCallback]);
   
   return {
     // State
@@ -163,8 +203,10 @@ export const useTelegram = () => {
     createChannel,
     fetchChannels,
     fetchChannelById,
+    fetchPublicChannelBySlug,
     updateChannel,
     publishChannel,
+    unpublishChannel,
     deleteChannel,
     setCurrentChannel,
     
@@ -175,6 +217,9 @@ export const useTelegram = () => {
     updatePlan,
     deletePlan,
     setCurrentPlan,
-    subscribeToPlan   
+    subscribeToPlan,
+    initiateSubscription,
+    getOrderStatus,
+    handlePaymentCallback
   };
 }; 

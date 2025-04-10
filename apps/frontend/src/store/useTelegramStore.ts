@@ -2,6 +2,17 @@ import axios from 'axios';
 import { create } from 'zustand';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+//Order Status
+export interface OrderStatus {
+  orderId: string;
+  status: string;
+}
+
+//Payment Session
+export interface PaymentSession {
+  orderId: string;
+  paymentSessionId: string;
+}
 // Define Telegram Account interface
 export interface TelegramAccount {
   id: string;
@@ -87,6 +98,7 @@ interface TelegramState {
   fetchPublicChannelBySlug: (slug: string) => Promise<PublicChannel>;
   updateChannel: (channelId: string, data: { botAdded: boolean }) => Promise<void>;
   publishChannel: (channelId: string) => Promise<void>;
+  unpublishChannel: (channelId: string) => Promise<void>;
   deleteChannel: (channelId: string) => Promise<void>;
   setCurrentChannel: (channel: TelegramChannel | null) => void;
   
@@ -100,6 +112,12 @@ interface TelegramState {
 
   // Subscription method
   subscribeToPlan: (channelId: string, planId: string) => Promise<void>;
+  
+  initiateSubscription: (channelId: string, planId: string) => Promise<PaymentSession>;
+  getOrderStatus: (orderId: string) => Promise<OrderStatus>;
+
+  // Payment callback method
+  handlePaymentCallback: (orderId: string, productType: string) => Promise<string>;
 }
 
 // Create axios instance with default config
@@ -279,6 +297,7 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await api.put(`/api/v1/telegram/channels/${channelId}/publish`);
+      await get().fetchChannels();
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to publish channel', 
@@ -287,6 +306,21 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
       throw error;
     }
   },
+
+  unpublishChannel: async (channelId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.put(`/api/v1/telegram/channels/${channelId}/unpublish`);
+      await get().fetchChannels();
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to unpublish channel', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
   deleteChannel: async (channelId: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -425,6 +459,58 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to subscribe to plan', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  initiateSubscription: async (channelId: string, planId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/api/v1/telegram/channels/${channelId}/plans/${planId}/initiate-subscription`);
+      
+      // Extract payment session data
+      const paymentData = response.data.data;
+      set({ isLoading: false });
+      
+      // Return payment session for redirect
+      return paymentData;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to initiate subscription', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+  
+  // Add new method to check order status
+  getOrderStatus: async (orderId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/orders/${orderId}`);
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get order status', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  // Add new method to handle payment callback
+  handlePaymentCallback: async (orderId: string, productType: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/orders/payment-callback?orderId=${orderId}&productType=${productType}`);
+      set({ isLoading: false });  
+      return response.data.status;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to handle payment callback', 
         isLoading: false 
       });
       throw error;

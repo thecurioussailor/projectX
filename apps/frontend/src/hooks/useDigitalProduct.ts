@@ -1,25 +1,34 @@
-import { useDigitalProductStore } from "../store/useDigitalProductStore";
+import { useCallback } from 'react';
+import { useDigitalProductStore, DigitalProduct, Testimonial, FAQ, RegistrationQuestion, SupportDetail } from '../store/useDigitalProductStore';
+import { useAuthStore } from '../store/useAuthStore';
+
+// Define file type mapping
 const FileType = {
     IMAGE: "IMAGE",
-    PDF: "PDF",
     VIDEO: "VIDEO",
-    AUDIO: "AUDIO",
-    DOCUMENT: "DOCUMENT",
+    PDF: "PDF",
     LINK: "LINK",
+    DOCUMENT: "DOCUMENT",
+    AUDIO: "AUDIO",
     OTHER: "OTHER"
 };
-const getFileType = (mimeType: string) => {
-    console.log("getFileType", mimeType);
+
+// Helper function to determine file type
+const getFileType = (mimeType: string): string => {
     if (mimeType.startsWith("image/")) return FileType.IMAGE;
-    if (mimeType === "application/pdf") return FileType.PDF;
     if (mimeType.startsWith("video/")) return FileType.VIDEO;
+    if (mimeType === "application/pdf") return FileType.PDF;
+    if (mimeType.includes("document") || mimeType.includes("msword") || mimeType.includes("officedocument")) return FileType.DOCUMENT;
     if (mimeType.startsWith("audio/")) return FileType.AUDIO;
-    if (mimeType.includes("officedocument") || mimeType.includes("msword")) return FileType.DOCUMENT;
-    if (mimeType.startsWith("text/")) return FileType.LINK; // Assuming text files are links (adjust as needed)
     return FileType.OTHER;
 };
 
+/**
+ * Custom hook for Digital Product functionality with authentication checks
+ */
 export const useDigitalProduct = () => {
+    const { token } = useAuthStore();
+    
     const {
         // State
         products,
@@ -27,47 +36,52 @@ export const useDigitalProduct = () => {
         isLoading,
         error,
         
-        // Product methods
-        createProduct,
-        fetchProducts,
-        fetchProductById,
-        fetchPublicProductBySlug,
-        updateProduct,
-        deleteProduct,
+        // Store methods
+        createProduct: storeCreateProduct,
+        fetchProducts: storeFetchProducts,
+        fetchProductById: storeFetchProductById,
+        fetchPublicProductBySlug: storeFetchPublicProductBySlug,
+        updateProduct: storeUpdateProduct,
+        deleteProduct: storeDeleteProduct,
         setCurrentProduct,
-        publishProduct,
-        unpublishProduct,
+        publishProduct: storePublishProduct,
+        unpublishProduct: storeUnpublishProduct,
         
-        // File methods
-        getFileUploadUrl,
-        uploadFileToS3,
-        uploadDigitalProductFile,
-        getDigitalProductFiles, 
-        deleteFile,
+        // File Methods
+        getFileUploadUrl: storeGetFileUploadUrl,
+        uploadFileToS3: storeUploadFileToS3,
+        uploadDigitalProductFile: storeUploadDigitalProductFile,
+        getDigitalProductFiles: storeGetDigitalProductFiles,
+        deleteFile: storeDeleteFile,
         
-        // Testimonial methods
-        createTestimonial,
-        getTestimonials,
-        updateTestimonial,
-        deleteTestimonial,
+        // Testimonial Methods
+        createTestimonial: storeCreateTestimonial,
+        getTestimonials: storeGetTestimonials,
+        updateTestimonial: storeUpdateTestimonial,
+        deleteTestimonial: storeDeleteTestimonial,
         
-        // FAQ methods
-        createFaq,
-        getFaqs,
-        updateFaq,
-        deleteFaq,
+        // FAQ Methods
+        createFaq: storeCreateFaq,
+        getFaqs: storeGetFaqs,
+        updateFaq: storeUpdateFaq,
+        deleteFaq: storeDeleteFaq,
         
-        // Registration question methods
-        createRegistrationQuestion,
-        getRegistrationQuestions,
-        updateRegistrationQuestion,
-        deleteRegistrationQuestion,
+        // Registration Question Methods
+        createRegistrationQuestion: storeCreateRegistrationQuestion,
+        getRegistrationQuestions: storeGetRegistrationQuestions,
+        updateRegistrationQuestion: storeUpdateRegistrationQuestion,
+        deleteRegistrationQuestion: storeDeleteRegistrationQuestion,
         
-        // Support detail methods
-        createSupportDetail,
-        getSupportDetails,
-        updateSupportDetail,
-        deleteSupportDetail
+        // Support Detail Methods
+        createSupportDetail: storeCreateSupportDetail,
+        getSupportDetails: storeGetSupportDetails,
+        updateSupportDetail: storeUpdateSupportDetail,
+        deleteSupportDetail: storeDeleteSupportDetail,
+        
+        // Cover Image Methods
+        getUploadCoverUrl: storeGetUploadCoverUrl,
+        uploadCoverImage: storeUploadCoverImage,
+        getCoverImage: storeGetCoverImage
     } = useDigitalProductStore();
 
     // Helper for complete file upload process
@@ -83,7 +97,7 @@ export const useDigitalProduct = () => {
             
             // Step 2: Upload file to S3
             await uploadFileToS3(uploadUrl, file);
-            
+
             // Step 3: Upload file to database
             const fileRecord = await uploadDigitalProductFile(productId, s3Key, fileType);
             
@@ -95,6 +109,262 @@ export const useDigitalProduct = () => {
         }
     };
 
+    // Product Methods with authentication check
+    const createProduct = useCallback(async (data: Partial<DigitalProduct>) => {
+        if (!token) {
+            throw new Error('You must be logged in to create a product');
+        }
+        return storeCreateProduct(data);
+    }, [token, storeCreateProduct]);
+    
+    const fetchProducts = useCallback(async () => {
+        if (!token) {
+            throw new Error('You must be logged in to fetch products');
+        }
+        return storeFetchProducts();
+    }, [token, storeFetchProducts]);
+    
+    const fetchProductById = useCallback(async (id: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to fetch a product');
+        }
+        return storeFetchProductById(id);
+    }, [token, storeFetchProductById]);
+    
+    const fetchPublicProductBySlug = useCallback(async (slug: string) => {
+        return storeFetchPublicProductBySlug(slug);
+    }, [storeFetchPublicProductBySlug]);
+    
+    const updateProduct = useCallback(async (id: string, data: Partial<DigitalProduct>) => {
+        if (!token) {
+            throw new Error('You must be logged in to update a product');
+        }
+        return storeUpdateProduct(id, data);
+    }, [token, storeUpdateProduct]);
+    
+    const deleteProduct = useCallback(async (id: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to delete a product');
+        }
+        return storeDeleteProduct(id);
+    }, [token, storeDeleteProduct]);
+    
+    const publishProduct = useCallback(async (id: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to publish a product');
+        }
+        return storePublishProduct(id);
+    }, [token, storePublishProduct]);
+    
+    const unpublishProduct = useCallback(async (id: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to unpublish a product');
+        }
+        return storeUnpublishProduct(id);
+    }, [token, storeUnpublishProduct]);
+
+    // File Methods with authentication check
+    const getFileUploadUrl = useCallback(async (productId: string, fileName: string, fileType: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get upload URL');
+        }
+        return storeGetFileUploadUrl(productId, fileName, fileType);
+    }, [token, storeGetFileUploadUrl]);
+    
+    const uploadFileToS3 = useCallback(async (url: string, file: File) => {
+        if (!token) {
+            throw new Error('You must be logged in to upload a file');
+        }
+        return storeUploadFileToS3(url, file);
+    }, [token, storeUploadFileToS3]);
+    
+    const uploadDigitalProductFile = useCallback(async (productId: string, s3Key: string, fileType: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to upload a product file');
+        }
+        return storeUploadDigitalProductFile(productId, s3Key, fileType);
+    }, [token, storeUploadDigitalProductFile]);
+    
+    const getDigitalProductFiles = useCallback(async (productId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get product files');
+        }
+        return storeGetDigitalProductFiles(productId);
+    }, [token, storeGetDigitalProductFiles]);
+    
+    const deleteFile = useCallback(async (productId: string, fileId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to delete a file');
+        }
+        return storeDeleteFile(productId, fileId);
+    }, [token, storeDeleteFile]);
+
+    // Testimonial Methods with authentication check
+    const createTestimonial = useCallback(async (productId: string, data: Partial<Testimonial>) => {
+        if (!token) {
+            throw new Error('You must be logged in to create a testimonial');
+        }
+        return storeCreateTestimonial(productId, data);
+    }, [token, storeCreateTestimonial]);
+    
+    const getTestimonials = useCallback(async (productId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get testimonials');
+        }
+        return storeGetTestimonials(productId);
+    }, [token, storeGetTestimonials]);
+    
+    const updateTestimonial = useCallback(async (testimonialId: string, data: Partial<Testimonial>) => {
+        if (!token) {
+            throw new Error('You must be logged in to update a testimonial');
+        }
+        return storeUpdateTestimonial(testimonialId, data);
+    }, [token, storeUpdateTestimonial]);
+    
+    const deleteTestimonial = useCallback(async (testimonialId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to delete a testimonial');
+        }
+        return storeDeleteTestimonial(testimonialId);
+    }, [token, storeDeleteTestimonial]);
+
+    // FAQ Methods with authentication check
+    const createFaq = useCallback(async (productId: string, data: Partial<FAQ>) => {
+        if (!token) {
+            throw new Error('You must be logged in to create an FAQ');
+        }
+        return storeCreateFaq(productId, data);
+    }, [token, storeCreateFaq]);
+    
+    const getFaqs = useCallback(async (productId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get FAQs');
+        }
+        return storeGetFaqs(productId);
+    }, [token, storeGetFaqs]);
+    
+    const updateFaq = useCallback(async (faqId: string, data: Partial<FAQ>) => {
+        if (!token) {
+            throw new Error('You must be logged in to update an FAQ');
+        }
+        return storeUpdateFaq(faqId, data);
+    }, [token, storeUpdateFaq]);
+    
+    const deleteFaq = useCallback(async (faqId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to delete an FAQ');
+        }
+        return storeDeleteFaq(faqId);
+    }, [token, storeDeleteFaq]);
+
+    // Registration Question Methods with authentication check
+    const createRegistrationQuestion = useCallback(async (productId: string, data: Partial<RegistrationQuestion>) => {
+        if (!token) {
+            throw new Error('You must be logged in to create a registration question');
+        }
+        return storeCreateRegistrationQuestion(productId, data);
+    }, [token, storeCreateRegistrationQuestion]);
+    
+    const getRegistrationQuestions = useCallback(async (productId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get registration questions');
+        }
+        return storeGetRegistrationQuestions(productId);
+    }, [token, storeGetRegistrationQuestions]);
+    
+    const updateRegistrationQuestion = useCallback(async (questionId: string, data: Partial<RegistrationQuestion>) => {
+        if (!token) {
+            throw new Error('You must be logged in to update a registration question');
+        }
+        return storeUpdateRegistrationQuestion(questionId, data);
+    }, [token, storeUpdateRegistrationQuestion]);
+    
+    const deleteRegistrationQuestion = useCallback(async (questionId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to delete a registration question');
+        }
+        return storeDeleteRegistrationQuestion(questionId);
+    }, [token, storeDeleteRegistrationQuestion]);
+
+    // Support Detail Methods with authentication check
+    const createSupportDetail = useCallback(async (productId: string, data: Partial<SupportDetail>) => {
+        if (!token) {
+            throw new Error('You must be logged in to create a support detail');
+        }
+        return storeCreateSupportDetail(productId, data);
+    }, [token, storeCreateSupportDetail]);
+    
+    const getSupportDetails = useCallback(async (productId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get support details');
+        }
+        return storeGetSupportDetails(productId);
+    }, [token, storeGetSupportDetails]);
+    
+    const updateSupportDetail = useCallback(async (detailId: string, data: Partial<SupportDetail>) => {
+        if (!token) {
+            throw new Error('You must be logged in to update a support detail');
+        }
+        return storeUpdateSupportDetail(detailId, data);
+    }, [token, storeUpdateSupportDetail]);
+    
+    const deleteSupportDetail = useCallback(async (detailId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to delete a support detail');
+        }
+        return storeDeleteSupportDetail(detailId);
+    }, [token, storeDeleteSupportDetail]);
+
+    // Cover Image Methods with authentication check
+    const uploadCover = async (productId: string, file: File): Promise<string | null> => {
+        try {
+            console.log("uploadFile", productId, file);
+            const mimeType = getFileType(file.type);
+            if(mimeType !== "IMAGE"){
+                throw new Error('File Type must be Image')
+            }
+            const { uploadUrl, s3Key } = await getUploadCoverUrl(
+                productId, 
+                file.name, 
+                mimeType
+            );
+            
+            // Step 2: Upload file to S3
+            await uploadFileToS3(uploadUrl, file);
+
+            // Step 3: Upload file to database
+            await uploadCoverImage(productId, s3Key);
+            
+            // Return the cover image URL
+            return await getCoverImage(productId);
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            throw error;
+        }
+    };
+
+    const getUploadCoverUrl = useCallback(async (productId: string, fileName: string, fileType: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get cover upload URL');
+        }
+        return storeGetUploadCoverUrl(productId, fileName, fileType);
+    }, [token, storeGetUploadCoverUrl]);
+    
+    const uploadCoverImage = useCallback(async (productId: string, s3Key: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to upload a cover image');
+        }
+        return storeUploadCoverImage(productId, s3Key);
+    }, [token, storeUploadCoverImage]);
+    
+    const getCoverImage = useCallback(async (productId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get cover image');
+        }
+        return storeGetCoverImage(productId);
+    }, [token, storeGetCoverImage]);
+
+
     return {
         // State
         products,
@@ -102,7 +372,7 @@ export const useDigitalProduct = () => {
         isLoading,
         error,
         
-        // Product methods
+        // Product Methods
         createProduct,
         fetchProducts,
         fetchProductById,
@@ -113,33 +383,42 @@ export const useDigitalProduct = () => {
         publishProduct,
         unpublishProduct,
         
-        // File methods
-        uploadFile, // Custom helper that combines getUploadUrl and uploadToS3
+        // File Methods
+        uploadFile,
+        getFileUploadUrl,
+        uploadFileToS3,
+        uploadDigitalProductFile,
         getDigitalProductFiles,
         deleteFile,
         
-        // Testimonial methods
+        // Testimonial Methods
         createTestimonial,
         getTestimonials,
         updateTestimonial,
         deleteTestimonial,
         
-        // FAQ methods
+        // FAQ Methods
         createFaq,
         getFaqs,
         updateFaq,
         deleteFaq,
         
-        // Registration question methods
+        // Registration Question Methods
         createRegistrationQuestion,
         getRegistrationQuestions,
         updateRegistrationQuestion,
         deleteRegistrationQuestion,
         
-        // Support detail methods
+        // Support Detail Methods
         createSupportDetail,
         getSupportDetails,
         updateSupportDetail,
-        deleteSupportDetail
+        deleteSupportDetail,
+        
+        // Cover Image Methods
+        uploadCover,
+        getUploadCoverUrl,
+        uploadCoverImage,
+        getCoverImage
     };
 };

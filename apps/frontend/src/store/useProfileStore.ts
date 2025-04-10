@@ -38,8 +38,8 @@ interface ProfileState {
   fetchProfile: () => Promise<void>;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
 
-  getProfileUploadUrl: () => Promise<{uploadUrl: string, s3key: string} | null>;
-  getCoverUploadUrl: () => Promise<{uploadUrl: string, s3key: string} | null>;
+  getProfileUploadUrl: ( fileName: string, fileType: string ) => Promise<{uploadUrl: string, s3key: string} | null>;
+  getCoverUploadUrl: ( fileName: string, fileType: string ) => Promise<{uploadUrl: string, s3key: string} | null>;
 
   updateProfilePicture: (s3key: string) => Promise<void>;
   updateCoverPicture: (s3key: string) => Promise<void>;
@@ -111,9 +111,12 @@ export const useProfileStore = create<ProfileState>((set) => ({
       });
     }
   },
-  getProfileUploadUrl: async () => {
+  getProfileUploadUrl: async (fileName, fileType) => {
     try {
-      const response = await api.post('/api/v1/users/profilepicture');
+      const response = await api.post('/api/v1/users/profilepicture', {
+        fileName,
+        fileType
+      });
       return {
         uploadUrl: response.data.data.url,
         s3key: response.data.data.key
@@ -123,9 +126,12 @@ export const useProfileStore = create<ProfileState>((set) => ({
       return null;
     }
   },
-  getCoverUploadUrl: async () => {
+  getCoverUploadUrl: async (fileName, fileType) => {
     try {
-      const response = await api.post('/api/v1/users/coverpicture');
+      const response = await api.post('/api/v1/users/coverpicture', {
+        fileName,
+        fileType
+      });
       return {
         uploadUrl: response.data.data.url,
         s3key: response.data.data.key

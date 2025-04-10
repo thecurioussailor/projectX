@@ -1,16 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useLinkStore } from '../store/useLinkStore';
+import { useState } from 'react';
 import UrlShortner from '../components/links/UrlShortner';
 import LinkTable from '../components/links/LinkTable';
 
 const LinkShort = () => {
   const [open, setOpen] = useState(false);
-  const { fetchLinks } = useLinkStore();
-
-  useEffect(() => {
-    fetchLinks();
-  }, [fetchLinks]);
-
   return (
     <section className="flex flex-col gap-6">
       <div className="flex justify-between items-center">

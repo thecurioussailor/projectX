@@ -6,7 +6,7 @@ import Faq from "./Faq";
 import { DigitalProduct } from "../../store/useDigitalProductStore";
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import LoadingSpinner from "../ui/LoadingSpinner";
-
+import CoverImage from "./CoverImage";
 const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }) => {
     const { isLoading, updateProduct } = useDigitalProduct();
     const [formData, setFormData] = useState({
@@ -120,6 +120,7 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                 </button>
             </form>
             <div className="flex flex-col gap-4">
+                <CoverImage productId={currentProduct.id} />
                 <Testimonials currentProduct={currentProduct} />
                 <Gallery />
                 <Faq currentProduct={currentProduct} productId={currentProduct.id} />

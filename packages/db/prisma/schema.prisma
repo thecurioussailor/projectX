@@ -68,6 +68,7 @@ model TelegramChannel {
   status                TelegramChannelStatus @default(INACTIVE)
   createdAt             DateTime          @default(now())
   telegramPlans         TelegramPlan[]
+  deletedAt             DateTime?
 }
 
 enum TelegramChannelStatus {
@@ -257,17 +258,22 @@ model Order {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
+  productType       ProductType
+
   digitalProductId       String?
   digitalProduct         DigitalProduct? @relation(fields: [digitalProductId], references: [id])
   
   telegramPlan      TelegramPlan?   @relation(fields: [telegramPlanId], references: [id])
   telegramPlanId    String?
 
-
-
   transactionId   String?
 
   transaction Transaction?
+}
+
+enum ProductType {
+  DIGITAL_PRODUCT
+  TELEGRAM_PLAN
 }
 
 enum OrderStatus {
@@ -286,7 +292,15 @@ model Transaction {
   gatewayTxnId  String     // payment_id from Razorpay/Cashfree
   amount        Decimal
   status        TransactionStatus    @default(PENDING)
-  signature     String?
+  paymentMethod           Json?              // payment_method from Cashfree
+  paymentGroup            String?              // payment_group from Cashfree
+  paymentMessage          String?              // payment_message from Cashfree
+  paymentTime             DateTime?            // payment_time from Cashfree
+  paymentCompletionTime   DateTime?          // payment_completion_time from Cashfree
+  bankReference           String?              // bank_reference from Cashfree
+  authId                  String?              // auth_id from Cashfree
+  paymentCurrency         String?              // payment_currency from Cashfree
+  paymentGatewayDetails   Json?              // payment_gateway_details from Cashfree
   createdAt     DateTime             @default(now())
 }
 
@@ -316,4 +330,31 @@ model Link {
   clicks      Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  analytics   ClickAnalytics[]
+  deletedAt   DateTime?
+}
+
+model ClickAnalytics {
+  id          String    @id @default(cuid())
+  link        Link      @relation(fields: [linkId], references: [id])
+  linkId      String
+  ipAddress   String?
+  host        String?
+  userAgent   String?
+  referer     String?
+  latitude    Float?
+  longitude   Float?
+  screenWidth Int?
+  screenHeight Int?
+  browser     String?
+  operatingSystem String?
+  device      String?
+  language    String?
+  country     String?
+  city        String?
+  region      String?
+  createdAt   DateTime  @default(now())
+
+  @@index([linkId])
+  
 }

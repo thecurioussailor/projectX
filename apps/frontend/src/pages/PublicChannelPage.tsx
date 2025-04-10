@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useTelegramStore } from '../store/useTelegramStore';
+import { useParams, Link } from 'react-router-dom';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import Error404 from '../components/ui/Error404';
+import { load } from '@cashfreepayments/cashfree-js';
+import { useTelegram } from '../hooks/useTelegram';
+
 
 interface PublicPlan {
   id: string;
@@ -20,10 +23,11 @@ interface PublicChannel {
 
 const PublicChannelPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { fetchPublicChannelBySlug, isLoading, error, subscribeToPlan } = useTelegramStore();
+  const { fetchPublicChannelBySlug, isLoading, error, initiateSubscription, handlePaymentCallback } = useTelegram();
   const [channel, setChannel] = useState<PublicChannel | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
+  // const location = useLocation();
 
   useEffect(() => {
     const loadChannel = async () => {
@@ -43,11 +47,50 @@ const PublicChannelPage = () => {
     loadChannel();
   }, [slug, fetchPublicChannelBySlug]);
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     if (!selectedPlan) return;
     if (channel?.id) {
-      subscribeToPlan(channel.id, selectedPlan);
-      navigate('/purchased');
+      try{
+        const paymentSession = await initiateSubscription(channel.id, selectedPlan);
+
+        localStorage.setItem('pendingPayment', JSON.stringify({
+          channelId: channel.id,
+          planId: selectedPlan,
+          orderId: paymentSession.orderId
+        }));
+
+        const cashfree = await load({
+          mode: "sandbox" // Change to "production" for production environment
+        });
+
+        if (!cashfree) {
+          throw new Error("Failed to load Cashfree SDK");
+        }
+
+        try {
+          const result = await cashfree.checkout({
+            paymentSessionId: paymentSession.paymentSessionId,
+            redirectTarget: "_modal"
+          });
+
+          // If we get here, it means the payment was successful but the redirect didn't happen
+          console.log('Payment success but no redirect happened:', result);
+          
+          // Call the payment callback and manually redirect
+          const status = await handlePaymentCallback(paymentSession.orderId, "TELEGRAM_PLAN");
+          if (status === "success") {
+            window.location.href = `${window.location.origin}/payment-success?orderId=${paymentSession.orderId}`;
+          } else {
+            window.location.href = `${window.location.origin}/payment-failed?orderId=${paymentSession.orderId}`;
+          }
+        } catch (error) {
+          console.error("Payment failed:", error);
+          window.location.href = `${window.location.origin}/payment-failed?orderId=${paymentSession.orderId}`;
+        }
+        
+      } catch (err) {
+        console.error("Failed to initiate subscription:", err);
+      }
     } else {
       console.error("Channel ID is undefined");
     }
@@ -63,29 +106,13 @@ const PublicChannelPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-50 p-6 rounded-lg max-w-lg text-center">
-          <h2 className="text-xl font-bold text-red-700 mb-2">Error</h2>
-          <p className="text-red-600">{error}</p>
-          <Link to="/" className="mt-4 inline-block bg-[#7F37D8] text-white px-4 py-2 rounded-lg">
-            Return to Home
-          </Link>
-        </div>
-      </div>
+      <Error404 error={error} />
     );
   }
 
   if (!channel) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-yellow-50 p-6 rounded-lg max-w-lg text-center">
-          <h2 className="text-xl font-bold text-yellow-700 mb-2">Channel Not Found</h2>
-          <p className="text-yellow-600">The channel you're looking for doesn't exist or isn't published yet.</p>
-          <Link to="/" className="mt-4 inline-block bg-[#7F37D8] text-white px-4 py-2 rounded-lg">
-            Return to Home
-          </Link>
-        </div>
-      </div>
+      <Error404 error="Channel Not Found" />
     );
   }
 
@@ -123,7 +150,7 @@ const PublicChannelPage = () => {
                           <p className="text-gray-600">{plan.duration} days access</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold">${plan.price}</p>
+                          <p className="text-lg font-bold">INR {plan.price}</p>
                           <input
                             type="radio"
                             name="plan"

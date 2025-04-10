@@ -6,6 +6,7 @@ export const linkRouter = Router();
 
 // Public routes
 linkRouter.get("/:shortId", linkController.redirectToOriginalUrl);
+// linkRouter.post("/analytics/track", linkController.trackAnalytics);
 linkRouter.get("/stats/:shortId", linkController.getLinkStats);
 
 // Protected routes

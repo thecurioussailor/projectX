@@ -27,6 +27,12 @@ digitalProductRouter.post("/:productId/uploadFile", authenticate, fileUploadCont
 digitalProductRouter.get("/:productId/files", authenticate, fileUploadController.getDigitalProductFiles);
 digitalProductRouter.delete("/:productId/files/:fileId", authenticate, fileUploadController.deleteFile);
 
+//cover image for digital product
+digitalProductRouter.post("/:productId/coverUrl", authenticate, fileUploadController.getUploadCoverUrl);
+digitalProductRouter.post("/:productId/uploadCoverImage", authenticate, fileUploadController.uploadCoverImage);
+digitalProductRouter.get("/:productId/coverImage", authenticate, fileUploadController.getCoverImage);
+// digitalProductRouter.delete("/:productId/coverUrl", authenticate, fileUploadController.deleteFile);
+
 // Testimonial routes
 digitalProductRouter.post("/:productId/testimonials", authenticate, testimonialController.createTestimonial);
 digitalProductRouter.get("/:productId/testimonials", authenticate, testimonialController.getTestimonials);
@@ -51,7 +57,8 @@ digitalProductRouter.get("/:productId/support-details", authenticate, supportDet
 digitalProductRouter.put("/support-details/:supportDetailId", authenticate, supportDetailController.updateSupportDetail);
 digitalProductRouter.delete("/support-details/:supportDetailId", authenticate, supportDetailController.deleteSupportDetail);
 
-
+//Purchase routes
+digitalProductRouter.post("/:productId/purchase", authenticate, digitalProductController.initiatePurchase);
 
 
 

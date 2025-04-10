@@ -490,3 +490,47 @@ export const unpublishDigitalProduct = async (req: Request, res: Response) => {
         });
     }
 };
+
+//Initiate purchase
+export const initiatePurchase = async (req: Request, res: Response) => {
+    try {
+        const { productId } = req.params;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }   
+
+        const product = await prismaClient.digitalProduct.findUnique({
+            where: {
+                id: productId
+            }
+        });         
+
+        if (!product) {
+            res.status(404).json({ error: "Product not found" });
+            return;
+        }
+
+        if (product.status !== "ACTIVE") {
+            res.status(400).json({ error: "Product is not active" });
+            return;
+        }
+
+    } catch (error) {
+        console.error('Error initiating purchase:', error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to initiate purchase"
+        });
+    }
+};
+        
+        
+        
+        
+        
+
+
+

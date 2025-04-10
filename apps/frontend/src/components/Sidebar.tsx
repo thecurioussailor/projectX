@@ -1,4 +1,4 @@
-import { FaChartLine, FaLink, FaProductHunt, FaTelegram, FaUser } from "react-icons/fa";
+import { FaChartLine, FaLink, FaProductHunt, FaTelegram } from "react-icons/fa";
 import { IoHomeOutline, IoPeopleOutline, IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
@@ -12,7 +12,6 @@ const Sidebar = () => {
     { name: 'Dashboard', icon: <IoHomeOutline size={20}/>, path: '/dashboard' },
     { name: 'Sales', icon: <FaChartLine size={20}/>, path: '/sales' },
     { name: 'Payments', icon: <MdOutlinePayment size={20}/>, path: '/payments' },
-    { name: 'Audience', icon: <FaUser size={20}/>, path: '/audience' },
     { name: 'Purchased', icon: <IoPeopleOutline size={20}/>, path: '/purchased' },
     { name: 'Links', icon: <FaLink size={20}/>, path: '/link-short' },
     { name: 'Telegram', icon: <FaTelegram size={20}/>, path: '/telegram' },

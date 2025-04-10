@@ -4,7 +4,9 @@ import { TelegramClient, Api } from "telegram";
 import { prismaClient } from "@repo/db";
 import dotenv from "dotenv";
 import { addBotToChannel, addUserToChannel } from "../utils/helper.js";
-
+import { Cashfree, CFEnvironment } from "cashfree-pg";
+import { initiatePayment } from "./orderController.js";
+// import { v4 as uuidv4 } from "uuid";
 dotenv.config();
 const apiId: number = Number(process.env.TELEGRAM_API_ID);
 const apiHash: string = process.env.TELEGRAM_API_HASH || '';
@@ -659,6 +661,64 @@ export const publishChannel = async (req: Request, res: Response) => {
     }
 }
 
+export const unpublishChannel = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const userId = req.user?.id;
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to unpublish this channel"
+            });
+            return;
+        }
+
+        // Publish channel
+        const unPublishedChannel = await prismaClient.telegramChannel.update({
+            where: { id: channelId },
+            data: { status: "INACTIVE" }
+        });
+        
+        res.status(200).json({
+            status: "success",
+            message: "Channel unpublished successfully",
+            data: unPublishedChannel
+        });
+        
+        
+    } catch (error) {
+        console.error("Unpublish channel error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to unpublish channel"
+        });
+    }
+}
+
 export const deleteChannel = async (req: Request, res: Response) => {
     try {
         const { channelId } = req.params;
@@ -696,9 +756,22 @@ export const deleteChannel = async (req: Request, res: Response) => {
         }
         
         // Delete channel
-        await prismaClient.telegramChannel.delete({
-            where: { id: channelId }
-        });
+        await prismaClient.$transaction(async (tx) => {
+            await tx.telegramPlan.updateMany({
+                where: {
+                    channelId: channelId
+                },
+                data: {
+                    deletedAt: new Date()
+                }
+            });
+            await tx.telegramChannel.update({
+                where: { id: channelId },
+                data: {
+                    deletedAt: new Date()
+                }
+            });
+        }); 
         
         res.status(200).json({
             status: "success",
@@ -1204,3 +1277,208 @@ export const subscribeToPlan = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const initiateTelegramSubscription = async (req: Request, res: Response) => {
+    try {
+        const { channelId, planId } = req.params;
+        const userId = req.user?.id;    
+        
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        const user = await prismaClient.user.findUnique({
+            where: { id: userId }
+        });
+
+        if(!user) {
+            res.status(400).json({
+                status: "error",
+                message: "User not found"
+            });
+            return;
+        }
+
+        const channel = await prismaClient.telegramChannel.findUnique({ 
+            where: { id: channelId }
+        });
+
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+
+        const plan = await prismaClient.telegramPlan.findUnique({
+            where: { id: planId }
+        });
+
+        if(!plan) { 
+            res.status(404).json({
+                status: "error",
+                message: "Plan not found"
+            });
+            return;
+        }       
+
+         // Check for existing active subscription
+         const existingSubscription = await prismaClient.telegramSubscription.findFirst({
+            where: {
+                userId,
+                plan: {
+                    channelId
+                },
+                status: "ACTIVE",
+                expiryDate: {
+                    gt: new Date()
+                }
+            }
+        });
+
+        if (existingSubscription && existingSubscription.status === "ACTIVE" && existingSubscription.expiryDate > new Date() && plan.price <= existingSubscription.planPrice) {
+            res.status(400).json({
+                status: "error",
+                message: "You can only upgrade to a higher-priced plan while you have an active subscription"
+            });
+
+        }
+
+        const orderPayload = {
+            productType: 'TELEGRAM_PLAN',
+            productId: plan.id,
+            amount: plan.price
+        };
+        
+        req.body = orderPayload; // Set the request body for the orderController
+        initiatePayment(req, res);
+
+    } catch (error) {
+        console.error("Initiate telegram subscription error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to initiate subscription"
+        });
+    }
+};
+
+
+// export const handlePaymentCallback = async (req: Request, res: Response) => {
+//     try {  
+
+//             const { orderId } = req.query;
+
+//          // Verify payment status with Cashfree
+//             const order = await prismaClient.order.findUnique({
+//                 where: { id: orderId as string },
+//                 include: {
+//                 user: true,
+//                 telegramPlan: {
+//                     include: {
+//                     channel: true
+//                     }
+//                 }
+//                 }
+//             });
+      
+//             if (!order) {
+//                 return res.status(404).json({
+//                 status: "error",
+//                 message: "Order not found"
+//                 });
+//             }
+
+//             const cashfree = new Cashfree(
+//                 process.env.CASHFREE_ENV === 'PRODUCTION'
+//                 ? CFEnvironment.PRODUCTION
+//                 : CFEnvironment.SANDBOX,
+//                 process.env.CASHFREE_APP_ID!,
+//                 process.env.CASHFREE_SECRET_KEY!
+//             );
+      
+//             const paymentStatus = await cashfree.PGOrderFetchPayments(order.id);
+      
+//         if (paymentStatus.data[0]?.payment_status === "SUCCESS") {
+//                 // Update order status
+//                 await prismaClient.order.update({
+//                 where: { id: order.id },
+//                 data: { status: "SUCCESS" }
+//                 });
+
+//             res.status(200).json({
+//                 status: "success",
+//                 message: "Payment callback received"
+//             });
+//         } else {
+//             res.status(200).json({
+//                 status: "success",
+//                 message: "Payment callback received"
+//             });
+//         }
+//     } catch (error) {
+//         console.error("Payment callback error:", error);
+//         res.status(500).json({
+//             status: "error",
+//             message: "Failed to handle payment callback"
+//         });
+//     }
+// }
+
+//  export const createCashfreeOrder = async (req: Request, res: Response) => {
+//     try {
+//       const { channelId, planId, planName, amount } = req.body;
+  
+//       if (!channelId || !planId || !planName || !amount) {
+//          res.status(400).json({ message: "Missing required fields." });
+//          return;
+//       }
+  
+//       const environment =
+//         process.env.CASHFREE_ENV === "PRODUCTION"
+//           ? CFEnvironment.PRODUCTION
+//           : CFEnvironment.SANDBOX;
+  
+//       // ✅ Correct Cashfree instantiation
+//       const cashfree = new Cashfree(
+//         environment,
+//         process.env.CASHFREE_APP_ID!,
+//         process.env.CASHFREE_SECRET_KEY!
+//       );
+  
+//       const orderId = order_${uuidv4()};
+  
+//       const payload = {
+//         order_id: orderId,
+//         order_amount: amount,
+//         order_currency: "INR",
+//         customer_details: {
+//           customer_id: user_${uuidv4()},
+//           customer_email: "test@example.com",
+//           customer_phone: "9999999999",
+//           customer_name: "Test User",
+//         },
+//         order_meta: {
+//           return_url: https://px.ionfirm.com/payment-success?order_id=${orderId},
+//         },
+//         order_note: ${planName} Plan for Channel ID ${channelId},
+//       };
+  
+//       const response = await cashfree.PGCreateOrder(payload);
+  
+//        res.status(200).json({
+//         payment_session_id: response.data.payment_session_id,
+//       });
+//     } catch (error: any) {
+//       console.error("Cashfree SDK Error:", error?.response?.data || error.message);
+//        res.status(500).json({
+//         message: "Cashfree order creation failed",
+//         error: error?.response?.data || error.message,
+//       });
+//       return;
+//     }
+//   };

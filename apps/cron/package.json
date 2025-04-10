@@ -1,0 +1,26 @@
+{
+  "name": "cron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "dotenv": "^16.0.3",
+    "node-cron": "^3.0.2",
+    "telegram": "^2.15.5",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.14.6",
+    "@types/node-cron": "^3.0.7",
+    "typescript": "^5.1.6"
+  }
+}
