@@ -1346,7 +1346,7 @@ export const initiateTelegramSubscription = async (req: Request, res: Response) 
                 status: "error",
                 message: "You can only upgrade to a higher-priced plan while you have an active subscription"
             });
-
+            return;
         }
 
         const orderPayload = {

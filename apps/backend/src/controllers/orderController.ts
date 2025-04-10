@@ -9,10 +9,11 @@ export const initiatePayment = async (req: Request, res: Response) => {
         const userId = req.user?.id;
         
         if (!userId) {
-            return res.status(401).json({
+            res.status(401).json({
                 status: "error",
                 message: "Authentication required"
             });
+            return;
         }
         
         const user = await prismaClient.user.findUnique({
@@ -20,10 +21,11 @@ export const initiatePayment = async (req: Request, res: Response) => {
         });
         
         if (!user) {
-            return res.status(404).json({
+            res.status(404).json({
                 status: "error",
                 message: "User not found"
             });
+            return;
         }
         
         // Create order with dynamic product reference
@@ -42,10 +44,11 @@ export const initiatePayment = async (req: Request, res: Response) => {
             orderData.digitalProductId = productId;
             orderData.productType = "DIGITAL_PRODUCT";
         } else {
-            return res.status(400).json({
+            res.status(400).json({
                 status: "error",
                 message: "Invalid product type"
             });
+            return;
         }
         
         const order = await prismaClient.order.create({

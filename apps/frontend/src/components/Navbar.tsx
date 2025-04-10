@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
-
+import userImage from "../assets/images/profileprojectx.png";
 const Navbar = () => {
   const { toggleSidebar, isSidebarOpen } = useSidebar();
 
@@ -76,13 +76,13 @@ const ProfileBar = () => {
       <div className="relative" ref={dropdownRef}>
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 rounded-full bg-[#fbf9fe] p-2 text-[#7F37D8]"
+          className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"
         >
-          <FaUser size={20}/>
+          <img src={userImage} width={120}></img>
         </button>
         
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg z-10 rounded-xl overflow-clip">
+          <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg z-10 rounded-xl overflow-clip">
             <div className="">
               <div className="flex flex-col gap-1 justify-center items-center text-gray-700 border-b bg-[#7F37D8] px-4 py-2">
                 <p className="font-medium text-white text-xl">{user?.username || 'User'}</p>
@@ -94,13 +94,13 @@ const ProfileBar = () => {
                     navigate('/profile');
                     setIsOpen(false);
                   }}
-                  className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Profile
+                  <FaUser />Profile
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Sign out
                 </button>
