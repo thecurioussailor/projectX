@@ -6,6 +6,7 @@ export const usePurchasedItems = () => {
     const { token } = useAuthStore();
     const {
         telegramSubscriptions,
+        digitalPurchases,
         isLoading,
         error,
         getPurchasedItems: storeGetPurchasedItems,
@@ -20,6 +21,7 @@ export const usePurchasedItems = () => {
 
     return {
         telegramSubscriptions,
+        digitalPurchases,
         isLoading,
         error,
         getPurchasedItems,

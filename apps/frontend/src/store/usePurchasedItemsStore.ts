@@ -4,8 +4,24 @@ import { TelegramSubscription } from "./useTelegramStore";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+
+export interface DigitalPurchase {
+    id: string;
+    userId: number;
+    productId: string;
+    product: {
+        title: string
+    };
+    purchaseDate: string;      // ISO timestamp
+    price: string;
+    status: 'ACTIVE' | 'INACTIVE';
+    createdAt: string;         // ISO timestamp
+    updatedAt: string;         // ISO timestamp
+  }
+export type PurchaseItem = TelegramSubscription | DigitalPurchase;
 interface PurchasedItemsState {
     telegramSubscriptions: TelegramSubscription[];
+    digitalPurchases: DigitalPurchase[];
     isLoading: boolean;
     error: string | null;
     getPurchasedItems: () => Promise<void>;
@@ -28,6 +44,7 @@ api.interceptors.request.use((config) => {
 
 export const usePurchasedItemsStore = create<PurchasedItemsState>((set) => ({
     telegramSubscriptions: [],
+    digitalPurchases: [],
     isLoading: false,
     error: null,
 
@@ -38,6 +55,7 @@ export const usePurchasedItemsStore = create<PurchasedItemsState>((set) => ({
             if (response.data.success && response.data.data) {
                 set({ 
                     telegramSubscriptions: response.data.data.telegramSubscriptions || [], 
+                    digitalPurchases: response.data.data.digitalProducts || [],
                     isLoading: false 
                 });
             } else {

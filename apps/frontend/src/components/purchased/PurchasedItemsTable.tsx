@@ -1,15 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePurchasedItems } from "../../hooks/usePurchasedItems";
-import { TelegramSubscription } from "../../store/useTelegramStore";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
+import { PurchaseItem } from "../../store/usePurchasedItemsStore";
 const PurchasedItemsTable = () => {
-    const { telegramSubscriptions, isLoading, error, getPurchasedItems } = usePurchasedItems();
-
+    const { telegramSubscriptions, digitalPurchases, isLoading, error, getPurchasedItems } = usePurchasedItems();
+    const [ purchasedItems, setPurchasedItems] = useState<PurchaseItem[]>([]);
     useEffect(() => {
         getPurchasedItems();
     }, [getPurchasedItems]);  
     
+    useEffect(() => {
+        if (!isLoading && !error) {
+          setPurchasedItems([
+            ...telegramSubscriptions,
+            ...digitalPurchases
+          ]);
+        }
+      }, [telegramSubscriptions, digitalPurchases, isLoading, error]);
+
+
     if (isLoading) {
         return (
             <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
@@ -17,6 +27,7 @@ const PurchasedItemsTable = () => {
             </div>
         );
     }
+
 
     if (error) {
         return (
@@ -40,17 +51,18 @@ const PurchasedItemsTable = () => {
                     <thead className="border-gray-300 h-20">
                         <tr className="border-t border-gray-200">
                             <th className="w-1/12 px-8">#</th>
-                            <th className="w-2/12">Plan Name</th>
+                            <th className="w-2/12">Item Name</th>
+                            <th className="w-1/12">Type</th>
                             <th className="w-1/12">Status</th>
                             <th className="w-1/12">Price (INR)</th>
-                            <th className="w-1/12">Duration</th>
+                            <th className="w-1/12">Purchase Date</th>
                             <th className="w-1/12">Expiry Date</th>
                             <th className="w-1/12">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {telegramSubscriptions.map((subscription, index) => (
-                            <PurchasedItemRow key={subscription.id} subscription={subscription} index={index} />
+                        {purchasedItems.map((item, index) => (
+                            <PurchasedItemRow key={item.id} item={item} index={index} />
                         ))}    
                     </tbody>
                 </table>
@@ -59,26 +71,39 @@ const PurchasedItemsTable = () => {
     );
 };
 
-const PurchasedItemRow = ({ subscription, index }: { subscription: TelegramSubscription, index: number }) => {
-
+const PurchasedItemRow = ({ item, index }: { item: PurchaseItem, index: number }) => {
+    const isSub = "planName" in item;
     return (
         <tr className="border-t border-gray-200 h-20">
             <td className="px-8">{index + 1}</td>
-            <td>{subscription.planName}</td>
+            <td>{isSub ? item.planName : item.product.title /* or a name prop */}</td>
             <td>
-                <span className={`px-2 py-1 rounded-full text-sm ${
-                    subscription.status === 'ACTIVE' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                }`}>
-                    {subscription.status}
-                </span>
+                {isSub ? "Subscription" : "Digital"}
             </td>
-            <td>{subscription.planPrice}</td>
-            <td>{subscription.planDuration} days</td>
-            <td>{new Date(subscription.expiryDate).toLocaleDateString()}</td>
             <td>
-                lkjs
+                <div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${item.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{item.status === "ACTIVE" ? "Active" : "Inactive"}</span></div>
+            </td>
+            <td>{isSub ? item.planPrice : item.price}</td>
+            <td>{new Date(
+          isSub ? item.createdAt : item.purchaseDate
+        ).toLocaleDateString()}</td>
+            <td>{isSub
+          ? new Date(item.expiryDate).toLocaleDateString()
+          : "–"}</td>
+            <td>
+                {isSub ? (
+                    <button
+                    className="border rounded-full px-4 py-2 text-xs hover:bg-purple-600 hover:text-white"
+                >
+                    Show Subscription
+                </button>
+                ): (
+                    <button
+                        className="border rounded-full px-4 py-2 text-xs hover:bg-purple-600 hover:text-white"
+                    >
+                        Show Digital
+                    </button>
+                )}
             </td>
         </tr>
     );

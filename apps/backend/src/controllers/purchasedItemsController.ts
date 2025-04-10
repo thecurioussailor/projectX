@@ -19,9 +19,16 @@ export const getPurchasedItems = async (req: Request, res: Response) => {
             }
         });
 
-        const digitalProducts = await prismaClient.digitalProduct.findMany({
+        const digitalProducts = await prismaClient.digitalProductPurchase.findMany({
             where: {
-                creatorId: userId
+                userId: userId
+            },
+            include: {
+                product: {
+                    select: {
+                        title: true
+                    }
+                }
             }
         });
 
