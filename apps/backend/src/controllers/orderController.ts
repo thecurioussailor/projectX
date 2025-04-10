@@ -169,7 +169,18 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                 await createTelegramSubscription(order);
             } else if (productType === 'DIGITAL_PRODUCT' && order.digitalProduct) {
                 // Process digital product purchase logic here
+                await createDigitalProductPurchase(order);
                 // (e.g., grant access, send download links, etc.)
+                if (order.digitalProduct.isLimitedQuantityEnabled && order.digitalProduct.quantity !== null) {
+                    await prismaClient.digitalProduct.update({
+                        where: { id: order.digitalProduct.id },
+                        data: {
+                            quantity: {
+                                decrement: 1
+                            }
+                        }
+                    });
+                }
             }
             console.log("Payment success ****************************************");
             res.status(200).json({
@@ -236,6 +247,20 @@ const createTelegramSubscription = async (order: any) => {
         }
     });
 };
+
+const createDigitalProductPurchase = async (order: any) => {
+    if (!order.userId || !order.digitalProductId) return;
+    
+    return prismaClient.digitalProductPurchase.create({
+        data: {
+            userId: order.userId,
+            productId: order.digitalProductId,
+            price: order.amount,
+            status: "ACTIVE"
+        }
+    });
+};
+
 
 export const getOrderById = async (req: Request, res: Response) => {
     try {

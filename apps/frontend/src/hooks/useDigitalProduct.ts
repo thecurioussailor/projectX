@@ -81,7 +81,11 @@ export const useDigitalProduct = () => {
         // Cover Image Methods
         getUploadCoverUrl: storeGetUploadCoverUrl,
         uploadCoverImage: storeUploadCoverImage,
-        getCoverImage: storeGetCoverImage
+        getCoverImage: storeGetCoverImage,
+
+        //payments
+        initiatePurchase: storeInitiatePurchase,
+        handlePaymentCallback: storeHandlePaymentCallback
     } = useDigitalProductStore();
 
     // Helper for complete file upload process
@@ -365,6 +369,20 @@ export const useDigitalProduct = () => {
     }, [token, storeGetCoverImage]);
 
 
+    const initiatePurchase = useCallback(async (productId: string, customAmount?: number) => {
+        if (!token) {
+          throw new Error('You must be logged in to subscribe to a plan');
+        }
+        return storeInitiatePurchase(productId, customAmount);
+      }, [token, storeInitiatePurchase]);
+
+    const handlePaymentCallback = useCallback(async (orderId: string, productType: string) => {
+    if (!token) {
+        throw new Error('You must be logged in to handle payment callback');
+    }
+    return storeHandlePaymentCallback(orderId, productType);
+    }, [token, storeHandlePaymentCallback]);
+
     return {
         // State
         products,
@@ -419,6 +437,10 @@ export const useDigitalProduct = () => {
         uploadCover,
         getUploadCoverUrl,
         uploadCoverImage,
-        getCoverImage
+        getCoverImage,
+
+        //payments
+        initiatePurchase,
+        handlePaymentCallback
     };
 };

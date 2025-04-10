@@ -1,6 +1,7 @@
 import { prismaClient } from "@repo/db";
 import { Request, Response } from "express";
 import { authenticate } from "../middleware/auth.js";
+import { initiatePayment } from "./orderController.js";
 
 // Create a draft digital product
 export const createDigitalProduct = async (req: Request, res: Response) => {
@@ -495,12 +496,16 @@ export const unpublishDigitalProduct = async (req: Request, res: Response) => {
 export const initiatePurchase = async (req: Request, res: Response) => {
     try {
         const { productId } = req.params;
+        const { customAmount } = req.body;
         const userId = req.user?.id;
 
         if (!userId) {
-            res.status(401).json({ error: "Unauthorized" });
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
             return;
-        }   
+        }    
 
         const product = await prismaClient.digitalProduct.findUnique({
             where: {
@@ -509,20 +514,72 @@ export const initiatePurchase = async (req: Request, res: Response) => {
         });         
 
         if (!product) {
-            res.status(404).json({ error: "Product not found" });
+            res.status(404).json({
+                status: "error",
+                message: "Product not found"
+            });
             return;
         }
 
         if (product.status !== "ACTIVE") {
-            res.status(400).json({ error: "Product is not active" });
+            res.status(400).json({
+                status: "error",
+                message: "Product is not active"
+            });
             return;
         }
 
+        if (product.isLimitedQuantityEnabled && product.quantity !== null && product.quantity <= 0) {
+            res.status(400).json({
+                status: "error",
+                message: "Product is out of stock"
+            });
+            return;
+        }
+
+        const existingPurchase = await prismaClient.digitalProductPurchase.findFirst({
+            where: {
+                userId,
+                productId,
+                status: "ACTIVE"
+            }
+        });
+
+        if (existingPurchase) {
+            res.status(400).json({
+                status: "error",
+                message: "You have already purchased this product"
+            });
+            return;
+        }
+
+        let finalPrice;
+        if(product.priceType === "FLEXIBLE" && customAmount){
+            if(customAmount < product.price){
+                res.status(400).json({
+                    status: "error",
+                    message: `Amount must be at least ${product.price}`
+                })
+            }
+            finalPrice = customAmount
+        }else {
+            finalPrice = product.hasDiscount && product.discountedPrice  ? product.discountedPrice : product.price;
+        }
+
+
+        const orderPayload = {
+            productType: 'DIGITAL_PRODUCT',
+            productId: product.id,
+            amount: finalPrice
+        };
+
+        req.body = orderPayload; // Set the request body for initiatePayment
+        initiatePayment(req, res);
     } catch (error) {
         console.error('Error initiating purchase:', error);
         res.status(500).json({
-            success: false,
-            error: "Failed to initiate purchase"
+            status: "error",
+            message: "Failed to initiate purchase"
         });
     }
 };

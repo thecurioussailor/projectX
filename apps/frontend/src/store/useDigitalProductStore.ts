@@ -1,5 +1,6 @@
 import axios from "axios";
 import { create } from "zustand";
+import { PaymentSession } from "./useTelegramStore";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -21,6 +22,8 @@ export interface PublicDigitalProduct {
     id: string;
     name: string;
     email: string;
+    phone: string;
+    address: string;
   };
 }
 // Define interfaces based on the schema
@@ -156,6 +159,10 @@ interface DigitalProductState {
   getUploadCoverUrl: (productId: string, fileName: string, fileType: string) => Promise<{uploadUrl: string, s3Key: string}>
   uploadCoverImage: (productId: string, s3Key: string) => Promise<void>
   getCoverImage: (productId: string) => Promise<string | null>
+
+  //payment
+  initiatePurchase: (productId: string, customAmount?: number) => Promise<PaymentSession>;
+  handlePaymentCallback: (orderId: string, productType: string) => Promise<string>;
   
 }
 
@@ -971,6 +978,47 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
         isLoading: false 
       });
       return null;
+    }
+  },
+
+  initiatePurchase: async (productId: string, customAmount?: number) => {
+    set({ isLoading: true, error: null });
+    try {
+      // If customAmount is provided, send it to the backend
+      const payload = customAmount ? { customAmount } : {};
+      
+      const response = await api.post(
+        `/api/v1/digital-products/${productId}/purchase`, 
+        payload
+      );
+      
+      // Extract payment session data
+      const paymentData = response.data.data;
+      set({ isLoading: false });
+      
+      // Return payment session for redirect
+      return paymentData;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to initiate purchase', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  handlePaymentCallback: async (orderId: string, productType: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/orders/payment-callback?orderId=${orderId}&productType=${productType}`);
+      set({ isLoading: false });  
+      return response.data.status;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to handle payment callback', 
+        isLoading: false 
+      });
+      throw error;
     }
   }
   
