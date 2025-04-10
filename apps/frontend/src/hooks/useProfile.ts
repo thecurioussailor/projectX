@@ -6,6 +6,27 @@ import { useAuthStore } from '../store/useAuthStore';
  * Custom hook for profile data with automatic loading
  * @param autoFetch Whether to fetch profile data automatically on mount
  */
+
+const FileType = {
+  IMAGE: "IMAGE",
+  VIDEO: "VIDEO",
+  PDF: "PDF",
+  LINK: "LINK",
+  DOCUMENT: "DOCUMENT",
+  AUDIO: "AUDIO",
+  OTHER: "OTHER"
+};
+
+// Helper function to determine file type
+const getFileType = (mimeType: string): string => {
+  if (mimeType.startsWith("image/")) return FileType.IMAGE;
+  if (mimeType.startsWith("video/")) return FileType.VIDEO;
+  if (mimeType === "application/pdf") return FileType.PDF;
+  if (mimeType.includes("document") || mimeType.includes("msword") || mimeType.includes("officedocument")) return FileType.DOCUMENT;
+  if (mimeType.startsWith("audio/")) return FileType.AUDIO;
+  return FileType.OTHER;
+};
+
 export const useProfile = (autoFetch = true) => {
   const { token } = useAuthStore();
   const { 
@@ -55,33 +76,33 @@ export const useProfile = (autoFetch = true) => {
     return storeGetCoverPicture();
   }, [token, storeGetCoverPicture]);
 
-  const getProfileUploadUrl = useCallback(async () => {
+  const getProfileUploadUrl = useCallback(async (fileName: string, fileType: string) => {
     if (!token) {
       throw new Error('You must be logged in to get profile upload url');
     }
-    return storeGetProfileUploadUrl();
+    return storeGetProfileUploadUrl(fileName, fileType);
   }, [token, storeGetProfileUploadUrl]);    
 
-  const updateProfilePicture = useCallback(async (s3key: string) => {
+  const updateProfilePicture = useCallback(async (s3Key: string) => {
     if (!token) {
       throw new Error('You must be logged in to update profile picture');
     }
-    return storeUpdateProfilePicture(s3key);
+    return storeUpdateProfilePicture(s3Key);
   }, [token, storeUpdateProfilePicture]);
   
-  const getCoverUploadUrl = useCallback(async () => {
+  const getCoverUploadUrl = useCallback(async (fileName: string, fileType: string) => {
     if (!token) {
       throw new Error('You must be logged in to get cover upload url');
     }
-    return storeGetCoverUploadUrl();
+    return storeGetCoverUploadUrl(fileName, fileType);
   }, [token, storeGetCoverUploadUrl]);    
   
 
-  const updateCoverPicture = useCallback(async (s3key: string) => {
+    const updateCoverPicture = useCallback(async (s3Key: string) => {
     if (!token) {
       throw new Error('You must be logged in to update cover picture');
     }
-    return storeUpdateCoverPicture(s3key);
+    return storeUpdateCoverPicture(s3Key);
   }, [token, storeUpdateCoverPicture]);
 
   /**
@@ -96,12 +117,16 @@ export const useProfile = (autoFetch = true) => {
     }
     
     // Step 1: Get the presigned URL
-    const result = await storeGetProfileUploadUrl();
+    const mimeType = getFileType(file.type);
+    if(mimeType !== "IMAGE"){
+      throw new Error('File Type must be Image')
+    }
+    const result = await storeGetProfileUploadUrl(file.name, mimeType);
     if (!result) {
       throw new Error('Failed to get upload URL');
     }
     
-    const { uploadUrl, s3key } = result;
+    const { uploadUrl, s3Key } = result;
     
     // Step 2: Upload the file to the presigned URL
     await fetch(uploadUrl, {
@@ -113,7 +138,7 @@ export const useProfile = (autoFetch = true) => {
     });
     
     // Step 3: Update the profile picture record in the database
-    await storeUpdateProfilePicture(s3key);
+      await storeUpdateProfilePicture(s3Key);
     
     // Step 4: Refresh the profile picture URL
     return getProfilePicture();
@@ -126,17 +151,24 @@ export const useProfile = (autoFetch = true) => {
    * 3. Update the cover picture reference in the database
    */
   const uploadAndUpdateCoverPicture = useCallback(async (file: File) => {
+    console.log("uploadAndUpdateCoverPicture", file);
     if (!token) {
       throw new Error('You must be logged in to update cover picture');
     }
     
     // Step 1: Get the presigned URL
-    const result = await storeGetCoverUploadUrl();
+    const mimeType = getFileType(file.type);
+    console.log("mimeType", mimeType);
+    if(mimeType !== "IMAGE"){
+      throw new Error('File Type must be Image')
+    }
+    const result = await storeGetCoverUploadUrl(file.name, mimeType);
+    console.log("result", result);
     if (!result) {
       throw new Error('Failed to get upload URL');
     }
     
-    const { uploadUrl, s3key } = result;
+    const { uploadUrl, s3Key } = result;
     
     // Step 2: Upload the file to the presigned URL
     await fetch(uploadUrl, {
@@ -148,7 +180,7 @@ export const useProfile = (autoFetch = true) => {
     });
     
     // Step 3: Update the cover picture record in the database
-    await storeUpdateCoverPicture(s3key);
+      await storeUpdateCoverPicture(s3Key);
     
     // Step 4: Refresh the cover picture URL
     return getCoverPicture();

@@ -38,11 +38,11 @@ interface ProfileState {
   fetchProfile: () => Promise<void>;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
 
-  getProfileUploadUrl: ( fileName: string, fileType: string ) => Promise<{uploadUrl: string, s3key: string} | null>;
-  getCoverUploadUrl: ( fileName: string, fileType: string ) => Promise<{uploadUrl: string, s3key: string} | null>;
+  getProfileUploadUrl: ( fileName: string, fileType: string ) => Promise<{uploadUrl: string, s3Key: string} | null>;
+  getCoverUploadUrl: ( fileName: string, fileType: string ) => Promise<{uploadUrl: string, s3Key: string} | null>;
 
-  updateProfilePicture: (s3key: string) => Promise<void>;
-  updateCoverPicture: (s3key: string) => Promise<void>;
+  updateProfilePicture: (s3Key: string) => Promise<void>;
+  updateCoverPicture: (s3Key: string) => Promise<void>;
 
   getProfilePicture: () => Promise<string | null>;
   getCoverPicture: () => Promise<string | null>;
@@ -119,7 +119,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       });
       return {
         uploadUrl: response.data.data.url,
-        s3key: response.data.data.key
+        s3Key: response.data.data.key
       };
     } catch (error) {
       console.error('Error fetching profile upload URL:', error);
@@ -134,17 +134,17 @@ export const useProfileStore = create<ProfileState>((set) => ({
       });
       return {
         uploadUrl: response.data.data.url,
-        s3key: response.data.data.key
+        s3Key: response.data.data.key
       };
     } catch (error) {
       console.error('Error fetching cover upload URL:', error);
       return null;
     }
   },
-  updateProfilePicture: async (s3key: string) => {
+  updateProfilePicture: async (s3Key: string) => {
     try {
       const response = await api.post('/api/v1/users/profilepicture/update', {
-        s3key
+        s3Key
       });
       return response.data.data.message;
     } catch (error) {
@@ -152,10 +152,10 @@ export const useProfileStore = create<ProfileState>((set) => ({
       return null;
     }
   },
-  updateCoverPicture: async (s3key: string) => {
+  updateCoverPicture: async (s3Key: string) => {
     try {
       const response = await api.post('/api/v1/users/coverpicture/update', {
-        s3key
+        s3Key
       });
       return response.data.data.message;
     } catch (error) {

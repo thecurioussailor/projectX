@@ -391,6 +391,7 @@ export const updateProfilePicture = async (req: Request, res: Response) => {
 
 export const updateCoverPicture = async (req: Request, res: Response) => {
   try {
+    console.log("updateCoverPicture", req.body);
     const { s3Key } = req.body;
     const userId = req.user?.id;
 
@@ -420,7 +421,7 @@ export const updateCoverPicture = async (req: Request, res: Response) => {
       try {
         const deleteParams = {
           Bucket: BUCKET_NAME,
-          Key: currentUser.coverImage
+          Key: currentUser.coverImage || ''
         };  
 
         await s3Client.send(new DeleteObjectCommand(deleteParams));
