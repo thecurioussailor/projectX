@@ -4,7 +4,6 @@ import { GoCheck, GoCopy } from "react-icons/go";
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import { DigitalProduct } from "../../store/useDigitalProductStore";
 import LoadingSpinner from "../ui/LoadingSpinner";
-import { HiOutlineDotsVertical } from "react-icons/hi";
 import { FaEdit, FaTrash, FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import Error from "../ui/Error";
