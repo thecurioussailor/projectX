@@ -6,6 +6,7 @@ const EditDigitalProduct = () => {
   const navigate = useNavigate();
   const { currentProduct, publishProduct, unpublishProduct } = useDigitalProduct();
   const { id } = useParams();
+
   return (
     <section className="flex flex-col gap-6">
       <div className="flex justify-between gap-4">

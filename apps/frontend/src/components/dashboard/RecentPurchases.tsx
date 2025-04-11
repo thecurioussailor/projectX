@@ -1,6 +1,30 @@
-const RecentPurchases = () => {
+import RecentPurchaseTable from "./RecentPurchaseTable"
+
+export interface RecentSale {
+    id: string;
+    amount: number;
+    status: string;
+    productType: string;
+    createdAt: string;
+    user: {
+      username: string;
+      profileImage: string | null;
+    };
+    digitalProduct?: {
+      title: string;
+      coverImage: string | null;
+    };
+    telegramPlan?: {
+      name: string;
+      channel: {
+        channelName: string;
+      };
+    };
+}
+
+const RecentPurchases = ({data}: {data: RecentSale[]}) => {
     return (
-      <div className="w-full bg-white rounded-[3rem] p-8 h-40 overflow-clip shadow-lg shadow-purple-100">
+      <div className="w-full bg-white rounded-[3rem] p-8 overflow-clip shadow-lg shadow-purple-100">
           <div className="relative">
               <div className="absolute rounded-full bg-[#7E37D8] h-14 w-14 -top-6 -left-16"></div>
               <div className="absolute rounded-full bg-[#7E37D8] h-1 w-1 top-2 left-4"></div>
@@ -9,10 +33,10 @@ const RecentPurchases = () => {
               <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
               <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
           </div>
-          <div className="p-4 px-6">
+          <div className="p-4 px-6 flex flex-col gap-6">
               <h1 className="font-bold text-xl">Recent Purchases</h1>
-              <div>
-  
+              <div className="py-3">
+                <RecentPurchaseTable data={data}/>
               </div>
           </div>
       </div>

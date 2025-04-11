@@ -397,7 +397,7 @@ export const publishDigitalProduct = async (req: Request, res: Response) => {
             });
             return;
         }
-
+        
         // Validate required fields for publishing
         if (!existingProduct.title || !existingProduct.price || existingProduct.files.length === 0) {
             res.status(400).json({ 

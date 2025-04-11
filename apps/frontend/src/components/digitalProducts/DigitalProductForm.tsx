@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { IoIosArrowDown } from "react-icons/io";
 import { useDigitalProduct } from '../../hooks/useDigitalProduct';
 import { DigitalProduct } from '../../store/useDigitalProductStore';
+import { useNavigate } from 'react-router-dom';
 const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void}) => {
   const {createProduct} = useDigitalProduct();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -14,10 +16,17 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
     discountedPrice: "",
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    createProduct(formData as Partial<DigitalProduct>);
+    if(formData.priceType === "FIXED" && !formData.discountedPrice) {
+      return;
+    }
+    if(formData.priceType === "FLEXIBLE" && !formData.discountedPrice) {
+      formData.discountedPrice = formData.price;
+    }
+    const product = await createProduct(formData as Partial<DigitalProduct>);
     setShowForm(false);
+    navigate(`/digital-products/${product.id}/edit`);
   };
   return (
     <div className="p-4">

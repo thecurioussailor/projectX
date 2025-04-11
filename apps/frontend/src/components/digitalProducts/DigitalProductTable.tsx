@@ -8,6 +8,7 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { FaEdit, FaTrash, FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import Error from "../ui/Error";
+import { BsThreeDots } from "react-icons/bs";
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 const DigitalProductTable = () => {
     const { products, isLoading, error, fetchProducts } = useDigitalProduct();
@@ -112,9 +113,9 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
                     <button 
                         ref={ref}
                         onClick={() => setShowMenu(!showMenu)}
-                        className="text-[#7F37D8] ml-4 p-2 hover:bg-gray-100 rounded-full"
+                        className="text-[#7F37D8] ml-4 px-2 py-1 hover:bg-gray-100 rounded-full"
                     >
-                            <HiOutlineDotsVertical />
+                            <BsThreeDots size={20}/>
                     </button>
                     {showMenu && (
                         <div className="absolute z-10 top-12 -right-16">

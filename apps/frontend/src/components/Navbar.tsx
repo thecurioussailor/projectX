@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 import userImage from "../assets/images/profileprojectx.png";
+import notification from "../assets/images/notificationBell.png";
 const Navbar = () => {
   const { toggleSidebar, isSidebarOpen } = useSidebar();
 
@@ -73,7 +74,13 @@ const ProfileBar = () => {
           className="w-full pl-5 pr-3 text-gray-600 bg-transparent border-0 border-l border-purple-100 focus:outline-none focus:ring-0 placeholder-purple-200"
         />
       </div>
-      <div className="relative" ref={dropdownRef}>
+      <div className="relative flex gap-8" ref={dropdownRef}>
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"
+        >
+          <img src={notification} width={20}></img>
+        </button>
         <button 
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"
