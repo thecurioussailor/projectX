@@ -4,6 +4,12 @@ import { TelegramSubscription } from "./useTelegramStore";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+// Interface for file data returned from the API
+export interface DigitalFile {
+    id: string;
+    type: string;
+    presignedUrl: string;
+}
 
 export interface DigitalPurchase {
     id: string;
@@ -17,7 +23,9 @@ export interface DigitalPurchase {
     status: 'ACTIVE' | 'INACTIVE';
     createdAt: string;         // ISO timestamp
     updatedAt: string;         // ISO timestamp
-  }
+    files?: DigitalFile[];     // Optional files property for downloaded files
+}
+
 export type PurchaseItem = TelegramSubscription | DigitalPurchase;
 interface PurchasedItemsState {
     telegramSubscriptions: TelegramSubscription[];
@@ -25,6 +33,7 @@ interface PurchasedItemsState {
     isLoading: boolean;
     error: string | null;
     getPurchasedItems: () => Promise<void>;
+    getDigitalProductFiles: (purchasedItemId: string) => Promise<void>;
 }
 
 const api = axios.create({
@@ -69,9 +78,41 @@ export const usePurchasedItemsStore = create<PurchasedItemsState>((set) => ({
             });
             throw error;
         }
+    },
+    getDigitalProductFiles: async (purchasedItemId) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await api.get(`/api/v1/digital-files/${purchasedItemId}`);
+            
+            if (response.data.status === "success" && Array.isArray(response.data.data)) {
+                // Create a digital purchase object with the files array
+                const purchaseWithFiles: DigitalPurchase = {
+                    id: purchasedItemId,
+                    userId: 0, // Default values for required fields
+                    productId: '',
+                    product: { title: 'Digital Product' },
+                    purchaseDate: '',
+                    price: '',
+                    status: 'ACTIVE',
+                    createdAt: '',
+                    updatedAt: '',
+                    files: response.data.data // Array of files with presigned URLs
+                };
+                
+                set({ 
+                    digitalPurchases: [purchaseWithFiles],
+                    isLoading: false 
+                });
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (error) {
+            console.error('Error fetching digital product files:', error);
+            set({ 
+                error: error instanceof Error ? error.message : 'Failed to get digital product files', 
+                isLoading: false 
+            });
+            throw error;
+        }
     }
 }));
-
-
-
-

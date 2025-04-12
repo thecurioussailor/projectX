@@ -108,6 +108,7 @@ model TelegramSubscription {
   planPrice         Decimal
   planDuration      Int
   expiryDate        DateTime
+  inviteLink        String?
   status            TelegramSubscriptionStatus @default(ACTIVE)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt

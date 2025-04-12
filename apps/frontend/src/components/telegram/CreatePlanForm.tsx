@@ -73,7 +73,7 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
               <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <div>
                   <p className="font-medium">{plan.name}</p>
-                  <p className="text-sm">${plan.price} / {plan.duration} days</p>
+                  <p className="text-sm">{plan.price} INR / {plan.duration} days</p>
                 </div>
               </div>
             ))}
@@ -99,7 +99,7 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-gray-700" htmlFor="plan-price">
-          Price (USD)
+          Price (INR)
         </label>
         <input
           type="number"

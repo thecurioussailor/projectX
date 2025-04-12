@@ -22,6 +22,7 @@ import EditTelegramChannel from './pages/EditTelegramChannel'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailed from './pages/PaymentFailed'
 import PaymentCallback from './pages/PaymentCallback'
+import PurchasedDigitalProducts from './pages/PurchasedDigitalProducts'
 export default function App() {
   return (
     <AuthProvider>
@@ -59,6 +60,7 @@ export default function App() {
             <Route path='/digital-products' element={<DigitalProduct />} />
             <Route path='/digital-products/:id/edit' element={<EditDigitalProduct />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/purchased-digital-products/:id" element={<PurchasedDigitalProducts />} />
           </Route>
         </Routes>
       </BrowserRouter>

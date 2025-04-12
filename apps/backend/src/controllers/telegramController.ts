@@ -1367,7 +1367,131 @@ export const initiateTelegramSubscription = async (req: Request, res: Response) 
     }
 };
 
+export const getAllUserSubscribers = async (req: Request, res: Response) => {
+    
+    
+    try {
+      const userId = req.user?.id;
 
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Unauthorized'
+        });
+        return;
+      }
+
+      const user = await prismaClient.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true
+        }
+      });
+
+      if (!user) {
+          res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+        return;
+      }
+
+      const telegramAccounts = await prismaClient.telegramAccount.findMany({
+        where: {
+          userId: userId
+        },
+        select: {
+          id: true
+        }
+      });
+      
+      const accountIds = telegramAccounts.map(account => account.id);
+      
+      // Get all channels owned by these accounts
+      const channels = await prismaClient.telegramChannel.findMany({
+        where: {
+          telegramAccountId: {
+            in: accountIds
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+      
+      const channelIds = channels.map(channel => channel.id);
+      
+      // Get all plans for these channels
+      const plans = await prismaClient.telegramPlan.findMany({
+        where: {
+          channelId: {
+            in: channelIds
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+      
+      const planIds = plans.map(plan => plan.id);
+      
+      const totalSubscribers = await prismaClient.telegramSubscription.count({
+        where: {
+          planId: {
+            in: planIds
+          }
+        }
+      });
+      
+      const subscribers = await prismaClient.telegramSubscription.findMany({
+        where: {
+          planId: {
+            in: planIds
+          }
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              email: true,
+              phone: true
+            }
+          },
+          plan: {
+            include: {
+              channel: {
+                select: {
+                  id: true,
+                  channelName: true,
+                  channelDescription: true,
+                  telegramChannelId: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+      
+      res.status(200).json({
+        success: true,
+        totalCount: totalSubscribers,
+        data: subscribers
+      });
+    } catch (error) {
+      console.error('Error fetching all user subscribers:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch subscribers',
+        error: error as Error
+      });
+    }
+  };
+  
 // export const handlePaymentCallback = async (req: Request, res: Response) => {
 //     try {  
 

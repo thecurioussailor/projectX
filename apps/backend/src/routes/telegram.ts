@@ -30,6 +30,8 @@ telegramRouter.get("/public/channels/:slug", telegramController.getPublicChannel
 
 //subscription management
 telegramRouter.post("/channels/:channelId/plans/:planId/initiate-subscription", authenticate, telegramController.initiateTelegramSubscription);
+
+telegramRouter.get("/channels/:channelId/subscribers", authenticate, telegramController.getAllUserSubscribers);
 // telegramRouter.get("/orders/:orderId/status", authenticate, telegramController.getOrderStatus);
 // telegramRouter.post("/payment-callback", telegramController.handlePaymentCallback);
 //cashfree payment

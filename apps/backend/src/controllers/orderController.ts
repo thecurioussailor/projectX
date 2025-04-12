@@ -2,6 +2,13 @@ import { prismaClient } from "@repo/db";
 import { Cashfree } from "cashfree-pg";
 import { CFEnvironment } from "cashfree-pg";
 import { Request, Response } from "express";
+import { StringSession } from "telegram/sessions/index.js";
+import { TelegramClient, Api } from "telegram";
+import dotenv from "dotenv";
+
+dotenv.config();
+const apiId: number = Number(process.env.TELEGRAM_API_ID);
+const apiHash: string = process.env.TELEGRAM_API_HASH || '';
 
 export const initiatePayment = async (req: Request, res: Response) => {
     try {
@@ -169,7 +176,24 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
             // Process based on product type
             if (productType === 'TELEGRAM_PLAN' && order.telegramPlan) {
                 // Create telegram subscription
-                await createTelegramSubscription(order);
+                const subscription = await createTelegramSubscription(order);
+                try {
+                    const inviteLink = await generateTelegramInviteLink(order, subscription);
+                    console.log("Payment success with invite link ****************************************");
+                    res.status(200).json({
+                        status: "success",
+                        message: "Payment successful",
+                        inviteLink
+                    });
+                } catch (error) {
+                    console.error("Failed to generate invite link but payment processed:", error);
+                    // Still return success as the payment and subscription were created
+                    res.status(200).json({
+                        status: "success", 
+                        message: "Payment successful, but failed to generate channel invite link."
+                    });
+                }
+                return;
             } else if (productType === 'DIGITAL_PRODUCT' && order.digitalProduct) {
                 // Process digital product purchase logic here
                 await createDigitalProductPurchase(order);
@@ -249,6 +273,121 @@ const createTelegramSubscription = async (order: any) => {
             expiryDate
         }
     });
+};
+
+const generateTelegramInviteLink = async (order: any, subscription: any) => {
+    try {
+        if (!order.telegramPlan) {
+            const plan = await prismaClient.telegramPlan.findUnique({
+                where: { id: order.telegramPlanId },
+                include: { channel: true }
+            });
+            
+            if (!plan) {
+                throw new Error("Telegram plan not found");
+            }
+            
+            order.telegramPlan = plan;
+        }
+
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: order.telegramPlan.channelId }
+        });
+        
+        if (!channel || !channel.telegramChannelId) {
+            throw new Error("Channel ID not found");
+        }
+        
+        const telegramAccount = await prismaClient.telegramAccount.findFirst({
+            where: { 
+                channels: {
+                    some: {
+                        id: channel.id
+                    }
+                }
+            }
+        });
+        
+        if (!telegramAccount || !telegramAccount.session) {
+            throw new Error("Telegram account session not found");
+        }
+        
+        // Initialize Telegram client with the session
+        const client = new TelegramClient(
+            new StringSession(telegramAccount.session),
+            apiId,
+            apiHash,
+            { connectionRetries: 5 }
+        );
+        await client.connect();
+        
+        if (!await client.isUserAuthorized()) {
+            throw new Error("Telegram account not authorized");
+        }
+
+        console.log("Fetching dialogs to locate the channel...");
+        const dialogs = await client.getDialogs({});
+        console.log(`Found ${dialogs.length} dialogs`);
+
+
+        // Find our channel in dialogs
+        const targetChannelId = channel.telegramChannelId;
+        console.log("Looking for channel with ID:", targetChannelId);
+        
+        let targetChannel = null;
+        for (const dialog of dialogs) {
+            console.log("Dialog:", JSON.stringify({
+                id: dialog.entity?.id,
+                title: dialog.title,
+                type: dialog.entity?.className
+            }));
+            
+            if (dialog.entity && 
+                (dialog.entity.id.toString() === targetChannelId || 
+                 dialog.entity.id.toString() === `-100${targetChannelId}`)) {
+                targetChannel = dialog.entity;
+                break;
+            }
+        }
+        
+        if (!targetChannel) {
+            throw new Error("Channel not found in Telegram dialogs");
+        }
+        
+        console.log("Found channel:", JSON.stringify(targetChannel, null, 2));
+        
+        // Generate a single-use invite link that expires after one use
+        console.log("Generating invite link...");
+        const inviteLink = await client.invoke(
+            new Api.messages.ExportChatInvite({
+                peer: targetChannel,
+                expireDate: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours expiry
+                usageLimit: 1, // Single use only
+            })
+        );
+        
+        console.log("Invite link result:", JSON.stringify(inviteLink, null, 2));
+        
+        await client.disconnect();
+        
+        // Make sure we have a valid link
+        if (!inviteLink || !inviteLink.link) {
+            throw new Error("Failed to generate invite link");
+        }
+        
+        // Store the invite link in the subscription record
+        if (subscription) {
+            await prismaClient.telegramSubscription.update({
+                where: { id: subscription.id },
+                data: { inviteLink: inviteLink.link }
+            });
+        }
+        
+        return inviteLink.link;
+    } catch (error) {
+        console.error("Error generating Telegram invite link:", error);
+        throw error;
+    }
 };
 
 const createDigitalProductPurchase = async (order: any) => {

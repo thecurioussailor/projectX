@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { useTelegram } from "../../hooks/useTelegram";
+import CreatePlanForm from "../telegram/CreatePlanForm";
 
 const ChannelOverview = ({ channelId }: { channelId: string }) => {
     const { fetchChannelById, currentChannel } = useTelegram();
@@ -19,8 +20,8 @@ const ChannelOverview = ({ channelId }: { channelId: string }) => {
                     </div>
                     <p className="text-sm text-gray-500">{currentChannel?.channelDescription}</p>
                 </div>
-                <div>
-
+                <div className="flex flex-col gap-2 p-10" >
+                    {currentChannel && <CreatePlanForm channel={currentChannel!} onPlanCreated={() => {}} />}
                 </div>
             </div>
         </div>

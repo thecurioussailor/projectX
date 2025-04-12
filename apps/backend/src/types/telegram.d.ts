@@ -7,9 +7,19 @@ declare module 'telegram' {
     isUserAuthorized(): Promise<boolean>;
     getDialogs({}): Promise<any>;
     disconnect(): Promise<void>;
+    getEntity(id: string): Promise<any>;
   }
   
   export namespace Api {
+    export namespace messages {
+      export class ExportChatInvite {
+        constructor(options: {
+          peer: any;
+          expireDate?: number;
+          usageLimit?: number;
+        });
+      }
+    }
     export namespace auth {
       export class SendCode {
         constructor(options: {
@@ -19,7 +29,7 @@ declare module 'telegram' {
           settings: any;
         });
       }
-      
+
       export class SignIn {
         constructor(options: {
           phoneNumber: string;

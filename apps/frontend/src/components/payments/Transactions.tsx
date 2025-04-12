@@ -1,10 +1,9 @@
-import { useState } from "react";
-import { GoCopy } from "react-icons/go";
-import { GoCheck } from "react-icons/go";
-import { IoShareSocialOutline } from "react-icons/io5";
+import { Transaction } from "../../store/useTransactionStore";
+import { useTransaction } from "../../hooks/useTransaction";
+
 
 const Transactions = () => {
-    const [copied, setCopied] = useState(false);
+    const { transactions } = useTransaction();
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
             <div className="flex flex-col gap-4 w-full">
@@ -23,32 +22,17 @@ const Transactions = () => {
                         <tr className="border-t border-gray-200">
                             <th className="w-1/12 px-8">#</th>
                             <th className="w-2/12">Name</th>
+                            <th className="w-1/12">Type</th>
                             <th className="w-1/12">Status</th>
-                            <th className="w-1/12">Price</th>
-                            <th className="w-1/12">Revenue</th>
-                            <th className="w-1/12">Sales</th>
-                            <th className="w-1/12">Actions</th>
+                            <th className="w-1/12">Amount(INR)</th>
+                            <th className="w-1/12">Date</th>
+                            <th className="w-1/12">Customer Username</th>
                         </tr>
                     </thead>
                     <tbody>
-                    <tr className="border-t border-gray-200 h-20">
-                        <td className="px-8">1</td>
-                        <td>Digital Product 1</td>
-                        <td>Active</td>
-                        <td>1</td>
-                        <td>100</td>
-                        <td>100</td>
-                        <td>
-                            <div className="flex items-center bg-[#7F37D8] rounded-3xl text-white w-40">
-                                <button 
-                                                                        
-                                    className="border-r flex items-center gap-2 border-white px-4 py-2 w-2/3"><IoShareSocialOutline size={20}/> Share</button>
-                                <button 
-                                    onClick={() => setCopied(!copied)}
-                                    className="px-4 py-2 rounded-r-3xl w-1/3">{copied ? <GoCheck size={20} /> : <GoCopy size={20} />}</button>
-                            </div>
-                        </td>
-                    </tr>  
+                        {transactions?.map((transaction, index) => (
+                            <TransactionRow key={index} transaction={transaction} index={index} />
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -57,3 +41,17 @@ const Transactions = () => {
 }
 
 export default Transactions
+
+const TransactionRow = ({transaction, index}: {transaction: Transaction, index: number}) => {
+    return (
+        <tr className="border-t border-gray-200 h-20">
+            <td className="px-8">{index + 1}</td>
+            <td>{transaction.order?.digitalProduct?.title || transaction.order?.telegramPlan?.name}</td>
+            <td><span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-2 py-1">{transaction.order?.productType}</span></td>
+            <td><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${transaction.status === "SUCCESS" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{transaction.status === "SUCCESS" ? "Success" : "Failed"}</span></div></td>
+            <td>{transaction.amount}</td>
+            <td className="text-xs font-semibold text-gray-700">{new Date(transaction.paymentTime).toLocaleDateString("en-US", { month: "long", day: "numeric", hour: "numeric", minute: "numeric" })}</td>
+            <td className="text-[#158DF7] font-semibold">{transaction.order?.user?.username}</td>
+        </tr>
+    )
+}

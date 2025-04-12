@@ -23,7 +23,7 @@ const EditTelegramChannel = () => {
       </div>
       <div className="flex justify-between gap-6 w-full">      
           {activeTab === "Overview" && <ChannelOverview channelId={id as string}/>}
-          {activeTab === "Subscribers" && <ChannelSubscriber/>}
+          {activeTab === "Subscribers" && <ChannelSubscriber channelId={id as string}/>}
       </div>
   </section>
   )

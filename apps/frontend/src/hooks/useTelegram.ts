@@ -14,6 +14,8 @@ export const useTelegram = () => {
     currentChannel,
     plans,
     currentPlan,
+    subscribers,
+    totalSubscribers,
     isLoading,
     error,
     
@@ -39,7 +41,8 @@ export const useTelegram = () => {
     subscribeToPlan: storeSubscribeToPlan,
     initiateSubscription: storeInitiateSubscription,
     getOrderStatus: storeGetOrderStatus,
-    handlePaymentCallback: storeHandlePaymentCallback
+    handlePaymentCallback: storeHandlePaymentCallback,
+    fetchChannelSubscribers: storeFetchChannelSubscribers
   } = useTelegramStore();
   
   // Auth methods with authentication check
@@ -156,6 +159,14 @@ export const useTelegram = () => {
     return storeDeletePlan(planId);
   }, [token, storeDeletePlan]);
 
+  // Subscriber methods with authentication check
+  const fetchChannelSubscribers = useCallback(async (channelId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to fetch channel subscribers');
+    }
+    return storeFetchChannelSubscribers(channelId);
+  }, [token, storeFetchChannelSubscribers]);
+
   // Subscription methods with authentication check
   const subscribeToPlan = useCallback(async (channelId: string, planId: string) => {
     if (!token) {
@@ -192,6 +203,8 @@ export const useTelegram = () => {
     currentChannel,
     plans,
     currentPlan,
+    subscribers,
+    totalSubscribers,
     isLoading,
     error,
     
@@ -217,9 +230,14 @@ export const useTelegram = () => {
     updatePlan,
     deletePlan,
     setCurrentPlan,
+    
+    // Subscription methods
     subscribeToPlan,
     initiateSubscription,
     getOrderStatus,
-    handlePaymentCallback
+    handlePaymentCallback,
+    
+    // Subscriber methods
+    fetchChannelSubscribers
   };
 }; 

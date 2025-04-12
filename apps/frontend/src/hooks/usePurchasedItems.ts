@@ -10,6 +10,7 @@ export const usePurchasedItems = () => {
         isLoading,
         error,
         getPurchasedItems: storeGetPurchasedItems,
+        getDigitalProductFiles: storeGetDigitalProductFiles
     } = usePurchasedItemsStore();
 
     const getPurchasedItems = useCallback(async () => {
@@ -19,11 +20,19 @@ export const usePurchasedItems = () => {
         return storeGetPurchasedItems();
     }, [token, storeGetPurchasedItems]);
 
+    const getDigitalProductFiles = useCallback(async (purchasedItemId: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get digital product files');    
+        }
+        return storeGetDigitalProductFiles(purchasedItemId);
+    }, [token, storeGetDigitalProductFiles]);
+
     return {
         telegramSubscriptions,
         digitalPurchases,
         isLoading,
         error,
         getPurchasedItems,
+        getDigitalProductFiles
     }
 }

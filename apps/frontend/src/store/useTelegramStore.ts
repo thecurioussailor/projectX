@@ -13,6 +13,7 @@ export interface PaymentSession {
   orderId: string;
   paymentSessionId: string;
 }
+
 // Define Telegram Account interface
 export interface TelegramAccount {
   id: string;
@@ -84,6 +85,8 @@ interface TelegramState {
   currentChannel: TelegramChannel | null;
   plans: TelegramPlan[];
   currentPlan: TelegramPlan | null;
+  subscribers: TelegramSubscription[];
+  totalSubscribers: number;
   isLoading: boolean;
   error: string | null;
   
@@ -118,6 +121,9 @@ interface TelegramState {
 
   // Payment callback method
   handlePaymentCallback: (orderId: string, productType: string) => Promise<string>;
+  
+  // Subscriber methods
+  fetchChannelSubscribers: (channelId: string) => Promise<void>;
 }
 
 // Create axios instance with default config
@@ -144,6 +150,8 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
   currentChannel: null,
   plans: [],
   currentPlan: null,
+  subscribers: [],
+  totalSubscribers: 0,
   isLoading: false,
   error: null,
   
@@ -512,6 +520,31 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
       set({ 
         error: error instanceof Error ? error.message : 'Failed to handle payment callback', 
         isLoading: false 
+      });
+      throw error;
+    }
+  },
+  
+  // Subscriber methods
+  fetchChannelSubscribers: async (channelId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/telegram/channels/${channelId}/subscribers`);
+      
+      if (response.data.success) {
+        set({
+          subscribers: response.data.data,
+          totalSubscribers: response.data.totalCount,
+          isLoading: false
+        });
+      } else {
+        throw new Error('Failed to fetch subscribers');
+      }
+    } catch (error) {
+      console.error('Error fetching channel subscribers:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Failed to fetch channel subscribers',
+        isLoading: false
       });
       throw error;
     }

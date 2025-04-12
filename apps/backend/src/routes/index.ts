@@ -8,6 +8,10 @@ import { purchasedItemsRouter } from "./purchasedItems.js";
 import { orderRouter } from "./order.js";
 import { dashboardRouter } from "./dashboard.js";
 import { salesRouter } from "./sales.js";
+import { transactionRouter } from "./transaction.js";
+import { digitalFileRouter } from "./digitalFile.js";
+import { walletRouter } from "./wallet.js";
+
 export const router = Router();
 
 router.use("/auth", authRouter);
@@ -19,5 +23,10 @@ router.use("/digital-products", digitalProductRouter);
 router.use("/orders", orderRouter);
 router.use("/dashboard", dashboardRouter);
 router.use("/sales", salesRouter);
+router.use("/transactions", transactionRouter);
+router.use("/digital-files", digitalFileRouter);
+router.use("/wallet", walletRouter);
+
+
 
 
