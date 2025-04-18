@@ -1372,7 +1372,7 @@ export const getAllUserSubscribers = async (req: Request, res: Response) => {
     
     try {
       const userId = req.user?.id;
-
+      const channelId = req.params.channelId;
       if (!userId) {
         res.status(401).json({
           success: false,
@@ -1395,58 +1395,13 @@ export const getAllUserSubscribers = async (req: Request, res: Response) => {
         });
         return;
       }
-
-      const telegramAccounts = await prismaClient.telegramAccount.findMany({
-        where: {
-          userId: userId
-        },
-        select: {
-          id: true
-        }
-      });
-      
-      const accountIds = telegramAccounts.map(account => account.id);
-      
-      // Get all channels owned by these accounts
-      const channels = await prismaClient.telegramChannel.findMany({
-        where: {
-          telegramAccountId: {
-            in: accountIds
-          }
-        },
-        select: {
-          id: true
-        }
-      });
-      
-      const channelIds = channels.map(channel => channel.id);
-      
-      // Get all plans for these channels
-      const plans = await prismaClient.telegramPlan.findMany({
-        where: {
-          channelId: {
-            in: channelIds
-          }
-        },
-        select: {
-          id: true
-        }
-      });
-      
-      const planIds = plans.map(plan => plan.id);
-      
-      const totalSubscribers = await prismaClient.telegramSubscription.count({
-        where: {
-          planId: {
-            in: planIds
-          }
-        }
-      });
       
       const subscribers = await prismaClient.telegramSubscription.findMany({
         where: {
-          planId: {
-            in: planIds
+          plan: {
+            channel: {
+              id: channelId
+            } 
           }
         },
         include: {
@@ -1479,7 +1434,6 @@ export const getAllUserSubscribers = async (req: Request, res: Response) => {
       
       res.status(200).json({
         success: true,
-        totalCount: totalSubscribers,
         data: subscribers
       });
     } catch (error) {

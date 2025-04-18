@@ -79,6 +79,26 @@ export interface PublicChannel {
   }[];
 }
 
+interface Subscriber {
+  id: string;
+  user: {
+      id: string;
+      username: string;
+      name: string;
+      email: string;
+      phone: string;
+  };
+  status: string;
+  plan: {
+      id: string;
+      name: string;
+      price: number;
+      createdAt: string;
+      expiryDate: string;
+  };
+  createdAt: string;
+  expiryDate: string;
+}
 // Define store state interface
 interface TelegramState {
   accounts: TelegramAccount[];
@@ -86,8 +106,7 @@ interface TelegramState {
   currentChannel: TelegramChannel | null;
   plans: TelegramPlan[];
   currentPlan: TelegramPlan | null;
-  subscribers: TelegramSubscription[];
-  totalSubscribers: number;
+  subscribers: Subscriber[];
   isLoading: boolean;
   error: string | null;
   
@@ -535,7 +554,6 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
       if (response.data.success) {
         set({
           subscribers: response.data.data,
-          totalSubscribers: response.data.totalCount,
           isLoading: false
         });
       } else {

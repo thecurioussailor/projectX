@@ -44,6 +44,27 @@ const ChannelSubscriber = ({ channelId }: { channelId: string }) => {
 
 export default ChannelSubscriber
 
+interface Subscriber {
+    id: string;
+    user: {
+        id: string;
+        username: string;
+        name: string;
+        email: string;
+        phone: string;
+    };
+    status: string;
+    plan: {
+        id: string;
+        name: string;
+        price: number;
+        createdAt: string;
+        expiryDate: string;
+    };
+    createdAt: string;
+    expiryDate: string;
+}
+
 const SubscriberRow = ({ subscriber, index }: { subscriber: Subscriber, index: number }) => {
 
     return (

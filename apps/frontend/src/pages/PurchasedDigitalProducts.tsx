@@ -51,7 +51,8 @@ const PurchasedDigitalProducts = () => {
             fileName = decodeURIComponent(fileName);
             
             return fileName || 'Download File';
-        } catch (e) {
+        } catch (error) {
+            console.error(error);
             return 'Download File';
         }
     };
