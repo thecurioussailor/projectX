@@ -23,6 +23,13 @@ import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailed from './pages/PaymentFailed'
 import PaymentCallback from './pages/PaymentCallback'
 import PurchasedDigitalProducts from './pages/PurchasedDigitalProducts'
+import AdminDashboard from './admin/pages/AdminDashboard'
+import AdminSignin from './admin/pages/AdminSignin'
+import AdminAuthLayout from './admin/layouts/AdminAuthLayout'
+import { AdminAuthProvider } from './admin/context/AdminAuthContext'
+import { AdminSidebarProvider } from './admin/context/AdminSidebarContext'
+import AdminProtectedRoute from './admin/components/AdminProtectedRoute'
+import AdminSettings from './admin/pages/AdminSettings'
 export default function App() {
   return (
     <AuthProvider>
@@ -31,6 +38,7 @@ export default function App() {
           {/* Public Routes with PublicLayout */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/signin" element={<Signin />} />
+          <Route path="/admin/signin" element={<AdminSignin />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-failed" element={<PaymentFailed />} />
           <Route path="/payment-callback" element={<PaymentCallback />} />
@@ -62,6 +70,20 @@ export default function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/purchased-digital-products/:id" element={<PurchasedDigitalProducts />} />
           </Route>
+          {/* Protected Routes with AuthLayout */}
+          <Route path="/admin" element={
+            <AdminAuthProvider>
+              <AdminSidebarProvider>
+                <AdminProtectedRoute>
+                  <AdminAuthLayout />
+                </AdminProtectedRoute>
+              </AdminSidebarProvider>
+            </AdminAuthProvider>
+            }>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+          
         </Routes>
       </BrowserRouter>
     </AuthProvider>

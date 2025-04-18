@@ -84,7 +84,7 @@ const PurchasedItemRow = ({ item, index }: { item: PurchaseItem, index: number }
     const navigate = useNavigate(); 
     const handleRowClick = () => {
         if (isSub) {
-            console.log("Telegram Plan");
+            window.open(item.inviteLink, "_blank", "noopener,noreferrer");
         }else{
             navigate(`/purchased-digital-products/${item.id}`);
         }

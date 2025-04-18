@@ -60,6 +60,7 @@ export interface TelegramSubscription {
   planPrice: number;
   planDuration: number;
   expiryDate: string;
+  inviteLink: string;
   status: 'ACTIVE' | 'EXPIRED';
   createdAt: string;
 }

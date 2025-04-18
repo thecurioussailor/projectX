@@ -1,22 +1,14 @@
-import { FaChartLine, FaLink, FaProductHunt, FaTelegram } from "react-icons/fa";
-import { IoHomeOutline, IoPeopleOutline, IoSettingsOutline } from "react-icons/io5";
-import { MdOutlinePayment } from "react-icons/md";
+import { IoHomeOutline, IoSettingsOutline } from "react-icons/io5"; 
 import { Link, useLocation } from "react-router-dom";
-import { useSidebar } from "../context/SidebarContext";
+import { useAdminSidebar } from "../context/AdminSidebarContext";
 
-const Sidebar = () => {
+const AdminSidebar = () => {
   const location = useLocation();
-  const { isSidebarOpen } = useSidebar();
+  const { isSidebarOpen } = useAdminSidebar();
   
   const sidebarItems = [
-    { name: 'Dashboard', icon: <IoHomeOutline size={20}/>, path: '/dashboard' },
-    { name: 'Sales', icon: <FaChartLine size={20}/>, path: '/sales' },
-    { name: 'Payments', icon: <MdOutlinePayment size={20}/>, path: '/payments' },
-    { name: 'Purchased', icon: <IoPeopleOutline size={20}/>, path: '/purchased' },
-    { name: 'Links', icon: <FaLink size={20}/>, path: '/link-short' },
-    { name: 'Telegram', icon: <FaTelegram size={20}/>, path: '/telegram' },
-    { name: 'Products', icon: <FaProductHunt size={20}/>, path: '/digital-products' },
-    { name: 'Settings', icon: <IoSettingsOutline size={20}/>, path: '/settings' }
+    { name: 'Dashboard', icon: <IoHomeOutline size={20}/>, path: '/admin/dashboard' },
+    { name: 'Settings', icon: <IoSettingsOutline size={20}/>, path: '/admin/settings' }
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -49,6 +41,6 @@ const Sidebar = () => {
   );}
 };
 
-export default Sidebar;
+export default AdminSidebar;
 
     

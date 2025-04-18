@@ -128,8 +128,8 @@ const PaymentSuccess = () => {
         )}
         
         <div className="flex justify-center">
-          <Link to="/dashboard" className="bg-[#7F37D8] text-white py-2 px-6 rounded-full hover:bg-[#6C2EB9] inline-block">
-            Back to Dashboard
+          <Link to="/purchased" className="bg-[#7F37D8] text-white py-2 px-6 rounded-full hover:bg-[#6C2EB9] inline-block">
+            Go to Purchases
           </Link>
         </div>
       </div>

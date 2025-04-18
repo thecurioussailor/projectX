@@ -1,15 +1,15 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-interface SidebarContextType {
+interface AdminSidebarContextType {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   openSidebar: () => void;
 }
 
-const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+const AdminSidebarContext = createContext<AdminSidebarContextType | undefined>(undefined);
 
-export const SidebarProvider = ({ children }: { children: ReactNode }) => {
+export const AdminSidebarProvider = ({ children }: { children: ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
@@ -25,14 +25,14 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <SidebarContext.Provider value={{ isSidebarOpen, toggleSidebar, closeSidebar, openSidebar }}>
+    <AdminSidebarContext.Provider value={{ isSidebarOpen, toggleSidebar, closeSidebar, openSidebar }}>
       {children}
-    </SidebarContext.Provider>
+    </AdminSidebarContext.Provider>
   );
 };
 
-export const useSidebar = (): SidebarContextType => {
-  const context = useContext(SidebarContext);
+export const useAdminSidebar = (): AdminSidebarContextType => {
+  const context = useContext(AdminSidebarContext);
   if (context === undefined) {
     throw new Error('useSidebar must be used within a SidebarProvider');
   }
