@@ -2,10 +2,33 @@ import { useCallback } from 'react';
 import { useTelegramStore } from '../store/useTelegramStore';
 import { useAuthStore } from '../store/useAuthStore';
 
+// Define a proper interface matching the one in useTelegramStore
+interface TelegramSubscriber {
+  id: string;
+  user: {
+    id: string;
+    username: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+  status: string;
+  plan: {
+    id: string;
+    name: string;
+    price: number;
+    createdAt: string;
+    expiryDate: string;
+  };
+  createdAt: string;
+  expiryDate: string;
+}
+
 /**
  * Custom hook for Telegram functionality with authentication checks
+ * @returns Telegram functionality with authentication
  */
-export const useTelegram = () => {
+export function useTelegram() {
   const { token } = useAuthStore();
   
   const {
@@ -14,8 +37,7 @@ export const useTelegram = () => {
     currentChannel,
     plans,
     currentPlan,
-    subscribers,
-    totalSubscribers,
+    subscribers: storeSubscribers,
     isLoading,
     error,
     
@@ -45,6 +67,9 @@ export const useTelegram = () => {
     fetchChannelSubscribers: storeFetchChannelSubscribers
   } = useTelegramStore();
   
+  // Cast subscribers to our local type to avoid naming conflicts
+  const subscribers = storeSubscribers as unknown as TelegramSubscriber[];
+
   // Auth methods with authentication check
   const sendOtp = useCallback(async (phoneNumber: string) => {
     if (!token) {
@@ -204,7 +229,6 @@ export const useTelegram = () => {
     plans,
     currentPlan,
     subscribers,
-    totalSubscribers,
     isLoading,
     error,
     
@@ -240,4 +264,4 @@ export const useTelegram = () => {
     // Subscriber methods
     fetchChannelSubscribers
   };
-}; 
+} 
