@@ -26,8 +26,8 @@ model User {
   location          String?
   emailVerified     Boolean    @default(false)
   emailVerifiedAt   DateTime?
-  wallet            Decimal    @default(0.0)
   createdAt         DateTime   @default(now())
+  wallet            Wallet?
 
   telegramAccounts      TelegramAccount[]
   products              DigitalProduct[]
@@ -41,6 +41,63 @@ model User {
 enum Role {
   USER
   ADMIN
+}
+
+model Wallet {
+  id                  String    @id @default(cuid())
+  user                User      @relation(fields: [userId], references: [id])
+  userId              Int       @unique  // One-to-one relationship with User
+
+  totalBalance        Decimal   @default(0.0)  // Total money (withdrawable + pending)
+  withdrawableBalance Decimal   @default(0.0)  // Amount available for withdrawal
+  pendingBalance      Decimal   @default(0.0)  // Amount not yet available
+  totalEarnings       Decimal   @default(0.0)  // Lifetime earnings
+  totalWithdrawn      Decimal   @default(0.0)  // Total withdrawn so far
+
+  lastUpdated         DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+
+  withdrawalRequests  WithdrawalRequest[]
+}
+
+model WithdrawalRequest {
+  id              String            @id @default(cuid())
+
+  wallet          Wallet            @relation(fields: [walletId], references: [id])
+  walletId        String
+
+  amount          Decimal
+  status          WithdrawalStatus  @default(PENDING)
+
+  paymentMethod   String?            // Bank transfer, PayPal, etc.
+  paymentDetails  Json?              // Account details for the payment
+
+  adminNotes      String?           // Admin notes
+  processedAt     DateTime?         // When admin processed the withdrawal
+  processedBy     String?           // Admin who processed it
+  transactionId   String?           // Reference ID for the payment
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  transactions    WithdrawalTransaction[]
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model WithdrawalTransaction {
+  id                  String            @id @default(cuid())
+  withdrawalRequestId String
+  withdrawalRequest   WithdrawalRequest @relation(fields: [withdrawalRequestId], references: [id])
+  amount              Decimal
+  method              String            // Razorpay, Cashfree, etc.
+  txnId               String            // transaction_id from Razorpay/Cashfree
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 }
 
 model TelegramAccount {

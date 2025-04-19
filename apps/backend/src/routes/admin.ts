@@ -5,3 +5,6 @@ export const adminRouter = Router();
 
 adminRouter.post("/signin", adminController.adminSignin);
 adminRouter.get("/profile", authenticate, authorizeAdmin, adminController.adminProfile);
+
+adminRouter.post("/withdrawals/:id/approve", adminController.approveWithdrawalRequest);
+adminRouter.post("/withdrawals/:id/reject", adminController.rejectWithdrawalRequest);

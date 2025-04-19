@@ -1,7 +1,7 @@
 import React from "react";
 
 interface MoneyCardProps {
-  amount: string;
+  amount: number;
   gradient: string;
   title: string;
 }

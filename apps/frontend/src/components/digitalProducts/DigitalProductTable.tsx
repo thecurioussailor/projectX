@@ -5,9 +5,10 @@ import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import { DigitalProduct } from "../../store/useDigitalProductStore";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { FaEdit, FaTrash, FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Error from "../ui/Error";
 import { BsThreeDots } from "react-icons/bs";
+import Warning from "../ui/Warning";
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 const DigitalProductTable = () => {
     const { products, isLoading, error, fetchProducts } = useDigitalProduct();
@@ -73,7 +74,8 @@ export default DigitalProductTable
 const ProductRow = ({ product, index }: { product: DigitalProduct, index: number }) => {
     const [copied, setCopied] = useState(false);
     const { deleteProduct } = useDigitalProduct();
-    const [showMenu, setShowMenu] = useState(false);  
+    const [showMenu, setShowMenu] = useState(false); 
+    const [showWarning, setShowWarning] = useState(false); 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
     const navigate = useNavigate();
     const ref = useRef<HTMLButtonElement>(null);
@@ -94,6 +96,11 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
             setCopied(false);
         }, 2000);
     }
+    const handleShare = (productId: string) => {
+        const shareableLink = `${PUBLIC_APP_URL}/d/${productId}`;
+        console.log(shareableLink);
+        window.open(shareableLink, '_blank');
+    };
     return (
         <tr className="border-t border-gray-200 h-20">
             <td className="pl-8">{index + 1}</td>
@@ -104,15 +111,27 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
             <td className="pl-4">{product._count.orders}</td>
             <td>
                 <div className="flex relative items-center bg-[#7F37D8] rounded-3xl text-white w-40">
-                    <Link 
-                        to={`/d/${product.id}`} 
-                        target="_blank"
+                    <button 
+                        onClick={() => {
+                            if(product.status === "ACTIVE") {
+                                handleShare(product.id); 
+                            } else {
+                                setShowWarning(true)
+                            }
+                        }}
                         className="border-r flex items-center gap-2 border-white px-4 py-2 w-2/3"
                     >
                         <IoShareSocialOutline size={20}/> Share
-                    </Link>
+                    </button>
+                    {showWarning && <Warning title="Product is inactive" message="Please activate the product to share it" onCancel={() => setShowWarning(false)} />}   
                     <button 
-                        onClick={() => handleCopyLink(product.id)}
+                        onClick={() => {
+                            if(product.status === "ACTIVE") {
+                                handleCopyLink(product.id);
+                            } else {
+                                setShowWarning(true);
+                            }
+                        }}
                         className="px-4 py-2 rounded-r-3xl w-1/3"
                     >
                         {copied ? <GoCheck size={20} /> : <GoCopy size={20} />}

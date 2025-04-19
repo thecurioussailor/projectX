@@ -4,6 +4,7 @@ import { CFEnvironment } from "cashfree-pg";
 import { Request, Response } from "express";
 import { StringSession } from "telegram/sessions/index.js";
 import { TelegramClient, Api } from "telegram";
+import { updateWalletBalance } from "./walletController.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -177,6 +178,16 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
             if (productType === 'TELEGRAM_PLAN' && order.telegramPlan) {
                 // Create telegram subscription
                 const subscription = await createTelegramSubscription(order);
+
+                // Update wallet balance for the channel owner
+                if(order.telegramPlan.channel && order.telegramPlan.channel.telegramAccountId) {
+                    const telegramAccount = await prismaClient.telegramAccount.findUnique({
+                        where: { id: order.telegramPlan.channel.telegramAccountId }
+                    });
+                    if(telegramAccount) {
+                        const updateWallet = await updateWalletBalance(telegramAccount.userId.toString(), Number(order.amount));
+                    }
+                }
                 try {
                     const inviteLink = await generateTelegramInviteLink(order, subscription);
                     console.log("Payment success with invite link ****************************************");
@@ -197,6 +208,11 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
             } else if (productType === 'DIGITAL_PRODUCT' && order.digitalProduct) {
                 // Process digital product purchase logic here
                 await createDigitalProductPurchase(order);
+
+                // Update wallet balance for the digital product owner
+                if(order.digitalProduct.creatorId) {
+                    const updateWallet = await updateWalletBalance(order.digitalProduct.creatorId.toString(), Number(order.amount));
+                }
                 // (e.g., grant access, send download links, etc.)
                 if (order.digitalProduct.isLimitedQuantityEnabled && order.digitalProduct.quantity !== null) {
                     await prismaClient.digitalProduct.update({

@@ -7,6 +7,7 @@ dotenv.config();
 
 export const signup = async (req: Request, res: Response) => {
   try {
+    console.log('signup');
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -34,17 +35,28 @@ export const signup = async (req: Request, res: Response) => {
     const userCount = await prismaClient.user.count();
     const role = userCount === 0 ? 'ADMIN' : 'USER';
 
-    const newUser = await prismaClient.user.create({
-      data: {
-        username,
-        password: hashedPassword,
-        role
-      }
+    const result = await prismaClient.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          username,
+          password: hashedPassword,
+          role
+        }
+      });
+
+      await tx.wallet.create({
+        data: {
+          userId: newUser.id
+        }
+      });
+
+      return { newUser };
     });
+
     const token = jwt.sign({
-      id: newUser.id,
-      username: newUser.username,
-      role: newUser.role
+      id: result.newUser.id,
+      username: result.newUser.username,
+      role: result.newUser.role
     }, process.env.JWT_SECRET!);
 
     res.status(201).json({
@@ -52,9 +64,9 @@ export const signup = async (req: Request, res: Response) => {
       message: 'User created successfully',
       data: {
         user: {
-          id: newUser.id,
-          username: newUser.username,
-          role: newUser.role
+          id: result.newUser.id,
+          username: result.newUser.username,
+          role: result.newUser.role
         },
         token
       }

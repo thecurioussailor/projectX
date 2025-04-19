@@ -99,3 +99,25 @@ export const adminProfile = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const approveWithdrawalRequest = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        if(!userId) {
+            res.status(401).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+        }
+    } catch (error) {
+        
+    }
+}
+
+export const rejectWithdrawalRequest = async (req: Request, res: Response) => {
+    try {
+        
+    } catch (error) {
+        
+    }
+}
