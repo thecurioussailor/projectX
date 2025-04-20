@@ -31,7 +31,7 @@ const api = axios.create({
 
 // Add auth interceptor
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,10 +39,10 @@ api.interceptors.request.use((config) => {
 });
 
 export const useAdminStore = create<AdminState>((set) => ({
-    isAuthenticated: !!localStorage.getItem('admin_token'),
+    isAuthenticated: !!localStorage.getItem('token'),
     isLoading: false,
     error: null,
-    token: localStorage.getItem('admin_token'),
+    token: localStorage.getItem('token'),
     user: null,
 
     signin: async (username: string, password: string) => {
@@ -57,7 +57,7 @@ export const useAdminStore = create<AdminState>((set) => ({
                 return false;
             }
             
-            localStorage.setItem("admin_token", token);
+            localStorage.setItem("token", token);
             set({ isAuthenticated: true, token, user });
             return true;
         } catch (error) {
@@ -70,7 +70,7 @@ export const useAdminStore = create<AdminState>((set) => ({
     },
 
     logout: () => {
-        localStorage.removeItem('admin_token');
+        localStorage.removeItem('token');
         set({ 
             isAuthenticated: false, 
             token: null, 
@@ -79,7 +79,7 @@ export const useAdminStore = create<AdminState>((set) => ({
     },
 
     setToken: (token: string) => {
-        localStorage.setItem('admin_token', token);
+        localStorage.setItem('token', token);
         set({ token, isAuthenticated: true });
     },
 

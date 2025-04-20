@@ -1,8 +1,8 @@
-const AdminSettings = () => {
+const AdminPayoutManagement = () => {
   return (
     <section className="flex flex-col gap-8">
     <div className="flex justify-between gap-4">
-      <h1 className="text-3xl font-bold text-[#7F37D8]">Settings</h1>
+        <h1 className="text-3xl font-bold text-[#7F37D8]">Payout Management</h1>
     </div>
     <div className="grid grid-cols-4 justify-between gap-4">
       
@@ -11,4 +11,4 @@ const AdminSettings = () => {
   )
 }
 
-export default AdminSettings
+export default AdminPayoutManagement

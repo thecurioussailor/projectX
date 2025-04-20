@@ -30,6 +30,12 @@ import { AdminAuthProvider } from './admin/context/AdminAuthContext'
 import { AdminSidebarProvider } from './admin/context/AdminSidebarContext'
 import AdminProtectedRoute from './admin/components/AdminProtectedRoute'
 import AdminSettings from './admin/pages/AdminSettings'
+import AdminUserManagement from './admin/pages/AdminUserManagement'
+import AdminPlanManagement from './admin/pages/AdminPlanManagement'
+import AdminPayoutManagement from './admin/pages/AdminPayoutManagement'
+import AdminSupport from './admin/pages/AdminSupport'
+import LandingPage2 from './pages/LandingPage2'
+import UserDetails from './admin/pages/UserDetails'
 export default function App() {
   return (
     <AuthProvider>
@@ -37,6 +43,7 @@ export default function App() {
         <Routes>
           {/* Public Routes with PublicLayout */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/landing-page-2" element={<LandingPage2 />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/admin/signin" element={<AdminSignin />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
@@ -81,6 +88,11 @@ export default function App() {
             </AdminAuthProvider>
             }>
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="user-management" element={<AdminUserManagement />} />
+            <Route path="user-management/:id" element={<UserDetails />} />
+            <Route path="plan-management" element={<AdminPlanManagement />} />
+            <Route path="payout-management" element={<AdminPayoutManagement />} />
+            <Route path="support" element={<AdminSupport />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           

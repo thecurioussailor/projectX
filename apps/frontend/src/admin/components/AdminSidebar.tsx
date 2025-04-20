@@ -8,9 +8,9 @@ const AdminSidebar = () => {
   
   const sidebarItems = [
     { name: 'Dashboard', icon: <IoHomeOutline size={20}/>, path: '/admin/dashboard' },
-    { name: 'Users', icon: <IoSettingsOutline size={20}/>, path: '/admin/users' },
-    { name: 'Plans', icon: <IoSettingsOutline size={20}/>, path: '/admin/plans' },
-    { name: 'Payouts', icon: <IoSettingsOutline size={20}/>, path: '/admin/payouts' },
+    { name: 'Users', icon: <IoSettingsOutline size={20}/>, path: '/admin/user-management' },
+    { name: 'Plans', icon: <IoSettingsOutline size={20}/>, path: '/admin/plan-management' },
+    { name: 'Payouts', icon: <IoSettingsOutline size={20}/>, path: '/admin/payout-management' },
     { name: 'Support', icon: <IoSettingsOutline size={20}/>, path: '/admin/support' },
     { name: 'Settings', icon: <IoSettingsOutline size={20}/>, path: '/admin/settings' }
   ];
