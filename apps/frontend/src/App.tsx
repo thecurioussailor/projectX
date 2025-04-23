@@ -36,6 +36,7 @@ import AdminPayoutManagement from './admin/pages/AdminPayoutManagement'
 import AdminSupport from './admin/pages/AdminSupport'
 import LandingPage2 from './pages/LandingPage2'
 import UserDetails from './admin/pages/UserDetails'
+import AdminEditPlatformPlan from './admin/pages/AdminEditPlatformPlan'
 export default function App() {
   return (
     <AuthProvider>
@@ -91,6 +92,7 @@ export default function App() {
             <Route path="user-management" element={<AdminUserManagement />} />
             <Route path="user-management/:id" element={<UserDetails />} />
             <Route path="plan-management" element={<AdminPlanManagement />} />
+            <Route path="plan-management/:id" element={<AdminEditPlatformPlan />} />
             <Route path="payout-management" element={<AdminPayoutManagement />} />
             <Route path="support" element={<AdminSupport />} />
             <Route path="settings" element={<AdminSettings />} />

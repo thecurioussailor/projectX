@@ -13,7 +13,7 @@ const AdminPlanManagement = () => {
         </div>
       </div>
       <div>
-          <PlatformPlanContainer />
+        <PlatformPlanContainer />
       </div>
     </section>
   )

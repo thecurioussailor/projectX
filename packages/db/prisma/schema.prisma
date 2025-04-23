@@ -26,16 +26,18 @@ model User {
   location          String?
   emailVerified     Boolean    @default(false)
   emailVerifiedAt   DateTime?
+  isBanned          Boolean    @default(false)
   createdAt         DateTime   @default(now())
   wallet            Wallet?
 
-  telegramAccounts      TelegramAccount[]
-  products              DigitalProduct[]
-  orders                Order[]
-  transactions          Transaction[]
-  links                 Link[]
-  telegramSubscriptions TelegramSubscription[]
-  digitalProductPurchases DigitalProductPurchase[]
+  telegramAccounts            TelegramAccount[]
+  products                    DigitalProduct[]
+  orders                      Order[]
+  transactions                Transaction[]
+  links                       Link[]
+  telegramSubscriptions       TelegramSubscription[]
+  digitalProductPurchases     DigitalProductPurchase[]
+  userPlatformSubscriptions   UserPlatformSubscription[]
 }
 
 enum Role {
@@ -98,6 +100,95 @@ model WithdrawalTransaction {
   txnId               String            // transaction_id from Razorpay/Cashfree
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
+}
+
+model PlatformSubscriptionPlan {
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  monthlyPrice      Decimal            @default(0)      // Monthly price
+  annualPrice       Decimal?           // Optional annual pricing
+  isCustom          Boolean            @default(false)
+
+  transactionFeePercentage Decimal     @default(11.00)   // Default 11% for free plan
+  
+  // Plan status
+  isActive                  Boolean     @default(true)
+  isDefault                 Boolean     @default(false)  // Only one plan can be default
+  
+  // Metadata
+  createdAt                 DateTime    @default(now())
+  updatedAt                 DateTime    @updatedAt
+  deletedAt                 DateTime?
+
+  features                  PlatformSubscriptionPlanFeature[]
+  userPlatformSubscriptions         UserPlatformSubscription[]
+}
+
+model PlatformSubscriptionPlanFeature {
+  id                String             @id @default(cuid())
+  platformPlan      PlatformSubscriptionPlan   @relation(fields: [platformPlanId], references: [id])
+  platformPlanId    String
+  
+  featureKey        String             // max_digital_products, max_telegram_subscriptions, max_links, etc. 
+  limitValue        Int?               // null = unlimited, specific number = limit
+  
+  data              Json?
+  
+  isEnabled         Boolean            @default(true)
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([platformPlanId, featureKey])
+}
+model UserPlatformSubscription {
+  id                String             @id @default(cuid())
+  user              User               @relation(fields: [userId], references: [id])
+  userId            Int             
+  platformPlan              PlatformSubscriptionPlan   @relation(fields: [platformPlanId], references: [id])
+  platformPlanId            String
+  
+  // Subscription status
+  status            SubscriptionStatus @default(ACTIVE)
+  
+  // Billing cycle
+  billingCycle      BillingCycle       @default(MONTHLY)
+  
+  // Dates
+  startDate         DateTime           @default(now())
+  endDate           DateTime
+  trialEndDate      DateTime?
+  
+  // Payments
+  currentPeriodStart DateTime          @default(now())
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean           @default(false)
+  
+  // Fee override (optional - for custom plans)
+  customFeePercentage Decimal?         // Overrides plan fee if set
+  
+  // Metadata
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  // Payment tracking
+  orders Order[]
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  UNPAID
+  CANCELED
+  TRIALING
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUALLY
+  LIFETIME
 }
 
 model TelegramAccount {
@@ -339,6 +430,9 @@ model Order {
 
   productType       ProductType
 
+  platformSubscription   UserPlatformSubscription?   @relation(fields: [platformSubscriptionId], references: [id])
+  platformSubscriptionId String?
+
   digitalProductId       String?
   digitalProduct         DigitalProduct? @relation(fields: [digitalProductId], references: [id])
   
@@ -351,6 +445,7 @@ model Order {
 }
 
 enum ProductType {
+  PLATFORM_SUBSCRIPTION
   DIGITAL_PRODUCT
   TELEGRAM_PLAN
 }

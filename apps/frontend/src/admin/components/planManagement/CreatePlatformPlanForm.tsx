@@ -2,50 +2,30 @@ import { useState } from "react";
 import { IoCloseOutline } from "react-icons/io5";
 import { usePlatformPlan } from "../../hooks/usePlatformPlan";
 import { FaSpinner } from "react-icons/fa";
-
 interface FormData {
   name: string;
-  price: number;
-  transactionFeePercentage: number;
+  description: string;
+  monthlyPrice: number;
   annualPrice: number | null;
+  transactionFeePercentage: number;
   isCustom: boolean;
-  maxDigitalProducts: number | null;
-  maxTelegramSubscriptions: number | null;
-  maxLinks: number | null;
   isDefault: boolean;
   isActive: boolean;
-  description: string;
-  canSellDigitalProducts: boolean;
-  canManageTelegramSubs: boolean;
-  canUseUrlShortener: boolean;
-  hasCustomDomain: boolean;
-  hasAdvancedAnalytics: boolean;
-  hasPrioritySupport: boolean;
 }
 
 const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) => {
   const { createPlan, isLoading, error } = usePlatformPlan();
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  
   const [formData, setFormData] = useState<FormData>({
-    name: "Free Plan",
-    price: 1,
-    transactionFeePercentage: 20,
-    annualPrice: 0,
+    name: '',
+    monthlyPrice: 0,
+    transactionFeePercentage: 0,
+    annualPrice: null,
     isCustom: false,
-    maxDigitalProducts: 100,
-    maxTelegramSubscriptions: 100,
-    maxLinks: 100,
-    isDefault: true,
+    isDefault: false,
     isActive: true,
-    description: "Ideal for content creators who want to scale their monetization. Includes up to 50 products, 25 Telegram groups, and custom link support.",
-    canSellDigitalProducts: true,
-    canManageTelegramSubs: true,
-    canUseUrlShortener: true,
-    hasCustomDomain: false,
-    hasAdvancedAnalytics: false,
-    hasPrioritySupport: false,
+    description: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -77,8 +57,8 @@ const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) =
       errors.name = "Name is required";
     }
     
-    if (formData.price < 0) {
-      errors.price = "Price cannot be negative";
+    if (formData.monthlyPrice < 0) {
+      errors.monthlyPrice = "Price cannot be negative";
     }
     
     if (formData.transactionFeePercentage < 0 || formData.transactionFeePercentage > 100) {
@@ -107,6 +87,7 @@ const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) =
       setTimeout(() => {
         setOpen(false);
       }, 2000);
+        
     } catch (error) {
       console.error("Error creating plan:", error);
     }
@@ -137,7 +118,7 @@ const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) =
           
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col col-span-2 gap-2">
                 <label htmlFor="name" className="font-medium">Plan Name*</label>
                 <input 
                   type="text" 
@@ -150,19 +131,30 @@ const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) =
                 />
                 {formErrors.name && <p className="text-red-500 text-sm">{formErrors.name}</p>}
               </div>
-              
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <label htmlFor="description" className="font-medium">Description</label>
+                <textarea 
+                  id="description" 
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Enter plan description" 
+                  rows={3}
+                  className="w-full p-2 rounded-md border border-gray-300" 
+                />
+              </div>
               <div className="flex flex-col gap-2">
                 <label htmlFor="price" className="font-medium">Monthly Price*</label>
                 <input 
                   type="number" 
-                  id="price" 
-                  name="price"
-                  value={formData.price}
+                  id="monthlyPrice" 
+                  name="monthlyPrice"
+                  value={formData.monthlyPrice}
                   onChange={handleChange}
                   placeholder="Enter monthly price" 
                   className="w-full p-2 rounded-md border border-gray-300" 
                 />
-                {formErrors.price && <p className="text-red-500 text-sm">{formErrors.price}</p>}
+                {formErrors.monthlyPrice && <p className="text-red-500 text-sm">{formErrors.monthlyPrice}</p>}
               </div>
               
               <div className="flex flex-col gap-2">
@@ -192,137 +184,8 @@ const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) =
                 />
                 {formErrors.transactionFeePercentage && <p className="text-red-500 text-sm">{formErrors.transactionFeePercentage}</p>}
               </div>
-              
-              <div className="flex flex-col gap-2">
-                <label htmlFor="maxDigitalProducts" className="font-medium">Max Digital Products</label>
-                <input 
-                  type="number" 
-                  id="maxDigitalProducts" 
-                  name="maxDigitalProducts"
-                  value={formData.maxDigitalProducts === null ? '' : formData.maxDigitalProducts}
-                  onChange={handleChange}
-                  placeholder="Enter max number of digital products" 
-                  className="w-full p-2 rounded-md border border-gray-300" 
-                />
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <label htmlFor="maxTelegramSubscriptions" className="font-medium">Max Telegram Subscriptions</label>
-                <input 
-                  type="number" 
-                  id="maxTelegramSubscriptions" 
-                  name="maxTelegramSubscriptions"
-                  value={formData.maxTelegramSubscriptions === null ? '' : formData.maxTelegramSubscriptions}
-                  onChange={handleChange}
-                  placeholder="Enter max number of telegram subscriptions" 
-                  className="w-full p-2 rounded-md border border-gray-300" 
-                />
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <label htmlFor="maxLinks" className="font-medium">Max Links</label>
-                <input 
-                  type="number" 
-                  id="maxLinks" 
-                  name="maxLinks"
-                  value={formData.maxLinks === null ? '' : formData.maxLinks}
-                  onChange={handleChange}
-                  placeholder="Enter max number of links" 
-                  className="w-full p-2 rounded-md border border-gray-300" 
-                />
-              </div>
-              
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label htmlFor="description" className="font-medium">Description</label>
-                <textarea 
-                  id="description" 
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Enter plan description" 
-                  rows={3}
-                  className="w-full p-2 rounded-md border border-gray-300" 
-                />
-              </div>
             </div>
-            
-            <div className="mt-6 border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-medium mb-3">Features</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="canSellDigitalProducts" 
-                    name="canSellDigitalProducts"
-                    checked={formData.canSellDigitalProducts}
-                    onChange={handleChange}
-                    className="w-4 h-4" 
-                  />
-                  <label htmlFor="canSellDigitalProducts">Sell Digital Products</label>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="canManageTelegramSubs" 
-                    name="canManageTelegramSubs"
-                    checked={formData.canManageTelegramSubs}
-                    onChange={handleChange}
-                    className="w-4 h-4" 
-                  />
-                  <label htmlFor="canManageTelegramSubs">Manage Telegram Subscriptions</label>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="canUseUrlShortener" 
-                    name="canUseUrlShortener"
-                    checked={formData.canUseUrlShortener}
-                    onChange={handleChange}
-                    className="w-4 h-4" 
-                  />
-                  <label htmlFor="canUseUrlShortener">Use URL Shortener</label>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="hasCustomDomain" 
-                    name="hasCustomDomain"
-                    checked={formData.hasCustomDomain}
-                    onChange={handleChange}
-                    className="w-4 h-4" 
-                  />
-                  <label htmlFor="hasCustomDomain">Custom Domain</label>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="hasAdvancedAnalytics" 
-                    name="hasAdvancedAnalytics"
-                    checked={formData.hasAdvancedAnalytics}
-                    onChange={handleChange}
-                    className="w-4 h-4" 
-                  />
-                  <label htmlFor="hasAdvancedAnalytics">Advanced Analytics</label>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="hasPrioritySupport" 
-                    name="hasPrioritySupport"
-                    checked={formData.hasPrioritySupport}
-                    onChange={handleChange}
-                    className="w-4 h-4" 
-                  />
-                  <label htmlFor="hasPrioritySupport">Priority Support</label>
-                </div>
-              </div>
-            </div>
-            
+
             <div className="mt-6 border-t border-gray-200 pt-4">
               <h3 className="text-lg font-medium mb-3">Plan Status</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

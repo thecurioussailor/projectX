@@ -1,4 +1,5 @@
 import { useSales } from "../../hooks/useSales";
+import { Sale } from "../../store/useSalesStore";
 
 const SalesTable = () => {
     const { sales, isLoading, error } = useSales();
@@ -41,7 +42,7 @@ const SalesTable = () => {
 
 export default SalesTable
 
-const SalesTableRow = ({sale, index}: {sale: any, index: number}) => {
+const SalesTableRow = ({sale, index}: {sale: Sale, index: number}) => {
     return (
         <tr className="border-t border-gray-200 h-20 text-[#1B3155]">
             <td className="px-8">{index + 1}</td>

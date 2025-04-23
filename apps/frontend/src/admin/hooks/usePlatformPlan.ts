@@ -1,24 +1,20 @@
 import { useCallback, useEffect } from 'react';
-import { useAuthStore } from '../../store/useAuthStore';
 import { 
     usePlatformPlanStore, 
     PlatformSubscriptionPlan, 
-    BillingCycle,
-    PaymentSession,
-    OrderStatus
 } from '../store/usePlatformPlanStore';
+import { useAdminAuth } from '../context/AdminAuthContext';
 
 /**
  * Custom hook for Platform Subscription Plan functionality with authentication checks
  */
-export const usePlatformPlan = ({autoFetch = true}: {autoFetch?: boolean} = {}) => {
-    const { token } = useAuthStore();
+export const usePlatformPlan = () => {
+    const { token } = useAdminAuth();
     
     const {
         // State
         plans,
         currentPlan,
-        userSubscription,
         isLoading,
         error,
         
@@ -29,15 +25,6 @@ export const usePlatformPlan = ({autoFetch = true}: {autoFetch?: boolean} = {}) 
         updatePlan: storeUpdatePlan,
         deletePlan: storeDeletePlan,
         
-        // User methods
-        fetchActivePlans: storeFetchActivePlans,
-        fetchUserSubscription: storeFetchUserSubscription,
-        subscribeToPlan: storeSubscribeToPlan,
-        getOrderStatus: storeGetOrderStatus,
-        cancelSubscription: storeCancelSubscription,
-        
-        // State management
-        setCurrentPlan,
     } = usePlatformPlanStore();
 
     // Admin methods with authentication check
@@ -76,50 +63,17 @@ export const usePlatformPlan = ({autoFetch = true}: {autoFetch?: boolean} = {}) 
         return storeDeletePlan(planId);
     }, [token, storeDeletePlan]);
     
-    // User methods with authentication check
-    const fetchActivePlans = useCallback(async () => {
-        return storeFetchActivePlans();
-    }, [storeFetchActivePlans]);
-    
-    const fetchUserSubscription = useCallback(async () => {
-        if (!token) {
-            throw new Error('You must be logged in to fetch your subscription');
-        }
-        return storeFetchUserSubscription();
-    }, [token, storeFetchUserSubscription]);
-    
-    const subscribeToPlan = useCallback(async (planId: string, billingCycle: BillingCycle): Promise<PaymentSession> => {
-        if (!token) {
-            throw new Error('You must be logged in to subscribe to a plan');
-        }
-        return storeSubscribeToPlan(planId, billingCycle);
-    }, [token, storeSubscribeToPlan]);
-    
-    const getOrderStatus = useCallback(async (orderId: string): Promise<OrderStatus> => {
-        if (!token) {
-            throw new Error('You must be logged in to check order status');
-        }
-        return storeGetOrderStatus(orderId);
-    }, [token, storeGetOrderStatus]);
-    
-    const cancelSubscription = useCallback(async () => {
-        if (!token) {
-            throw new Error('You must be logged in to cancel your subscription');
-        }
-        return storeCancelSubscription();
-    }, [token, storeCancelSubscription]);
-
+    // Fetch plans when the hook is mounted or token changes
     useEffect(() => {
-        if (autoFetch && token && !plans && !isLoading) {
-            fetchAllPlans();
+        if (token) {
+            fetchAllPlans().catch(err => console.error('Error fetching plans:', err));
         }
-    }, [autoFetch,token, fetchAllPlans, plans, isLoading]);
+    }, [token, fetchAllPlans]);
 
     return {
         // State
         plans,
         currentPlan,
-        userSubscription,
         isLoading,
         error,
         
@@ -129,15 +83,5 @@ export const usePlatformPlan = ({autoFetch = true}: {autoFetch?: boolean} = {}) 
         createPlan,
         updatePlan,
         deletePlan,
-        
-        // User methods
-        fetchActivePlans,
-        fetchUserSubscription,
-        subscribeToPlan,
-        getOrderStatus,
-        cancelSubscription,
-        
-        // State management
-        setCurrentPlan,
     };
 };

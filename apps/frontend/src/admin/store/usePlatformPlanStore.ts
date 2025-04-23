@@ -7,25 +7,10 @@ export interface PlatformSubscriptionPlan {
   id: string;
   name: string;
   description: string | null;
-  price: number;
+  monthlyPrice: number;
   annualPrice: number | null;
   isCustom: boolean;
   transactionFeePercentage: number;
-  
-  // Feature toggles
-  maxDigitalProducts: number | null;
-  maxTelegramSubscriptions: number | null;
-  maxLinks: number | null;
-  
-  // Features enabled
-  canSellDigitalProducts: boolean;
-  canManageTelegramSubs: boolean;
-  canUseUrlShortener: boolean;
-  
-  // Additional premium features
-  hasCustomDomain: boolean;
-  hasAdvancedAnalytics: boolean;
-  hasPrioritySupport: boolean;
   
   // Plan status
   isActive: boolean;
@@ -35,59 +20,13 @@ export interface PlatformSubscriptionPlan {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-  
-  // Relations
-  userPlatformSubscriptions?: UserPlatformSubscription[];
 }
 
-// Define UserPlatformSubscription interface
-export interface UserPlatformSubscription {
-  id: string;
-  userId: number;
-  planId: string;
-  status: SubscriptionStatus;
-  billingCycle: BillingCycle;
-  startDate: string;
-  endDate: string;
-  trialEndDate: string | null;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  cancelAtPeriodEnd: boolean;
-  customFeePercentage: number | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export enum SubscriptionStatus {
-  ACTIVE = 'ACTIVE',
-  PAST_DUE = 'PAST_DUE',
-  UNPAID = 'UNPAID',
-  CANCELED = 'CANCELED',
-  TRIALING = 'TRIALING',
-  EXPIRED = 'EXPIRED'
-}
-
-export enum BillingCycle {
-  MONTHLY = 'MONTHLY',
-  ANNUALLY = 'ANNUALLY',
-  LIFETIME = 'LIFETIME'
-}
-
-export interface PaymentSession {
-  orderId: string;
-  paymentSessionId: string;
-}
-
-export interface OrderStatus {
-  orderId: string;
-  status: string;
-}
 
 // Define store state interface
 interface PlatformPlanState {
   plans: PlatformSubscriptionPlan[];
   currentPlan: PlatformSubscriptionPlan | null;
-  userSubscription: UserPlatformSubscription | null;
   isLoading: boolean;
   error: string | null;
   
@@ -97,16 +36,6 @@ interface PlatformPlanState {
   createPlan: (planData: Partial<PlatformSubscriptionPlan>) => Promise<void>;
   updatePlan: (planId: string, planData: Partial<PlatformSubscriptionPlan>) => Promise<void>;
   deletePlan: (planId: string) => Promise<void>;
-  
-  // User methods
-  fetchActivePlans: () => Promise<void>;
-  fetchUserSubscription: () => Promise<void>;
-  subscribeToPlan: (planId: string, billingCycle: BillingCycle) => Promise<PaymentSession>;
-  getOrderStatus: (orderId: string) => Promise<OrderStatus>;
-  cancelSubscription: () => Promise<void>;
-  
-  // State management
-  setCurrentPlan: (plan: PlatformSubscriptionPlan | null) => void;
 }
 
 // Create axios instance with default config
@@ -130,7 +59,6 @@ api.interceptors.request.use((config) => {
 export const usePlatformPlanStore = create<PlatformPlanState>((set, get) => ({
   plans: [],
   currentPlan: null,
-  userSubscription: null,
   isLoading: false,
   error: null,
   
@@ -237,105 +165,5 @@ export const usePlatformPlanStore = create<PlatformPlanState>((set, get) => ({
       });
       throw error;
     }
-  },
-  
-  // User methods
-  fetchActivePlans: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await api.get('/api/v1/subscription-plans');
-      if (response.data.success) {
-        set({ plans: response.data.data, isLoading: false });
-      } else {
-        throw new Error(response.data.message || 'Failed to fetch plans');
-      }
-    } catch (error) {
-      console.error('Error fetching active plans:', error);
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch active plans', 
-        isLoading: false 
-      });
-    }
-  },
-  
-  fetchUserSubscription: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await api.get('/api/v1/user/subscription');
-      if (response.data.success) {
-        set({ userSubscription: response.data.data, isLoading: false });
-      } else {
-        set({ userSubscription: null, isLoading: false });
-      }
-    } catch (error) {
-      console.error('Error fetching user subscription:', error);
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch user subscription', 
-        userSubscription: null,
-        isLoading: false 
-      });
-    }
-  },
-  
-  subscribeToPlan: async (planId: string, billingCycle: BillingCycle) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await api.post(`/api/v1/subscription-plans/${planId}/subscribe`, { billingCycle });
-      if (response.data.success) {
-        return response.data.data;
-      } else {
-        throw new Error(response.data.message || 'Failed to subscribe to plan');
-      }
-    } catch (error) {
-      console.error('Error subscribing to plan:', error);
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to subscribe to plan', 
-        isLoading: false 
-      });
-      throw error;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-  
-  getOrderStatus: async (orderId: string) => {
-    try {
-      const response = await api.get(`/api/v1/orders/${orderId}/status`);
-      if (response.data.success) {
-        return response.data.data;
-      } else {
-        throw new Error(response.data.message || 'Failed to get order status');
-      }
-    } catch (error) {
-      console.error('Error getting order status:', error);
-      throw error;
-    }
-  },
-  
-  cancelSubscription: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await api.post('/api/v1/user/subscription/cancel');
-      if (response.data.success) {
-        set({ 
-          userSubscription: response.data.data,
-          isLoading: false 
-        });
-      } else {
-        throw new Error(response.data.message || 'Failed to cancel subscription');
-      }
-    } catch (error) {
-      console.error('Error canceling subscription:', error);
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to cancel subscription', 
-        isLoading: false 
-      });
-      throw error;
-    }
-  },
-  
-  // State management
-  setCurrentPlan: (plan: PlatformSubscriptionPlan | null) => {
-    set({ currentPlan: plan });
   },
 }));

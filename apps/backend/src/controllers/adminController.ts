@@ -121,3 +121,42 @@ export const rejectWithdrawalRequest = async (req: Request, res: Response) => {
         
     }
 }
+
+export const getAllWithdrawalRequests = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        if(!userId || req.user?.role !== "ADMIN") {
+            res.status(401).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+            return;
+        }
+        const withdrawalRequests = await prismaClient.withdrawalRequest.findMany({  
+            include: {
+                wallet: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Withdrawal requests fetched successfully',
+            data: withdrawalRequests
+        });
+    } catch (error) {
+        console.error('Withdrawal requests error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+}
