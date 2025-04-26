@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 import userImage from "../assets/images/profileprojectx.png";
 import notification from "../assets/images/notificationBell.png";
+import logo from "../assets/images/tinywalletLogo.png";
 const Navbar = () => {
   const { toggleSidebar, isSidebarOpen } = useSidebar();
 
@@ -14,7 +15,7 @@ const Navbar = () => {
     <nav className="flex justify-between items-center px-8 py-6 shadow-sm">
       <div className="flex w-1/3 items-center gap-4">
         <Link to="/">
-          <h1 className="text-3xl font-bold">projectX</h1>
+          <img src={logo} alt="TinyWallet" className="w-48" />
         </Link>
         <button 
           onClick={toggleSidebar}
