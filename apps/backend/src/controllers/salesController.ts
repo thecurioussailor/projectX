@@ -43,18 +43,22 @@ export const getAllSales = async (req: Request, res: Response) => {
             createdAt: true,
             user: {
                 select: {
+                  id: true,
                   username: true,
-                  profileImage: true
+                  name: true,
+                  email: true,
+                  phone: true,
                 }
             },
             digitalProduct: {
                 select: {
+                  id: true,
                   title: true,
-                  coverImage: true
                 }
             },
             telegramPlan: {
                 select: {
+                    id: true,
                     name: true,
                     channel: {
                         select: {

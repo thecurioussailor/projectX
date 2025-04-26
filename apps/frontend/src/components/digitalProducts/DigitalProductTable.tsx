@@ -34,7 +34,7 @@ const DigitalProductTable = () => {
         </div>
     }
   return (
-    <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
+    <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full shadow-lg overflow-clip shadow-purple-100">
             <div className="flex flex-col gap-4 w-full">
                 <div className="relative ml-8 mt-8">
                     <div className="absolute rounded-full bg-[#7E37D8] h-14 w-14 -top-6 -left-16"></div>
@@ -144,25 +144,25 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
                             <BsThreeDots size={20}/>
                     </button>
                     {showMenu && (
-                        <div className="absolute z-10 top-12 -right-16">
+                        <div className="absolute z-50 -top-24 -right-10 border border-gray-200 rounded-3xl">
                             <div className="flex flex-col rounded-3xl bg-white overflow-clip">
                             <button 
                                 onClick={() => {
                                     navigate(`/digital-products/${product.id}/edit`);
                                 }}
-                                className="text-zinc-800 flex items-center gap-2 hover:bg-purple-600 hover:text-white px-4 py-2"
+                                className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"
                             >
                                 <FaEdit size={15}/> Edit
                             </button>
                             {product.status === "ACTIVE" ? (
-                                <button className="text-zinc-800 flex items-center gap-2 hover:bg-purple-600 hover:text-white px-4 py-2"><FaEyeSlash size={15}/> Unpublish</button>
+                                <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"><FaEyeSlash size={15}/> Unpublish</button>
                             ): (
-                                <button className="text-zinc-800 flex items-center gap-2 hover:bg-purple-600 hover:text-white px-4 py-2"><FaEye size={15}/> Publish</button>
+                                <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"><FaEye size={15}/> Publish</button>
                             )}
                             
                             <button 
                                 onClick={() => setShowDeleteConfirm(product.id)}   
-                                className="text-zinc-800 flex items-center gap-2 hover:bg-purple-600 hover:text-white px-4 py-2"
+                                className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"
                             >
                                 <FaTrash size={15}/> Delete
                             </button>

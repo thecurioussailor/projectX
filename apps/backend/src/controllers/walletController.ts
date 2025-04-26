@@ -54,9 +54,22 @@ export const createWithdrawalRequest = async (req: Request, res: Response) => {
             return;
         }
 
+        const { amount } = req.body;    
+
+        if(!amount) {
+            res.status(400).json({
+                message: "Amount is required",
+                success: false
+            });
+            return;
+        }
+
         const user = await prismaClient.user.findUnique({
             where: {
-                id: userId
+                id: Number(userId)
+            },
+            include: {
+                kycDocuments: true
             }
         });
 
@@ -64,21 +77,23 @@ export const createWithdrawalRequest = async (req: Request, res: Response) => {
             res.status(404).json({
                 message: "User not found",
                 success: false
+            });
+            return;
+        }
+
+        const kycDocument = user.kycDocuments.find(document => document.status === 'APPROVED');
+
+        if(!kycDocument) {
+            res.status(400).json({
+                message: "KYC document not found",
+                success: false
             }); 
             return;
         }
 
-        const { amount } = req.body;    
-        if(!amount) {
-            res.status(400).json({
-                message: "Amount is required",
-                success: false
-            });
-        }
-        
         const wallet = await prismaClient.wallet.findUnique({
             where: {
-                userId: user.id
+                userId: Number(userId)
             }
         });
 
@@ -98,20 +113,115 @@ export const createWithdrawalRequest = async (req: Request, res: Response) => {
             return;
         }
 
-        const withdrawalRequest = await prismaClient.withdrawalRequest.create({
-            data: {
-                walletId: wallet.id,
-                amount: amount
-            }
+        const result = await prismaClient.$transaction(async (tx) => {
+            const withdrawalRequest = await tx.withdrawalRequest.create({
+                data: {
+                    walletId: wallet.id,
+                    amount: amount
+                }
+            });
+
+            await tx.wallet.update({
+                where: { id: wallet.id },
+                data: {
+                    totalBalance: { decrement: amount },
+                    withdrawableBalance: { decrement: amount },
+                    pendingBalance: { increment: amount }
+                }
+            });
+
+            return { withdrawalRequest, wallet };
         });
 
         res.status(200).json({
             success: true,
             message: "Withdrawal request created successfully",
-            data: withdrawalRequest
+            data: result.withdrawalRequest
         });
     } catch (error) {
         console.log("Error creating withdrawal request", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error
+        });
+    }
+}
+
+export const cancelWithdrawalRequest = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({ 
+                success: false,
+                message: "Unauthorized",
+            });
+            return;
+        }
+
+        const withdrawalRequest = await prismaClient.withdrawalRequest.findUnique({
+            where: {
+                id: id,
+                wallet: {
+                    userId: Number(userId)
+                }
+            },
+            include: {
+                wallet: true
+            }
+        });
+
+        if(!withdrawalRequest) {
+            res.status(404).json({
+                success: false,
+                message: "Withdrawal request not found or you don't have permission to cancel it",
+                
+            });
+            return;
+        }
+
+        // Check if the request is in a cancelable state
+        if (withdrawalRequest.status !== 'PENDING') {
+            res.status(400).json({
+                success: false,
+                message: `Cannot cancel a withdrawal request with status: ${withdrawalRequest.status}`
+            });
+            return;
+        }
+
+        const result = await prismaClient.$transaction(async (tx) => {
+            // Update the withdrawal request status to CANCELLED
+            const updatedRequest = await tx.withdrawalRequest.update({
+                where: { id: withdrawalRequest.id },
+                data: {
+                    status: "CANCELLED", // Need to add this to the enum
+                    adminNotes: "Cancelled by user",
+                    updatedAt: new Date()
+                }
+            });
+
+            // Return the funds to the withdrawable balance
+            const updatedWallet = await tx.wallet.update({
+                where: { id: withdrawalRequest.walletId },
+                data: {
+                    totalBalance: { increment: withdrawalRequest.amount },
+                    withdrawableBalance: { increment: withdrawalRequest.amount },
+                    pendingBalance: { decrement: withdrawalRequest.amount },
+                    lastUpdated: new Date()
+                }
+            });
+            return { withdrawalRequest: updatedRequest, wallet: updatedWallet };
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Withdrawal request cancelled successfully",
+            data: result.withdrawalRequest
+        });
+    } catch (error) {
+        console.log("Error cancelling withdrawal request", error);
         res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -226,8 +336,95 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
             });
         }
 
-        const withdrawableAmount = amount * 0.8;
-        const pendingAmount = amount * 0.2;
+        // Get current date
+        const currentDate = new Date();
+
+        const userSubscription = await prismaClient.userPlatformSubscription.findFirst({
+            where: {
+                userId: Number(userId),
+                status: 'ACTIVE',
+                endDate: {
+                    gte: currentDate
+                },
+                NOT: {
+                    platformPlan: {
+                        isDefault: true
+                    }
+                }
+            },
+            include: {
+                platformPlan: true
+            },
+            orderBy: {
+                // Prioritize non-default plans
+                platformPlan: {
+                    transactionFeePercentage: 'asc'
+                }
+            }
+        });
+
+        // If no active non-default subscription found, get the default plan
+        if (!userSubscription) {
+            const defaultSubscription = await prismaClient.userPlatformSubscription.findFirst({
+                where: {
+                    userId: Number(userId),
+                    status: 'ACTIVE',
+                    endDate: {
+                        gte: currentDate
+                    },
+                    platformPlan: {
+                        isDefault: true
+                    }
+                },
+                include: {
+                    platformPlan: true
+                }
+            });
+
+            if (!defaultSubscription) {
+                console.log("No active subscription found for user", userId);
+                return false;
+            }
+
+            // Use default plan fee percentage
+            const feePercentage = defaultSubscription.customFeePercentage || 
+                                 defaultSubscription.platformPlan.transactionFeePercentage;
+                                 
+            const platformFee = (amount * Number(feePercentage)) / 100;
+            const userAmount = amount - platformFee;
+            
+            const withdrawableAmount = userAmount;
+
+            await prismaClient.wallet.update({
+                where: {
+                    id: wallet.id
+                },
+                data: {
+                    totalBalance: {
+                        increment: userAmount
+                    },
+                    withdrawableBalance: {
+                        increment: withdrawableAmount
+                    },
+                    totalEarnings: {
+                        increment: userAmount
+                    },
+                    lastUpdated: new Date()
+                }
+            });
+            
+            return true;
+        }
+
+        // Use the active subscription's fee percentage
+        const feePercentage = userSubscription.customFeePercentage || 
+                             userSubscription.platformPlan.transactionFeePercentage;
+                             
+        const platformFee = (amount * Number(feePercentage)) / 100;
+        const userAmount = amount - platformFee;
+        
+        // Split user amount into withdrawable (80%) and pending (20%)
+        const withdrawableAmount = userAmount;
 
         await prismaClient.wallet.update({
             where: {
@@ -235,16 +432,13 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
             },
             data: {
                 totalBalance: {
-                    increment: amount
+                    increment: userAmount
                 },
                 withdrawableBalance: {
                     increment: withdrawableAmount
                 },
-                pendingBalance: {
-                    increment: pendingAmount
-                },
                 totalEarnings: {
-                    increment: amount
+                    increment: userAmount
                 },
                 lastUpdated: new Date()
             }

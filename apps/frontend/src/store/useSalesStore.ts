@@ -10,14 +10,18 @@ export interface Sale {
   productType: string;
   createdAt: string;
   user: {
+    id: string;
     username: string;
-    profileImage: string | null;
+    name: string;
+    email: string;
+    phone: string;
   };
   digitalProduct?: {
+    id: string;
     title: string;
-    coverImage: string | null;
   };
   telegramPlan?: {
+    id: string;
     name: string;
     channel: {
       channelName: string;

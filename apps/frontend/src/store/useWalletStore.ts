@@ -19,8 +19,14 @@ export interface WithdrawalRequest {
     walletId: string;
     amount: number;
     status: string;
-    createdAt: string;
+    paymentMethod: string;
+    paymentDetails: string;
+    adminNotes: string;
     processedAt: string | null;
+    processedBy: string | null;
+    transactionId: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface WalletState {

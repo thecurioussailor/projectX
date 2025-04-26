@@ -89,16 +89,16 @@ const Dashboard = () => {
           <RevenueChart />
         </div>
         <div className="flex flex-row gap-8 w-full">
-          <div className="w-2/3">
+          {stats.recentSales.length !== 0 && <div className="w-2/3">
             <RecentPurchases data={stats?.recentSales}/>
-          </div>
-          <div className="w-1/3">
+          </div>}
+          {stats.digitalProductStats._count === 0 || stats.telegramStats._count === 0 && <div className="w-1/3">
             <PiChartSales 
               total={Number(stats?.digitalProductStats?._count) + Number(stats?.telegramStats?._count)}
               digital={Number(stats?.digitalProductStats?._count)}
               telegram={Number(stats?.telegramStats?._count)}
             />
-          </div>
+          </div>}
         </div>
     </section>
   )

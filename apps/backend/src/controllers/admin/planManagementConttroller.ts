@@ -176,8 +176,7 @@ export const updateSubscriptionPlan = async (req: Request, res: Response): Promi
             });
             return;
         }
-        const { name, price, transactionFeePercentage, annualPrice, isCustom, 
-            maxDigitalProducts, maxTelegramSubscriptions, maxLinks, isDefault, 
+        const { name, price, transactionFeePercentage, annualPrice, isCustom, isDefault, 
             isActive, description } = req.body;
         
         // Check if plan exists

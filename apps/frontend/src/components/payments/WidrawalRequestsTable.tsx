@@ -1,7 +1,33 @@
+import { useState } from "react";
 import { useWallet } from "../../hooks/useWallet";
 import { WithdrawalRequest } from "../../store/useWalletStore";
+import Error from "../ui/Error";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import WithdrawalRequestSidePop from "./WithdrawalRequestSidePop";
 const WidrawalRequestsTable = () => {
-    const { withdrawalRequests } = useWallet();
+    const { withdrawalRequests, isLoading, error } = useWallet();
+    if (isLoading) {
+        return (
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
+
+    if (error) {
+        return (
+            <Error error={"error"} />
+        );
+    }
+
+    if (!withdrawalRequests || withdrawalRequests.length === 0) {
+        return (
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <p className="text-gray-600">No withdrawable request found</p>
+            </div>
+        );
+    }
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
             <div className="flex flex-col gap-4 w-full">
@@ -29,6 +55,7 @@ const WidrawalRequestsTable = () => {
                             <th className="w-1/12">Status</th>
                             <th className="w-1/12">Created</th>
                             <th className="w-1/12">Processed</th>
+                            <th className="w-1/12">Action</th>
 
                         </tr>
                     </thead>
@@ -46,6 +73,7 @@ const WidrawalRequestsTable = () => {
 export default WidrawalRequestsTable
 
 const WithdrawalRequestRow = ({ withdrawalRequest, index }: { withdrawalRequest: WithdrawalRequest, index: number }) => {
+    const [isSidePopOpen, setIsSidePopOpen] = useState(false);
     return (
         <tr className="border-t border-gray-200 h-20">
             <td className="pl-8">{index + 1}</td>
@@ -61,6 +89,14 @@ const WithdrawalRequestRow = ({ withdrawalRequest, index }: { withdrawalRequest:
                 month: "long",
                 year: "numeric"
             }) : "N/A"}</td>
+            <td>
+                <button 
+                onClick={() => setIsSidePopOpen(true)}
+                className="text-white bg-[#7e37d8] px-4 py-2 rounded-full">
+                    View
+                </button>
+                {isSidePopOpen && <WithdrawalRequestSidePop withdrawalRequest={withdrawalRequest} onClose={() => setIsSidePopOpen(false)} />}
+            </td>
         </tr>
     )
 }

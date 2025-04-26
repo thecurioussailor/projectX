@@ -50,45 +50,70 @@ export const useFeatureStore = create<FeatureState>((set, get) => ({
         set({ isLoading: true });
         try {
             const response = await api.get(`/api/v1/admin/platform-features/${planId}`);
-            set({ features: response.data.data });
+            set({ features: response.data.data,
+                isLoading: false,
+                error: null
+             });
         } catch (error) {
-            set({ error: error instanceof Error ? error.message : 'An unknown error occurred' });
+            set({ error: error instanceof Error ? error.message : 'An unknown error occurred',
+                isLoading: false
+             });
         }
     },
     fetchFeatureById: async (featureId: string) => {
         set({ isLoading: true });
         try {
             const response = await api.get(`/api/v1/admin/platform-features/feature/${featureId}`);
-            set({ currentFeature: response.data.data });
+            set({ currentFeature: response.data.data,
+                isLoading: false,
+                error: null
+            });
         } catch (error) {
-            set({ error: error instanceof Error ? error.message : 'An unknown error occurred' });
+            set({ error: error instanceof Error ? error.message : 'An unknown error occurred',
+                isLoading: false
+             });
         }
     },
     createFeature: async (featureData: Partial<Feature>, planId: string) => {
         set({ isLoading: true });
         try {
             const response = await api.post(`/api/v1/admin/platform-features/${planId}`, featureData);
-            set({ features: [...get().features, response.data.data] });
+            set({ features: [...get().features, response.data.data],
+                isLoading: false,
+                error: null
+             });
         } catch (error) {
-            set({ error: error instanceof Error ? error.message : 'An unknown error occurred' });
+            set({ error: error instanceof Error ? error.message : 'An unknown error occurred',
+                isLoading: false
+             });
         }
     },  
     updateFeature: async (featureId: string, featureData: Partial<Feature>) => {
         set({ isLoading: true });
         try {
             const response = await api.put(`/api/v1/admin/platform-features/feature/${featureId}`, featureData);
-            set({ features: get().features.map(feature => feature.id === featureId ? response.data.data : feature) });
+            set({ features: get().features.map(feature => feature.id === featureId ? response.data.data : feature),
+                isLoading: false,
+                error: null
+             });
         } catch (error) {
-            set({ error: error instanceof Error ? error.message : 'An unknown error occurred' });
+            set({ error: error instanceof Error ? error.message : 'An unknown error occurred',
+                isLoading: false
+             });
         }
     },
     deleteFeature: async (featureId: string) => {
         set({ isLoading: true });
         try {
-            await api.delete(`/api/v1/admin/platform-features/feature/${featureId}`);
-            set({ features: get().features.filter(feature => feature.id !== featureId) });
+            await api.delete(`/api/v1/admin/platform-features/${featureId}`);
+            set({ features: get().features.filter(feature => feature.id !== featureId),
+                isLoading: false,
+                error: null
+             });
         } catch (error) {
-            set({ error: error instanceof Error ? error.message : 'An unknown error occurred' });
+            set({ error: error instanceof Error ? error.message : 'An unknown error occurred',
+                isLoading: false
+             });
         }
     }       
 }));

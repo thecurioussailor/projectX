@@ -13,7 +13,7 @@ interface FormData {
   }
 
 const EditPlatformPlanForm = ({plan}: {plan: PlatformSubscriptionPlan}) => {
-    const { updatePlan } = usePlatformPlan();
+    const { updatePlan, isLoading } = usePlatformPlan();
     const [formData, setFormData] = useState<FormData>({
         name: plan.name,
         description: plan.description || '',
@@ -59,32 +59,90 @@ const EditPlatformPlanForm = ({plan}: {plan: PlatformSubscriptionPlan}) => {
            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2 w-full">
                 <label htmlFor="name">Name</label>
-                <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} />
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleChange} 
+                    className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                />
             </div>
             <div className="flex flex-col gap-2 w-full">
                 <label htmlFor="description">Description</label>
-                <textarea id="description" name="description" value={formData.description} onChange={handleChange} />
+                <textarea 
+                    id="description" 
+                    name="description" 
+                    value={formData.description} 
+                    onChange={handleChange} 
+                    className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                />
             </div>
             <div className="flex gap-2 w-full">
                 <div className="flex flex-col gap-2 w-full">
                     <label htmlFor="monthlyPrice">Monthly Price</label>
-                    <input type="number" id="monthlyPrice" name="monthlyPrice" value={formData.monthlyPrice} onChange={handleChange} />
+                    <input 
+                        type="number" 
+                        id="monthlyPrice" 
+                        name="monthlyPrice" 
+                        value={formData.monthlyPrice} 
+                        onChange={handleChange} 
+                        className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                    />
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     <label htmlFor="annualPrice">Annual Price</label>
-                    <input type="number" id="annualPrice" name="annualPrice" value={formData.annualPrice || ''} onChange={handleChange} />
+                    <input 
+                        type="number" 
+                        id="annualPrice" 
+                        name="annualPrice" 
+                        value={formData.annualPrice || ''} 
+                        onChange={handleChange} 
+                        className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                    />
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     <label htmlFor="transactionFeePercentage">Transaction Fee Percentage</label>
-                    <input type="number" id="transactionFeePercentage" name="transactionFeePercentage" value={formData.transactionFeePercentage} onChange={handleChange} />
+                    <input 
+                        type="number" 
+                        id="transactionFeePercentage" 
+                        name="transactionFeePercentage" 
+                        value={formData.transactionFeePercentage} 
+                        onChange={handleChange} 
+                        className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                    />
                 </div>
             </div>
             <div className="flex gap-2">
                 <label htmlFor="isActive">Is Active</label>
-                <input type="checkbox" id="isActive" name="isActive" checked={formData.isActive} onChange={handleChange} />
+                <input 
+                    type="checkbox" 
+                    id="isActive" 
+                    name="isActive" 
+                    checked={formData.isActive} 
+                    onChange={handleChange} 
+                    className=""
+                />
             </div>
             <div className="flex gap-2">
-                <button className="bg-[#7E37D8] text-white px-4 py-2 rounded-md" type="submit">Save</button>
+                <label htmlFor="isDefault">Is Default</label>
+                <input 
+                    type="checkbox" 
+                    id="isDefault" 
+                    name="isDefault" 
+                    checked={formData.isDefault} 
+                    onChange={handleChange} 
+                    className=""
+                />
+            </div>
+            <div className="flex gap-2">
+                <button 
+                    className="bg-[#7E37D8] text-white px-4 py-2 rounded-md" 
+                    type="submit"
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Saving...' : 'Save'}
+                </button>
             </div>
            </form>
         </div>

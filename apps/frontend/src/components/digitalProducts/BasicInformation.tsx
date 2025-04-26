@@ -122,7 +122,7 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
             <div className="flex flex-col gap-4">
                 <CoverImage productId={currentProduct.id} />
                 <Testimonials currentProduct={currentProduct} />
-                <Gallery />
+                <Gallery productId={currentProduct.id} />
                 <Faq currentProduct={currentProduct} productId={currentProduct.id} />
             </div>
         </div>

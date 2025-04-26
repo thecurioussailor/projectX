@@ -33,10 +33,10 @@ import AdminSettings from './admin/pages/AdminSettings'
 import AdminUserManagement from './admin/pages/AdminUserManagement'
 import AdminPlanManagement from './admin/pages/AdminPlanManagement'
 import AdminPayoutManagement from './admin/pages/AdminPayoutManagement'
-import AdminSupport from './admin/pages/AdminSupport'
 import LandingPage2 from './pages/LandingPage2'
 import UserDetails from './admin/pages/UserDetails'
 import AdminEditPlatformPlan from './admin/pages/AdminEditPlatformPlan'
+import AdminKyc from './admin/pages/AdminKyc'
 export default function App() {
   return (
     <AuthProvider>
@@ -94,7 +94,7 @@ export default function App() {
             <Route path="plan-management" element={<AdminPlanManagement />} />
             <Route path="plan-management/:id" element={<AdminEditPlatformPlan />} />
             <Route path="payout-management" element={<AdminPayoutManagement />} />
-            <Route path="support" element={<AdminSupport />} />
+            <Route path="kyc-documents" element={<AdminKyc />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           

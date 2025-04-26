@@ -36,7 +36,7 @@ const PurchasedItemsTable = () => {
         );
     }
 
-    if (!telegramSubscriptions || telegramSubscriptions.length === 0) {
+    if (telegramSubscriptions.length === 0 && digitalPurchases.length === 0) {
         return (
             <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
                 <p className="text-gray-600">No purchased items found</p>
@@ -66,6 +66,7 @@ const PurchasedItemsTable = () => {
                             <th className="w-1/12">Amount (INR)</th>
                             <th className="w-1/12">Purchase Date</th>
                             <th className="w-1/12">Expiry Date</th>
+                            <th className="w-1/12">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,8 +92,7 @@ const PurchasedItemRow = ({ item, index }: { item: PurchaseItem, index: number }
     };
     return (
         <tr 
-            onClick={handleRowClick}
-            className="border-t border-gray-200 h-20 hover:bg-gray-50 hover:cursor-pointer"
+            className="border-t border-gray-200 h-20 hover:bg-gray-50"
         >
             <td className="px-8">{index + 1}</td>
             <td>{isSub ? item.planName : item.product.title /* or a name prop */}</td>
@@ -109,6 +109,13 @@ const PurchasedItemRow = ({ item, index }: { item: PurchaseItem, index: number }
             <td>{isSub
           ? new Date(item.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric" })
           : "–"}</td>
+            <td>
+                <button 
+                    onClick={handleRowClick}
+                    className="flex items-center gap-2 bg-[#7F37D8] rounded-full text-white px-4 py-2">
+                    View
+                </button>
+            </td>
         </tr>
     );
 };

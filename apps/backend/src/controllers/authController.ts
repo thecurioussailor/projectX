@@ -35,6 +35,26 @@ export const signup = async (req: Request, res: Response) => {
     const userCount = await prismaClient.user.count();
     const role = userCount === 0 ? 'ADMIN' : 'USER';
 
+    const defaultPlan = await prismaClient.platformSubscriptionPlan.findFirst({
+      where: {
+        isActive: true,
+        isDefault: true
+      }
+    });
+
+    if (!defaultPlan) {
+      res.status(500).json({
+        success: false,
+        message: 'No default subscription plan found'
+      });
+      return;
+    }
+
+    //  Calculate end date (default to 30 days if monthly billing)
+    const startDate = new Date();
+    const farFutureDate = new Date(startDate);
+    farFutureDate.setFullYear(farFutureDate.getFullYear() + 100);
+
     const result = await prismaClient.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
@@ -49,6 +69,18 @@ export const signup = async (req: Request, res: Response) => {
           userId: newUser.id
         }
       });
+
+      await tx.userPlatformSubscription.create({
+        data: {
+          userId: newUser.id,
+          platformPlanId: defaultPlan.id,
+          endDate: farFutureDate,
+          currentPeriodStart: startDate,
+          currentPeriodEnd: farFutureDate,
+          billingCycle: 'LIFETIME', // Using LIFETIME billing cycle for infinite access
+          status: 'ACTIVE'
+        }
+      })
 
       return { newUser };
     });

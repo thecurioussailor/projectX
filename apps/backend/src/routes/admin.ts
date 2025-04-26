@@ -3,7 +3,7 @@ import * as adminController from "../controllers/adminController.js";
 import * as adminUserController from "../controllers/admin/userManagementController.js";
 import * as adminPlanManagementController from "../controllers/admin/planManagementConttroller.js";
 import { authenticate, authorizeAdmin } from "../middleware/auth.js";
-
+import * as adminKycController from "../controllers/admin/adminKycController.js";
 export const adminRouter = Router();
 
 adminRouter.post("/signin", adminController.adminSignin);
@@ -34,3 +34,8 @@ adminRouter.get("/platform-features/:planId", authenticate, authorizeAdmin, admi
 adminRouter.get("/platform-features/feature/:featureId", authenticate, authorizeAdmin, adminPlanManagementController.getPlatformSubscriptionPlanFeatureById);
 adminRouter.put("/platform-features/:featureId", authenticate, authorizeAdmin, adminPlanManagementController.updatePlatformSubscriptionPlanFeature);
 adminRouter.delete("/platform-features/:featureId", authenticate, authorizeAdmin, adminPlanManagementController.deletePlatformSubscriptionPlanFeature);
+
+//KYC Document Routes
+adminRouter.get("/kyc-documents", authenticate, authorizeAdmin, adminKycController.getAllKycDocuments);
+adminRouter.get("/kyc-documents/:documentId", authenticate, authorizeAdmin, adminKycController.getKycDocumentById);
+adminRouter.put("/kyc-documents/:documentId", authenticate, authorizeAdmin, adminKycController.updateKycDocumentStatus);

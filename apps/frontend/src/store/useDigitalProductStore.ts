@@ -163,7 +163,11 @@ interface DigitalProductState {
   //payment
   initiatePurchase: (productId: string, customAmount?: number) => Promise<PaymentSession>;
   handlePaymentCallback: (orderId: string, productType: string) => Promise<string>;
-  
+
+  //Gallery Image for Digital Product
+  getUploadGalleryUrl: (productId: string, fileName: string, fileType: string) => Promise<{uploadUrl: string, s3Key: string}>
+  uploadGalleryImage: (productId: string, s3Key: string) => Promise<void>
+  getGalleryImage: (productId: string) => Promise<GalleryImage[] | null>
 }
 
 const api = axios.create({
@@ -969,7 +973,7 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
   getCoverImage: async (productId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get(`/api/v1/digital-products/${productId}/coverImage`);
+      const response = await axios.get(`${BACKEND_URL}/api/v1/digital-products/${productId}/coverImage`);
       set({ isLoading: false });
       return response.data.data.url;
     } catch (error) {
@@ -1020,6 +1024,56 @@ export const useDigitalProductStore = create<DigitalProductState>((set, get) => 
       });
       throw error;
     }
+  },
+
+  //Gallery Image for Digital Product
+  getUploadGalleryUrl: async (productId: string, fileName: string, fileType: string) => {
+    set({ isLoading: true, error: null });
+    try { 
+      const response = await api.post(`/api/v1/digital-products/${productId}/galleryUrl`, {
+        fileName,
+        fileType
+      });
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get gallery upload URL', 
+        isLoading: false 
+      });
+      throw error;
+    } 
+  },
+
+  uploadGalleryImage: async (productId: string, s3Key: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/api/v1/digital-products/${productId}/uploadGalleryImage`, { 
+        s3Key
+      });
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to upload gallery image',  
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  getGalleryImage: async (productId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/v1/digital-products/${productId}/galleryImage`);
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get gallery image', 
+        isLoading: false 
+      });
+      return null;
+    }
   }
-  
 })); 

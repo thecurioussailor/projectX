@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Bali from "../assets/images/bali.jpg";
 import { useDigitalProduct } from "../hooks/useDigitalProduct";
 import { useEffect, useState } from "react";
-import { PublicDigitalProduct, Testimonial } from "../store/useDigitalProductStore";
+import { GalleryImage, PublicDigitalProduct, Testimonial } from "../store/useDigitalProductStore";
 import { useAuth } from "../hooks/useAuth";
 import FaqCard from "../components/ui/FaqCard";
 import { FaStar } from "react-icons/fa";
@@ -17,6 +17,7 @@ const PublicDigitalProductPage = () => {
     getCoverImage, 
     initiatePurchase, 
     handlePaymentCallback,
+    getGalleryImage,
     isLoading,
     error 
   } = useDigitalProduct();
@@ -25,6 +26,7 @@ const PublicDigitalProductPage = () => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState<number>(0);
   const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -45,6 +47,13 @@ const PublicDigitalProductPage = () => {
           if (product?.id) {
             const coverImage = await getCoverImage(product.id);
             setCoverImage(coverImage);
+            }
+
+          // Get gallery images
+          if (product?.id) {
+            const galleryImagesArray = await getGalleryImage(product.id);
+            console.log(galleryImagesArray);
+            setGalleryImages(galleryImagesArray || []);
           }
         }
       } catch (err) {
@@ -168,10 +177,9 @@ const PublicDigitalProductPage = () => {
             <div className="flex flex-col gap-6">
               <p className="text-zinc-900 font-semibold text-2xl">Gallery</p>
               <div className="grid grid-cols-2 gap-4">
-                <img src={Bali} alt="Digital Product" className="w-full h-full rounded-md" />
-                <img src={Bali} alt="Digital Product" className="w-full h-full rounded-md" />
-                <img src={Bali} alt="Digital Product" className="w-full h-full rounded-md" />
-                <img src={Bali} alt="Digital Product" className="w-full h-full rounded-md" />
+                {galleryImages.map((image) => (
+                  <img key={image.id} src={image.imageUrl} alt="Digital Product" className="w-full h-full rounded-md" />
+                ))}
               </div>
             </div>
             <div className="flex flex-col gap-2">

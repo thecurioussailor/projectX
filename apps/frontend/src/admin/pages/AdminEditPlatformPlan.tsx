@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { usePlatformPlan } from "../hooks/usePlatformPlan";
 import { useEffect } from "react";
 import EditPlatformPlanForm from "../components/planManagement/EditPlatformPlanForm";
+import CreatePlanFeature from "../components/planManagement/CreatePlanFeature";
 const AdminEditPlatformPlan = () => {
     const { id } = useParams();
     const { currentPlan, fetchPlanById } = usePlatformPlan();
@@ -34,6 +35,10 @@ const AdminEditPlatformPlan = () => {
                 <div className="flex flex-col gap-4 pb-10 pt-10 px-12 border-t border-gray-200">
                     {currentPlan && <EditPlatformPlanForm plan={currentPlan} />}
                 </div>
+                <div className="flex flex-col gap-4 pb-10 pt-10 px-12">
+                    {currentPlan && <CreatePlanFeature plan={currentPlan} />}
+                </div>
+            
             </div>
     </div>
 </section>

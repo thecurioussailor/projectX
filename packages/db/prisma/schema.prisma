@@ -29,7 +29,7 @@ model User {
   isBanned          Boolean    @default(false)
   createdAt         DateTime   @default(now())
   wallet            Wallet?
-
+  kycDocument       KycDocument?
   telegramAccounts            TelegramAccount[]
   products                    DigitalProduct[]
   orders                      Order[]
@@ -43,6 +43,38 @@ model User {
 enum Role {
   USER
   ADMIN
+}
+
+model KycDocument {
+  id              String                @id @default(cuid())
+  userId          Int                   @unique
+  user            User                  @relation(fields: [userId], references: [id])
+  documentType    DocumentType
+  documentNumber  String
+  documentName    String
+  s3Key           String                // S3 key for file management
+  status          KycDocumentStatus     @default(PENDING)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
+enum DocumentType {
+  PAN
+  PASSPORT
+  DRIVERS_LICENSE
+  NATIONAL_ID
+  VOTER_ID
+  TAX_ID
+  UTILITY_BILL
+  BANK_STATEMENT
+  OTHER
+}
+
+enum KycDocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RESUBMIT_REQUESTED
 }
 
 model Wallet {
@@ -89,6 +121,7 @@ enum WithdrawalStatus {
   APPROVED
   REJECTED
   PAID
+  CANCELLED
 }
 
 model WithdrawalTransaction {

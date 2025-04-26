@@ -95,6 +95,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                         name="price" 
                         value={formData.price}
                         onChange={(e) => setFormData({...formData, price: e.target.value})}
+                        min={1}
                     />
                 </div>
                 {formData.priceType === "FIXED" && (
@@ -106,7 +107,9 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                             id="discountedPrice" 
                             name="discountedPrice" 
                             value={formData.discountedPrice}
-                            onChange={(e) => setFormData({...formData, discountedPrice: e.target.value})}
+                            onChange={(e) => setFormData({...formData, hasDiscount: true, discountedPrice: e.target.value})}
+                            min={1}
+                            max={formData.price}
                         />
                     </div>
                 )}

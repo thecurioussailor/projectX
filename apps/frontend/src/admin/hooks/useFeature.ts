@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useAdminAuth } from "../context/AdminAuthContext"
 import { Feature, useFeatureStore } from "../store/useFeatureStore"
-export const useFeature = () => {
+export const useFeature = (planId: string) => {
     const { token } = useAdminAuth();
     
     const {
@@ -50,6 +50,10 @@ export const useFeature = () => {
         };
         return deleteFeatureStore(featureId);
     }, [token, deleteFeatureStore]);
+
+    useEffect(() => {
+        fetchAllFeatures(planId);
+    }, [fetchAllFeatures, planId]);
 
     return {
         features,

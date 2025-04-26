@@ -1,6 +1,8 @@
 import { IoHomeOutline, IoSettingsOutline } from "react-icons/io5"; 
 import { Link, useLocation } from "react-router-dom";
 import { useAdminSidebar } from "../context/AdminSidebarContext";
+import { FaRegUser } from "react-icons/fa";
+import { CiMoneyCheck1 } from "react-icons/ci";
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -8,10 +10,10 @@ const AdminSidebar = () => {
   
   const sidebarItems = [
     { name: 'Dashboard', icon: <IoHomeOutline size={20}/>, path: '/admin/dashboard' },
-    { name: 'Users', icon: <IoSettingsOutline size={20}/>, path: '/admin/user-management' },
+    { name: 'Users', icon: <FaRegUser size={20}/>, path: '/admin/user-management' },
     { name: 'Plans', icon: <IoSettingsOutline size={20}/>, path: '/admin/plan-management' },
-    { name: 'Payouts', icon: <IoSettingsOutline size={20}/>, path: '/admin/payout-management' },
-    { name: 'Support', icon: <IoSettingsOutline size={20}/>, path: '/admin/support' },
+    { name: 'Payouts', icon: <CiMoneyCheck1 size={20}/>, path: '/admin/payout-management' },
+    { name: 'KYC', icon: <CiMoneyCheck1 size={20}/>, path: '/admin/kyc-documents' },
     { name: 'Settings', icon: <IoSettingsOutline size={20}/>, path: '/admin/settings' }
   ];
 

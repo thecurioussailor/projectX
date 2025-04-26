@@ -85,7 +85,12 @@ export const useDigitalProduct = () => {
 
         //payments
         initiatePurchase: storeInitiatePurchase,
-        handlePaymentCallback: storeHandlePaymentCallback
+        handlePaymentCallback: storeHandlePaymentCallback,
+
+        //Gallery Image Methods
+        getUploadGalleryUrl: storeGetUploadGalleryUrl,
+        uploadGalleryImage: storeUploadGalleryImage,
+        getGalleryImage: storeGetGalleryImage
     } = useDigitalProductStore();
 
     // Helper for complete file upload process
@@ -362,11 +367,8 @@ export const useDigitalProduct = () => {
     }, [token, storeUploadCoverImage]);
     
     const getCoverImage = useCallback(async (productId: string) => {
-        if (!token) {
-            throw new Error('You must be logged in to get cover image');
-        }
         return storeGetCoverImage(productId);
-    }, [token, storeGetCoverImage]);
+    }, [storeGetCoverImage]);
 
 
     const initiatePurchase = useCallback(async (productId: string, customAmount?: number) => {
@@ -382,6 +384,64 @@ export const useDigitalProduct = () => {
     }
     return storeHandlePaymentCallback(orderId, productType);
     }, [token, storeHandlePaymentCallback]);
+
+    //Gallery Image Methods with authentication check
+    const getUploadGalleryUrl = useCallback(async (productId: string, fileName: string, fileType: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to get gallery upload URL');
+        }
+        return storeGetUploadGalleryUrl(productId, fileName, fileType);
+    }, [token, storeGetUploadGalleryUrl]);  
+
+    const uploadGalleryImage = useCallback(async (productId: string, s3Key: string) => {
+        if (!token) {
+            throw new Error('You must be logged in to upload a gallery image');
+        }
+        return storeUploadGalleryImage(productId, s3Key);
+    }, [token, storeUploadGalleryImage]);   
+
+    const uploadGallery = async (productId: string, file: File) => {
+        try {
+            console.log("uploadFile", productId, file);
+            const mimeType = getFileType(file.type);
+            if(mimeType !== "IMAGE"){
+                throw new Error('File Type must be Image')  
+            }
+            const { uploadUrl, s3Key } = await getUploadGalleryUrl(
+                productId,
+                file.name,
+                mimeType
+            );
+
+            // Step 2: Upload file to S3
+            await uploadFileToS3(uploadUrl, file);
+
+            // Step 3: Upload file to database
+            await uploadGalleryImage(productId, s3Key);
+
+            // Return the gallery image URL
+            return await getGalleryImage(productId);
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            throw error;
+        }
+    }
+    const getGalleryImage = useCallback(async (productId: string) => {
+        try {
+            const result = await storeGetGalleryImage(productId);
+            return result;
+        } catch (error) {
+            // If the error is just "No gallery images found", return an empty array instead of throwing
+            if (error instanceof Error && 
+                (error.message.includes("No gallery images found") || 
+                 (typeof error.message === 'string' && error.message.includes('"success":false,"message":"No gallery images found"')))) {
+                console.log("No gallery images found, returning empty array");
+                return [];
+            }
+            // For other errors, rethrow
+            throw error;
+        }
+    }, [storeGetGalleryImage]);
 
     return {
         // State
@@ -441,6 +501,12 @@ export const useDigitalProduct = () => {
 
         //payments
         initiatePurchase,
-        handlePaymentCallback
+        handlePaymentCallback,
+
+        //Gallery Image Methods
+        uploadGallery,
+        getUploadGalleryUrl,
+        uploadGalleryImage,
+        getGalleryImage
     };
 };

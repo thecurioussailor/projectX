@@ -13,6 +13,7 @@ import { digitalFileRouter } from "./digitalFile.js";
 import { walletRouter } from "./wallet.js";
 import { adminRouter } from "./admin.js";
 import { platformSubsriptionRouter } from "./platformSubscription.js";
+import { kycRouter } from "./kyc.js";
 export const router = Router();
 
 router.use("/auth", authRouter);
@@ -27,6 +28,7 @@ router.use("/sales", salesRouter);
 router.use("/transactions", transactionRouter);
 router.use("/digital-files", digitalFileRouter);
 router.use("/wallet", walletRouter);
+router.use("/kyc", kycRouter);
 router.use("/admin", adminRouter);
 router.use("/platform-subscriptions", platformSubsriptionRouter);
 

@@ -5,6 +5,7 @@ export const walletRouter = Router();
 
 walletRouter.get("/", authenticate, walletController.getUserWallet);
 walletRouter.post("/withdraw", authenticate, walletController.createWithdrawalRequest);
+walletRouter.post("/cancel-withdrawal/:id", authenticate, walletController.cancelWithdrawalRequest);
 walletRouter.get("/withdrawals", authenticate, walletController.getWithdrawalRequests);
 walletRouter.get("/transactions", authenticate, walletController.getWalletTransactions);
 

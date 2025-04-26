@@ -1,10 +1,33 @@
 import { useSales } from "../../hooks/useSales";
 import { Sale } from "../../store/useSalesStore";
-
+import Error from "../ui/Error";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import { useState } from "react";
+import SaleSidePop from "./SaleSidePop";
 const SalesTable = () => {
     const { sales, isLoading, error } = useSales();
-    if (isLoading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (isLoading) {
+        return (
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
+
+    if (error) {
+        return (
+            <Error error={"error"} />
+        );
+    }
+
+    if (!sales || sales.length === 0) {
+        return (
+            <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
+                <p className="text-gray-600">No sale till now</p>
+            </div>
+        );
+    }
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
             <div className="flex flex-col gap-4 w-full">
@@ -22,11 +45,12 @@ const SalesTable = () => {
                     <thead className=" border-gray-300 h-20">
                         <tr className="border-t border-gray-200 text-[#1B3155]">
                             <th className="w-1/12 px-8">#</th>
-                            <th className="w-3/12">Item Name</th>
+                            <th className="w-2/12">Item Name</th>
                             <th className="w-2/12">Item Type</th>
-                            <th className="w-2/12">Price(INR)</th>
-                            <th className="w-2/12">Date</th>
-                            <th className="w-2/12">Customer Username</th>
+                            <th className="w-1/12">Price(INR)</th>
+                            <th className="w-1/12">Date</th>
+                            <th className="w-2/12">Username</th>
+                            <th className="w-1/12">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,6 +67,7 @@ const SalesTable = () => {
 export default SalesTable
 
 const SalesTableRow = ({sale, index}: {sale: Sale, index: number}) => {
+    const [isSidePopOpen, setIsSidePopOpen] = useState(false);
     return (
         <tr className="border-t border-gray-200 h-20 text-[#1B3155]">
             <td className="px-8">{index + 1}</td>
@@ -51,6 +76,14 @@ const SalesTableRow = ({sale, index}: {sale: Sale, index: number}) => {
             <td>{sale.amount}</td>
             <td>{new Date(sale.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}</td>
             <td className="text-[#158DF7] font-semibold">{sale.user.username}</td>
+            <td>
+                <button 
+                onClick={() => setIsSidePopOpen(true)}
+                className="text-white bg-[#7e37d8] px-4 py-2 rounded-full">
+                    View
+                </button>
+                {isSidePopOpen && <SaleSidePop sale={sale} onClose={() => setIsSidePopOpen(false)} />}
+            </td>
         </tr>
     )
 }
