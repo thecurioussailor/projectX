@@ -39,11 +39,11 @@ const Dashboard = () => {
   }
 
   return (
-    <section className="flex flex-col gap-8">
+    <section className="flex flex-col gap-8 pb-8">
         <div className="flex justify-between gap-4">
             <h1 className="text-3xl font-bold text-[#7F37D8]">Dashboard</h1>
         </div>
-        <div className="grid grid-cols-4 justify-between gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 justify-items-center gap-4">
           <TotalSaleCard 
             amount={formatCurrency(Number(stats?.digitalProductStats?._sum?.amount) + Number(stats?.telegramStats?._sum?.amount))} 
             gradient="bg-gradient-to-r from-fuchsia-500 to-purple-600" 
@@ -85,15 +85,15 @@ const Dashboard = () => {
             title={"Click Count"}
           />
         </div>
-        <div>
+        <div className="w-full">
           <RevenueChart />
         </div>
-        <div className="flex flex-row gap-8 w-full">
-          {stats.recentSales.length !== 0 && <div className="w-2/3">
+        <div className="flex flex-col lg:flex-row gap-8 w-full">
+          {stats.recentSales.length !== 0 && <div className="w-full lg:w-2/3">
             <RecentPurchases data={stats?.recentSales}/>
           </div>}
 
-          {(stats.digitalProductStats._count || stats.telegramStats._count) && <div className="w-1/3">
+          {(stats.digitalProductStats._count || stats.telegramStats._count) && <div className="w-full lg:w-1/3">
             <PiChartSales 
               total={Number(stats?.digitalProductStats?._count) + Number(stats?.telegramStats?._count)}
               digital={Number(stats?.digitalProductStats?._count)}

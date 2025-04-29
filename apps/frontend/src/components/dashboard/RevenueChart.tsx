@@ -29,6 +29,7 @@ export const options = {
     },
   },
   responsive: true,
+  maintainAspectRatio: false,
   scales: {
     x: {
       stacked: true,
@@ -76,7 +77,7 @@ const RevenueChart = () => {
   };
 
   return (
-    <div className="w-full bg-white rounded-[3rem] p-8 overflow-clip shadow-lg shadow-purple-100">
+    <div className="w-full bg-white rounded-[3rem] p-8 overflow-clip shadow-lg shadow-purple-100 h-min-fit">
         <div className="relative">
             <div className="absolute rounded-full bg-[#7E37D8] h-14 w-14 -top-6 -left-16"></div>
             <div className="absolute rounded-full bg-[#7E37D8] h-1 w-1 top-2 left-4"></div>
@@ -87,7 +88,7 @@ const RevenueChart = () => {
         </div>
         <div className="p-4 px-6">
             <h1 className="font-bold text-xl">Revenue Statistics</h1>
-            <div>
+            <div className="w-full h-64 lg:h-96">
               <Bar options={options} data={data} />
             </div>
         </div>

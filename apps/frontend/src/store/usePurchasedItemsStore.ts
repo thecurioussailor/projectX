@@ -26,6 +26,10 @@ export interface DigitalPurchase {
     files?: DigitalFile[];     // Optional files property for downloaded files
 }
 
+export interface TelegramSubscription extends TelegramSubscription {
+    inviteLink: string;
+}
+
 export type PurchaseItem = TelegramSubscription | DigitalPurchase;
 interface PurchasedItemsState {
     telegramSubscriptions: TelegramSubscription[];

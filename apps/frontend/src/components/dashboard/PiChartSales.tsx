@@ -38,12 +38,13 @@ const PiChartSales = ({total, digital, telegram}: { total: number, digital: numb
           </div>
           <div className="p-4 px-6 flex flex-col gap-4">
               <h1 className="font-bold text-xl">Sales</h1>
-              <div>
+              <div className="w-full flex flex-col justify-center items-center h-64 lg:h-96 gap-4">
                 <Pie 
                     data={data}
                 />
+                <h1 className="text-sm text-gray-500">Total: {total}</h1>
               </div>
-              <h1>Total: {total}</h1>
+              
           </div>
       </div>
   )

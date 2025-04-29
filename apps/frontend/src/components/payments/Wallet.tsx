@@ -31,7 +31,7 @@ const Wallet = () => {
                     <div>
                         <button 
                             onClick={() => setShowWithdrawalRequest(true)}
-                            className="bg-purple-500 text-white px-6 py-2 rounded-3xl">
+                            className="bg-[#7E37D8] text-white px-6 py-2 rounded-3xl">
                                 Withdraw
                         </button>
                         {showWithdrawalRequest && <CreateWithdrawalRequest onClose={() => setShowWithdrawalRequest(false)} />}

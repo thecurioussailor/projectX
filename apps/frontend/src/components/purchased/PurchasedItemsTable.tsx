@@ -4,6 +4,7 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import { PurchaseItem } from "../../store/usePurchasedItemsStore";
 import { useNavigate } from "react-router-dom";
+import PurchasedItemSidePop from "./PurchasedItemSidePop";
 const PurchasedItemsTable = () => {
     const { telegramSubscriptions, digitalPurchases, isLoading, error, getPurchasedItems } = usePurchasedItems();
     const [ purchasedItems, setPurchasedItems] = useState<PurchaseItem[]>([]);
@@ -83,6 +84,7 @@ const PurchasedItemsTable = () => {
 const PurchasedItemRow = ({ item, index }: { item: PurchaseItem, index: number }) => {
     const isSub = "planName" in item;
     const navigate = useNavigate(); 
+    const [isSidePopOpen, setIsSidePopOpen] = useState(false);
     const handleRowClick = () => {
         if (isSub) {
             window.open(item.inviteLink, "_blank", "noopener,noreferrer");
@@ -111,10 +113,11 @@ const PurchasedItemRow = ({ item, index }: { item: PurchaseItem, index: number }
           : "–"}</td>
             <td>
                 <button 
-                    onClick={handleRowClick}
+                    onClick={() => setIsSidePopOpen(true)}
                     className="flex items-center gap-2 bg-[#7F37D8] rounded-full text-white px-4 py-2">
                     View
                 </button>
+                {isSidePopOpen && <PurchasedItemSidePop purchasedItem={item} onClose={() => setIsSidePopOpen(false)} isSub={isSub} handle={() => handleRowClick()}/>}
             </td>
         </tr>
     );

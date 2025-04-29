@@ -2,7 +2,7 @@ import { IoCloseOutline } from "react-icons/io5"
 import { useState } from "react";
 import { useWallet } from "../../hooks/useWallet";
 const CreateWithdrawalRequest = ({ onClose }: { onClose: () => void }) => {
-    const [amount, setAmount] = useState(0);
+    const [amount, setAmount] = useState<number>(0);
     const { createWithdrawalRequest } = useWallet();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -27,12 +27,13 @@ const CreateWithdrawalRequest = ({ onClose }: { onClose: () => void }) => {
                     type="number" 
                     id="amount" 
                     value={amount} 
+                    min={1}
                     onChange={(e) => setAmount(Number(e.target.value))} 
                     className="border border-gray-300 rounded-md p-2"
                 />
                 <button 
                 type="submit"
-                className="bg-purple-500 text-white px-6 py-2 rounded-3xl">
+                className="bg-[#7E37D8] text-white px-6 py-2 rounded-3xl">
                     Create
             </button>
             </form>

@@ -3,16 +3,16 @@ import { RecentSale } from "./RecentPurchases";
 
 const RecentPurchaseTable = ({data}: {data: RecentSale[]}) => {
   return (
-    <div>
-        <table className="w-full">
+    <div className="overflow-x-scroll lg:overflow-x-hidden">
+        <table className="w-full min-w-max lg:min-w-full">
             <thead>
-                <th className="w-1/12"></th>
-                <th className="w-1/12"></th>
-                <th className="w-1/12"></th>
-                <th className="w-2/12"></th>
-                <th className="w-1/12"></th>
+                <th className="w-1/6"></th>
+                <th className="w-1/6"></th>
+                <th className="w-1/6"></th>
+                <th className="w-1/6"></th>
+                <th className="w-1/6"></th>
             </thead>
-            <tbody>
+            <tbody className="overflow-x-scroll">
                 {data.map((item, index) => (
                     <TableRow key={index} item={item}/>
                 ))} 
