@@ -5,7 +5,7 @@ import { FaChartLine, FaTelegram, FaProductHunt } from "react-icons/fa";
 import { FaLink } from "react-icons/fa";
 import { IoHomeOutline, IoPeopleOutline, IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const MobileNav = () => {
     const sidebarItems = [
@@ -23,6 +23,7 @@ const MobileNav = () => {
     ]
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
     const menuRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -61,10 +62,10 @@ const MobileNav = () => {
                 {isMenuOpen && (
                     <div className="absolute bottom-full -left-44 bg-white shadow-md w-48 rounded-lg p-4 flex flex-col gap-4">
                         {menuItems.map((item) => (
-                            <Link to={item.path} key={item.name} className="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg">
+                            <button onClick={() => {navigate(item.path); setIsMenuOpen(false)}} key={item.name} className="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg">
                                 {item.icon}
                                 <span className="text-sm">{item.name}</span>
-                            </Link> 
+                            </button> 
                         ))}
                     </div>
                 )}

@@ -11,8 +11,9 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const { uploadFile, deleteFile } = useDigitalProduct();
+    const { uploadFile, deleteFile, fetchProductById } = useDigitalProduct();
     const dropRef = useRef<HTMLDivElement>(null);
+    // const [currentFiles, setCurrentFiles] = useState<DigitalProduct[]>([]);
 
     useEffect(() => {
         console.log("Uploading product with ID:", currentProduct.id);
@@ -90,6 +91,8 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
             setSuccess(true);
             setFile(null);
             
+            await fetchProductById(currentProduct.id);
+           
             // Reset progress after 1 second
             setTimeout(() => {
                 setUploadProgress(0);

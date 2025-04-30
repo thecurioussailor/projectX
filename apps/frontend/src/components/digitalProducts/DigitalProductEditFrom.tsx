@@ -3,30 +3,15 @@ import BasicInformation from "./BasicInformation";
 import UploadProduct from "./UploadProduct";
 import PublishProduct from "./PublishProduct";
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
-import LoadingSpinner from "../ui/LoadingSpinner";
 
 const DigitalProductEditFrom = ({ productId }: { productId: string }) => {
     const [activeTab, setActiveTab] = useState("basic");
-    const { currentProduct, isLoading, error, fetchProductById } = useDigitalProduct();
+    const { currentProduct, fetchProductById } = useDigitalProduct();
 
     useEffect(() => {
         console.log("Fetching product with ID:", productId);
         fetchProductById(productId);
     }, [productId, fetchProductById]);
-
-    if (isLoading) {
-        return (
-            <LoadingSpinner size="lg" />
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-red-500">Error: {error}</div>
-            </div>
-        );
-    }
 
     if (!currentProduct) {
         return (

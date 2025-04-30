@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useAuthStore, User } from '../store/useAuthStore';
 
 interface AuthContextType {
@@ -17,9 +17,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     token, 
     isAuthenticated, 
     setToken, 
+    loadUser,
     logout: zustandLogout 
   } = useAuthStore();
 
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
   const login = (userData: { user: User; token: string }) => {
     // Use the token setter from zustand
     setToken(userData.token);

@@ -120,12 +120,10 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                 </button>
             </form>
             <div className="flex flex-col gap-4">
-                <CoverImage productId={currentProduct.id} />
-                <div className="flex flex-col gap-4">
-                    <Testimonials currentProduct={currentProduct} />
-                    <Gallery productId={currentProduct.id} />
-                    <Faq currentProduct={currentProduct} productId={currentProduct.id} />
-                </div>
+                <CoverImage productId={currentProduct.id}/>
+                <Testimonials currentProduct={currentProduct}/>
+                <Gallery productId={currentProduct.id}/>
+                <Faq currentProduct={currentProduct} productId={currentProduct.id}/>
             </div>
         </div>
     </div>

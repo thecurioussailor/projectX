@@ -18,6 +18,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   
+  loadUser: () => Promise<void>;
   // Auth actions
   signin: (username: string, password: string, loginMethod: 'email' | 'phone') => Promise<boolean>;
   signup: (email: string, phone: string, password: string) => Promise<boolean>;
@@ -36,6 +37,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false,
   error: null,
 
+  loadUser: async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/v1/users/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        set({ 
+          user: response.data.data,
+          isAuthenticated: true
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load user:', error);
+      // If token is invalid, clear it
+      localStorage.removeItem('token');
+      set({ user: null, token: null, isAuthenticated: false });
+    }
+  },
   // Sign in function
   signin: async (username: string, password: string, loginMethod: 'email' | 'phone') => {
     set({ isLoading: true, error: null });

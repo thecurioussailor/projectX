@@ -36,7 +36,7 @@ const ProfileEdit = ({ setOpenEditDialog }: { setOpenEditDialog: (open: boolean)
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex justify-center items-center">
+    <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center p-2">
       <div className="bg-white w-full md:w-2/3 lg:w-1/2 rounded-3xl pb-8 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between sticky top-0 bg-white z-10">
             <h2 className="text-2xl p-6 py-8 border-b border-gray-200">Edit Profile</h2>

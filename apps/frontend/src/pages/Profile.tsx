@@ -40,12 +40,12 @@ const Profile = () => {
         <h1 className="text-3xl font-bold text-[#7F37D8]"> Profile </h1>
       </div>
       <div className="flex relative justify-between">
-        <div className="w-full h-96 rounded-t-lg bg-gray-100 flex items-center justify-center">
+        <div className="w-full h-48 lg:h-96 rounded-t-lg bg-gray-100 flex items-center justify-center">
           {coverPictureUrl ? (
             <img 
               src={coverPictureUrl} 
               alt="Cover" 
-              className="w-full h-96 rounded-t-lg object-cover object-center" 
+              className="w-full h-48 lg:h-96 rounded-t-lg object-cover object-center" 
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = ''; // Clear the broken image
@@ -90,8 +90,8 @@ const Profile = () => {
           <p className="text-sm text-gray-500">{profile.role}</p>
         </div>
       </div>
-      <div className="flex justify-between gap-4 pt-6 pb-12 px-6 border-b border-[#E0E0E0]">
-        <div className="flex gap-4">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 pt-32 lg:pt-6 pb-20 md:pb-12 px-6 border-b border-[#E0E0E0]">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div>
             <h3 className="text-xs text-[#898989]">Email</h3>
             <p className="text-sm text-gray-500">{profile.email}</p>
@@ -101,10 +101,10 @@ const Profile = () => {
             <p className="text-sm text-gray-500">{profile.phone || 'Not provided'}</p>
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div>
-            <h3 className="text-xs text-[#898989]">Contact</h3>
-            <p className="text-sm text-gray-500">{profile.phone || 'Not provided'}</p>
+            <h3 className="text-xs text-[#898989]">Username</h3>
+            <p className="text-sm text-gray-500">{profile.username || 'Not provided'}</p>
           </div>
           <div>
             <h3 className="text-xs text-[#898989]">Location</h3>

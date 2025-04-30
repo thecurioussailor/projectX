@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTelegram } from "../../hooks/useTelegram";
 import { TelegramChannel } from "../../store/useTelegramStore";
+import { FaTrash } from "react-icons/fa";
 
 interface Plan {
   name: string;
@@ -17,7 +18,7 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
   const [planName, setPlanName] = useState("");
   const [planPrice, setPlanPrice] = useState("");
   const [planDuration, setPlanDuration] = useState("");
-  const { createPlan, fetchPlans, isLoading, error, plans } = useTelegram();
+  const { createPlan, fetchPlans, deletePlan, isLoading, error, plans } = useTelegram();
   
   useEffect(() => {
     // Fetch plans when component mounts
@@ -54,6 +55,16 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       console.error("Error creating plan:", error);
     }
   };
+
+  const handleDeletePlan = async (planId: string) => {
+    try {
+      await deletePlan(planId);
+      // Refresh plans after deletion
+      fetchPlans(channel.id);
+    } catch (error) {
+      console.error("Error deleting plan:", error);
+    }
+  };
   
   return (
     <div className="flex flex-col gap-4">
@@ -68,13 +79,19 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       {plans && plans.length > 0 && (
         <div className="mb-4">
           <h4 className="text-md font-medium mb-2">Current Plans:</h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="space-y-2 max-h-24 md:max-h-48 overflow-y-auto">
             {plans.map((plan, index) => (
               <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <div>
                   <p className="font-medium">{plan.name}</p>
                   <p className="text-sm">{plan.price} INR / {plan.duration} days</p>
                 </div>
+                <button
+                  onClick={() => handleDeletePlan(plan.id)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTrash />
+                </button>
               </div>
             ))}
           </div>
@@ -118,16 +135,19 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
         <label className="text-sm font-medium text-gray-700" htmlFor="plan-duration">
           Duration (days)
         </label>
-        <input
-          type="number"
+        <select
           id="plan-duration"
           value={planDuration}
           onChange={(e) => setPlanDuration(e.target.value)}
-          placeholder="e.g. 30, 365"
-          min="1"
           className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
-          required
-        />
+        >
+          <option value="1">1 day</option>
+          <option value="7">1 week</option>
+          <option value="15">15 days</option>
+          <option value="30">1 month</option>
+          <option value="365">1 year</option>
+          <option value="730">2 years</option>
+        </select>
       </div>
       
       {error && <p className="text-red-500 text-sm">{error}</p>}

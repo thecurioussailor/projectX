@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 import userImage from "../assets/images/profileprojectx.png";
 import logo from "../assets/images/tinywalletLogo.png";
+import { GoSignOut } from "react-icons/go";
 const Navbar = ({isMobile}: {isMobile: boolean}) => {
   const { toggleSidebar, isSidebarOpen } = useSidebar();
 
@@ -83,11 +84,11 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
         </button>
         
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg z-10 rounded-xl overflow-clip">
+          <div className="absolute right-0 top-12 mt-2 w-40 bg-white shadow-lg z-10 rounded-xl overflow-clip">
             <div className="">
               <div className="flex flex-col gap-1 justify-center items-center text-gray-700 border-b bg-[#7F37D8] px-4 py-2">
-                <p className="font-medium text-white text-xl">{user?.username || 'User'}</p>
-                <p className="text-xs text-white">{user?.role || 'Teacher'}</p>
+                <p className="font-medium text-white text-xl">{user?.username}</p>
+                <p className="text-xs text-white">{user?.role}</p>
               </div>
               <div className="flex flex-col">
                 <button
@@ -103,7 +104,7 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
                   onClick={handleLogout}
                   className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                Sign out
+               <GoSignOut /> Sign out
                 </button>
               </div>
             </div>

@@ -143,7 +143,7 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
                         </button>
                         {showMenu && (
                             <div className="relative">
-                                <div className="absolute z-10 top-10 -right-12 border border-gray-200 rounded-3xl">
+                                <div className="absolute z-10 -top-32 right-5 border border-gray-200 rounded-3xl">
                                     <div className="flex flex-col rounded-3xl bg-white overflow-clip">
                                         <button 
                                             onClick={() => navigate(`/telegram/${channel.id}/edit`)}        

@@ -27,13 +27,13 @@ const ChannelSubscriber = ({ channelId }: { channelId: string }) => {
                     <table className="w-full text-left min-w-max lg:min-w-full">
                         <thead className=" border-gray-300 h-20">
                             <tr className="border-t border-gray-200">
-                                <th className="w-1/12 px-8">#</th>
-                                <th className="w-2/12">Name</th>
-                                <th className="w-1/12 pl-3">Status</th>
-                                <th className="w-1/12">Plan</th>
-                                <th className="w-1/12">Amount</th>
-                                <th className="w-1/12">Start Date</th>
-                                <th className="w-1/12">Expiry Date</th>
+                                <th className="lg:w-1/12 px-8">#</th>
+                                <th className="lg:w-2/12 px-4">Name</th>
+                                <th className="lg:w-1/12 px-4">Status</th>
+                                <th className="lg:w-1/12 px-4">Plan</th>
+                                <th className="lg:w-1/12 px-4">Amount</th>
+                                <th className="lg:w-1/12 px-4">Start Date</th>
+                                <th className="lg:w-1/12 px-4">Expiry Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,12 +76,12 @@ const SubscriberRow = ({ subscriber, index }: { subscriber: Subscriber, index: n
     return (
         <tr className="border-t border-gray-200 h-20">
             <td className="px-8">{index + 1}</td>
-            <td>{subscriber.user.username}</td>
-            <td>{subscriber.status}</td>
-            <td>{subscriber.plan.name}</td>
-            <td>{subscriber.plan.price}</td>
-            <td>{new Date(subscriber.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-            <td>{new Date(subscriber.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+            <td className="px-4">{subscriber.user.username}</td>
+            <td className="px-4">{subscriber.status}</td>
+            <td className="px-4">{subscriber.plan.name}</td>
+            <td className="px-4">{subscriber.plan.price}</td>
+            <td className="px-4">{new Date(subscriber.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+            <td className="px-4">{new Date(subscriber.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
         </tr>  
     )
 }

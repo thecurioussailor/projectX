@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { IoIosArrowDown } from "react-icons/io";
 import { useDigitalProduct } from '../../hooks/useDigitalProduct';
 import { DigitalProduct } from '../../store/useDigitalProductStore';
 import { useNavigate } from 'react-router-dom';
@@ -59,7 +58,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     name="category"
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md p-2 appearance-none outline-none focus-within:ring-purple-500 focus-within:ring-2"
+                    className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-purple-500 focus-within:ring-2"
                 >
                     <option value="Education">Education</option>
                     <option value="Entertainment">Entertainment</option>
@@ -69,7 +68,6 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     <option value="Business">Business</option>
                     <option value="Other">Other</option>
                 </select>
-                <IoIosArrowDown size={20} className="absolute z-50 top-6 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
             </div>
             <div className="flex flex-col md:flex-row items-center gap-4">
                 <div className="relative w-full md:w-1/2 flex flex-col">
@@ -78,13 +76,12 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                         id="priceType" 
                         name="priceType" 
                         value={formData.priceType}
-                        className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2 appearance-none"
+                        className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
                         onChange={(e) => setFormData({...formData, priceType: e.target.value})}
                     >
                         <option value="FIXED">Fixed</option>
                         <option value="FLEXIBLE">Flexible</option>
                     </select>
-                    <IoIosArrowDown size={20} className="absolute z-50 top-12 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
                 </div>
                 <div className="w-full md:w-1/2">
                     <label htmlFor="price">{formData.priceType === "FIXED" ? "Price" : "Minimum Price"}</label>    

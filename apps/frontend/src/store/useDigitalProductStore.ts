@@ -50,12 +50,15 @@ export interface FAQ {
   answer: string;
 }
 
+
 export interface GalleryImage {
   id: string;
+  productId: string;
   imageUrl: string;
   imageOrder?: number;
   imageType: 'IMAGE' | 'VIDEO';
   imageName?: string;
+  createdAt?: string;
 }
 
 export interface RegistrationQuestion {

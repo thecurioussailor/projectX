@@ -62,7 +62,7 @@ const PublicDigitalProductPage = () => {
     };
 
     fetchProduct();
-  }, [slug, fetchPublicProductBySlug, getCoverImage]);
+  }, [slug, fetchPublicProductBySlug, getCoverImage, getGalleryImage]);
 
   const handlePurchase = async () => {
     if (!product || !amount) return;
