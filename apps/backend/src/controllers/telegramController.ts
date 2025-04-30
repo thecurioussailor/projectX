@@ -10,7 +10,7 @@ import { initiatePayment } from "./orderController.js";
 dotenv.config();
 const apiId: number = Number(process.env.TELEGRAM_API_ID);
 const apiHash: string = process.env.TELEGRAM_API_HASH || '';
-
+const botUsername: string = process.env.TELEGRAM_BOT_USERNAME || '';
 export const sendOtp = async (req: Request, res: Response) => {
     try {
         const { phoneNumber } = req.body;
@@ -384,7 +384,14 @@ export const createChannel = async (req: Request, res: Response) => {
             });
             console.log("channel created", newChannel);
             console.log("adding bot to channel");
-            const { success, message, channel } = await addBotToChannel(channelData.id.toString(), "@NetlySuperBot", client);
+            if(!botUsername) {
+                res.status(500).json({
+                    status: "error",
+                    message: "Bot username not found"
+                });
+                return;
+            }
+            const { success, message, channel } = await addBotToChannel(channelData.id.toString(), botUsername, client);
             console.log("bot added to channel", success, message, channel);
             if(!success) {
                 res.status(400).json({

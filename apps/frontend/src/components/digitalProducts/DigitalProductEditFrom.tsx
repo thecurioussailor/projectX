@@ -39,29 +39,31 @@ const DigitalProductEditFrom = ({ productId }: { productId: string }) => {
     return (
         <div className="flex flex-col justify-between gap-4 bg-white rounded-3xl">
             <div className="flex justify-between items-center px-8 py-8 gap-8 w-full border-b border-gray-200">
-                <div className="flex flex-col">
-                    <h1 className="text-xl font-semibold">{activeTab === "basic" ? "Basic Information" : activeTab === "upload" ? "Upload Product" : "Publish Product"}</h1>
-                    <p className="text-sm text-gray-500 mt-1">{currentProduct.title}</p>
-                </div>
-                <div className="flex gap-4">
-                    <button 
-                        className={`py-2 px-2 transition-colors ${activeTab === "basic" ? "border-b-2 border-b-[#7F37D8] text-[#7F37D8] font-semibold" : "border-b-2 border-b-transparent"}`}
-                        onClick={() => setActiveTab("basic")}
-                    >
-                        Basic
-                    </button>
-                    <button 
-                        className={`py-2 px-2 transition-colors ${activeTab === "upload" ? "border-b-2 border-b-[#7F37D8] text-[#7F37D8] font-semibold" : "border-b-2 border-b-transparent"}`}
-                        onClick={() => setActiveTab("upload")}
-                    >
-                        Upload
-                    </button>
-                    <button 
-                        className={`py-2 px-2 transition-colors ${activeTab === "publish" ? "border-b-2 border-b-[#7F37D8] text-[#7F37D8] font-semibold" : "border-b-2 border-b-transparent"}`}
-                        onClick={() => setActiveTab("publish")}
-                    >
-                        Publish
-                    </button>
+                <div className="flex flex-col md:flex-row justify-between w-full gap-4">
+                    <div className="flex flex-col">
+                        <h1 className="text-xl font-semibold">{activeTab === "basic" ? "Basic Information" : activeTab === "upload" ? "Upload Product" : "Publish Product"}</h1>
+                        <p className="text-sm text-gray-500 mt-1">{currentProduct.title}</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <button 
+                            className={`py-2 px-2 transition-colors ${activeTab === "basic" ? "border-b-2 border-b-[#7F37D8] text-[#7F37D8] font-semibold" : "border-b-2 border-b-transparent"}`}
+                            onClick={() => setActiveTab("basic")}
+                        >
+                            Basic
+                        </button>
+                        <button 
+                            className={`py-2 px-2 transition-colors ${activeTab === "upload" ? "border-b-2 border-b-[#7F37D8] text-[#7F37D8] font-semibold" : "border-b-2 border-b-transparent"}`}
+                            onClick={() => setActiveTab("upload")}
+                        >
+                            Upload
+                        </button>
+                        <button 
+                            className={`py-2 px-2 transition-colors ${activeTab === "publish" ? "border-b-2 border-b-[#7F37D8] text-[#7F37D8] font-semibold" : "border-b-2 border-b-transparent"}`}
+                            onClick={() => setActiveTab("publish")}
+                        >
+                            Publish
+                        </button>
+                    </div>
                 </div>
             </div> 
             <div className="flex px-8 py-8 w-full">

@@ -1,5 +1,5 @@
 import { Sale } from "../../store/useSalesStore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const SaleSidePop = ({ sale, onClose }: { sale: Sale, onClose: () => void }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -25,6 +25,23 @@ const SaleSidePop = ({ sale, onClose }: { sale: Sale, onClose: () => void }) => 
     setTimeout(onClose, 300);
   };
 
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    const printContents = printRef.current?.innerHTML;
+    const printWindow = window.open('', '', 'height=600,width=800');
+    if (printWindow && printContents) {
+      printWindow.document.write('<html><head><title>Sale Details</title>');
+      printWindow.document.write('</head><body>');
+      printWindow.document.write(printContents);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+  };
+
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 flex justify-end items-stretch z-50 transition-opacity duration-300"
@@ -47,7 +64,7 @@ const SaleSidePop = ({ sale, onClose }: { sale: Sale, onClose: () => void }) => 
             </button>
           </div>
           
-          <div className="space-y-4">
+          <div ref={printRef} className="space-y-4">
             <div className="border-b pb-3">
               <p className="text-sm text-[#718096]">Order ID</p>
               <p className="font-medium">{sale.id}</p>
@@ -118,7 +135,11 @@ const SaleSidePop = ({ sale, onClose }: { sale: Sale, onClose: () => void }) => 
                     </div>
                 )}
             </div>
+            
           </div>
+          <div className="pt-4">
+              <button onClick={handlePrint} className="bg-[#7e37d8] text-white px-4 py-2 rounded-md">Print</button>
+            </div>
         </div>
       </div>
     </div>

@@ -48,7 +48,7 @@ const LinkTable = () => {
         )
     }
     return (
-        <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
+        <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-16 md:mb-0">
             <div className="flex flex-col gap-4 w-full">
                 <div className="relative ml-8 mt-8">
                     <div className="absolute rounded-full bg-[#7E37D8] h-14 w-14 -top-6 -left-16"></div>
@@ -65,36 +65,36 @@ const LinkTable = () => {
                         <p className="text-gray-500">You haven't created any shortened links yet.</p>
                     </div>
                 ) : (
-                    <table className="w-full text-left">
-                        <thead className="border-gray-300 h-20">
-                            <tr className="border-t border-gray-200">
-                                <th className="w-1/12 px-8">#</th>
-                                <th className="w-2/12">Original URL</th>
-                                <th className="w-1/12">Status</th>
-                                <th className="w-1/12">Clicks</th>
-                                <th className="w-1/12">Created At</th>
-                                <th className="w-1/12">Short Link</th>
-                                <th className="w-1/12">Actions</th>
+                    <div className="overflow-x-auto lg:overflow-x-hidden">
+                        <table className="w-full text-left min-w-max lg:min-w-full">
+                            <thead className="border-gray-300 h-20">
+                                <tr className="border-t border-gray-200">
+                                <th className="lg:w-1/12 px-8">#</th>
+                                <th className="lg:w-2/12 px-4">Original URL</th>
+                                <th className="lg:w-1/12 px-4">Status</th>
+                                <th className="lg:w-1/12 px-4">Clicks</th>
+                                <th className="lg:w-1/12 px-4">Created At</th>
+                                <th className="lg:w-1/12 px-4">Short Link</th>
+                                <th className="lg:w-1/12 px-4">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {links.map((link, index) => (
                                 <tr key={link.id} className="border-t border-gray-200 h-20">
                                     <td className="px-8">{index + 1}</td>
-                                    <td>{link.originalUrl}</td>
-                                    <td>Active</td>
-                                    <td>{link.clicks}</td>
-                                    <td>{new Date(link.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short'})}</td>
-                                    <td>
-                                        <button 
+                                    <td className="px-4">{link.originalUrl}</td>
+                                    <td className="px-4">Active</td>
+                                    <td className="px-4">{link.clicks}</td>
+                                    <td className="px-4">{new Date(link.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short'})}</td>
+                                    <td className="px-4">
+                                        <div 
                                             className="relative flex items-center gap-2 hover:text-[#7F37D8]"
                                             onClick={() => copyToClipboard(link.shortId)}
                                         >
                                             <span>{link.shortId}</span>
-                                            <button 
-                                                onClick={() => copyToClipboard(link.shortId)}
+                                            <button
                                                 className="px-4 py-2 rounded-r-3xl w-1/3">{copied === link.shortId ? <GoCheck size={20} /> : <GoCopy size={20} />}</button>
-                                            </button>
+                                        </div>
                                     </td>
                                     <td className="text-[#7F37D8] pl-5">
                                         <button onClick={() => setOpen(true)}>
@@ -111,6 +111,7 @@ const LinkTable = () => {
                             ))}
                         </tbody>
                     </table>
+                    </div>
                 )}
             </div>
         </div>

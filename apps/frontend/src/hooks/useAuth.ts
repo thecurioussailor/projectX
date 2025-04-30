@@ -29,8 +29,8 @@ export const useAuth = (autoRedirect = false) => {
   }, [isAuthenticated, isLoading, navigate, autoRedirect]);
 
   // Handle signin with navigation
-  const handleSignin = async (username: string, password: string) => {
-    const success = await signin(username, password);
+  const handleSignin = async (username: string, password: string, loginMethod: 'email' | 'phone') => {
+    const success = await signin(username, password, loginMethod);
     if (success) {
       navigate('/dashboard');
     }
@@ -38,8 +38,8 @@ export const useAuth = (autoRedirect = false) => {
   };
 
   // Handle signup with navigation
-  const handleSignup = async (username: string, password: string) => {
-    const success = await signup(username, password);
+  const handleSignup = async (email: string, phone: string, password: string) => {
+    const success = await signup(email, phone, password);
     if (success) {
       navigate('/dashboard');
     }

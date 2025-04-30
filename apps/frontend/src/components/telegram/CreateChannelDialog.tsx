@@ -55,8 +55,8 @@ const CreateChannelDialog = ({ setOpen, onChannelCreated }: CreateChannelDialogP
     };
 
     return (
-        <div className="fixed flex justify-center items-center inset-0 bg-black/50 w-full h-full overflow-hidden z-50">
-            <div className="bg-white w-1/2 max-h-[85vh] rounded-3xl shadow-md flex flex-col">
+        <div className="fixed flex justify-center items-center inset-0 bg-black/50 w-full h-full overflow-hidden z-50 px-4">
+            <div className="bg-white w-full md:w-2/3 lg:w-1/2 rounded-3xl shadow-md flex flex-col">
                 <div className="p-6 border-b border-gray-200 flex justify-between items-center">
                     <h2 className="text-xl font-semibold">Create Channel</h2>
                     <button className="text-gray-500 hover:text-gray-700" onClick={() => setOpen(false)}>

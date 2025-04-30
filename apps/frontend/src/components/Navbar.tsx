@@ -6,20 +6,19 @@ import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 import userImage from "../assets/images/profileprojectx.png";
-import notification from "../assets/images/notificationBell.png";
 import logo from "../assets/images/tinywalletLogo.png";
-const Navbar = () => {
+const Navbar = ({isMobile}: {isMobile: boolean}) => {
   const { toggleSidebar, isSidebarOpen } = useSidebar();
 
   return (
     <nav className="flex justify-between items-center px-8 py-6 shadow-sm">
-      <div className="flex w-1/3 items-center gap-4">
+      <div className="flex md:w-1/3 w-full items-center gap-4">
         <Link to="/">
           <img src={logo} alt="TinyWallet" className="w-48" />
         </Link>
         <button 
           onClick={toggleSidebar}
-          className={`rounded-full p-2 mt-2 transition-colors ${
+          className={`${isMobile ? 'hidden' : ''} rounded-full p-2 mt-2 transition-colors ${
             isSidebarOpen 
               ? 'bg-[#7F37D8] text-white' 
               : 'bg-[#fbf9fe] text-[#7F37D8]'
@@ -29,8 +28,8 @@ const Navbar = () => {
           <FiAlignCenter size={20}/>
         </button>
       </div>
-      <div className="w-2/3">
-        <ProfileBar />
+      <div className="w-full md:w-2/3">
+        <ProfileBar isMobile={isMobile}/>
       </div>
     </nav>
   );
@@ -38,7 +37,7 @@ const Navbar = () => {
 
 export default Navbar; 
 
-const ProfileBar = () => {
+const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -64,8 +63,8 @@ const ProfileBar = () => {
   }, []);
 
   return (
-    <div className="flex justify-between items-center gap-2 w-full">
-      <div className="flex items-center gap-2 w-96">
+    <div className="flex justify-end md:justify-between md:items-center items-end gap-2 w-full">
+      <div className={`items-center gap-2 w-96 ${isMobile ? 'hidden' : 'flex'}`}>
         <div className="text-[#7F37D8]">
           <CiSearch size={20}/>
         </div>
@@ -80,13 +79,7 @@ const ProfileBar = () => {
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"
         >
-          <img src={notification} width={20}></img>
-        </button>
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"
-        >
-          <img src={userImage} width={120}></img>
+          <img src={userImage} width={120} className="rounded-full w-24 lg:w-28"></img>
         </button>
         
         {isOpen && (

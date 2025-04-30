@@ -14,13 +14,13 @@ const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
         setOpen(false);
     }
     return (
-    <div className="fixed flex justify-center z-50 items-center inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 w-full h-full">
-        <div className=" bg-white w-1/2 h-auto p-6 rounded-3xl shadow-md">
-            <h2 className="text-xl font-semibold mb-4 flex justify-between items-center gap-2 py-10 px-8 border-b border-gray-200">
+    <div className="fixed flex justify-center z-50 items-center inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 w-full h-full px-4">
+        <div className=" bg-white w-full md:w-2/3 lg:w-1/2 h-auto rounded-3xl shadow-md">
+            <h2 className="text-xl font-semibold mb-4 flex justify-between items-center gap-4 py-10 px-8 border-b border-gray-200">
                 <span>Create Short Link</span>
                 <button className="text-gray-500 hover:text-gray-700" onClick={() => setOpen(false)}><IoCloseOutline size={30}/></button>
             </h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-4 px-8 pb-8">
             <div>
                 <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-4">
                     Paste your long URL

@@ -1,5 +1,48 @@
 import { Request, Response } from "express";
 import { prismaClient } from "@repo/db";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const IPGEO_API_KEY = process.env.IPGEO_API_KEY || "";
+
+// Interface for the geolocation API response
+interface IpGeoLocationResponse {
+  ip: string;
+  continent_name: string;
+  country_name: string;
+  country_code2: string;
+  city: string;
+  state_prov: string;
+  latitude: number;
+  longitude: number;
+  time_zone: {
+    name: string;
+    offset: number;
+  };
+  isp: string;
+  organization: string;
+  currency: {
+    code: string;
+    name: string;
+  };
+  connection_type: string;
+  user_agent: {
+    name: string;
+    type: string;
+    version: string;
+    os_name: string;
+    os_version: string;
+    device: {
+      name: string;
+      type: string;
+      brand: string;
+      model: string;
+    };
+  };
+}
+
+
 
 // Custom function to generate a random short ID
 const generateShortId = (length = 8) => {
@@ -85,6 +128,34 @@ export const getUserLinks = async (req: Request, res: Response) => {
   }
 };
 
+
+// Function to get geolocation data from IP
+// Function to get geolocation data from IP using node-fetch
+async function getGeolocationData(ipAddress: string): Promise<IpGeoLocationResponse | null> {
+  try {
+    // Build the URL with query parameters
+    const params = new URLSearchParams({
+      apiKey: IPGEO_API_KEY,
+      ip: ipAddress,
+      fields: 'geo,time_zone,currency,user_agent,isp,organization,connection_type',
+      include: 'useragent'
+    });
+    
+    const response = await fetch(`https://api.ipgeolocation.io/ipgeo?${params}`);
+    
+    if (!response.ok) {
+      console.error('API request failed with status code:', response.status);
+      return null;
+    }
+    console.log("response**********************", response);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching geolocation data:', error);
+    return null;
+  }
+}
+
 export const redirectToOriginalUrl = async (req: Request, res: Response) => {
   try {
     const { shortId } = req.params;
@@ -102,7 +173,6 @@ export const redirectToOriginalUrl = async (req: Request, res: Response) => {
       });
       return;
     }
-
     
     await prismaClient.link.update({
       where: {
@@ -148,6 +218,10 @@ export const redirectToOriginalUrl = async (req: Request, res: Response) => {
       country,
       city,
     })
+
+    // Get detailed geolocation data
+    const geoData = await getGeolocationData(ipAddress || '');
+    console.log("geoData**********************", geoData);
     const clickAnalytics = await prismaClient.clickAnalytics.create({
       data: {
         linkId: link.id,

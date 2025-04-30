@@ -19,8 +19,8 @@ interface AuthState {
   error: string | null;
   
   // Auth actions
-  signin: (username: string, password: string) => Promise<boolean>;
-  signup: (username: string, password: string) => Promise<boolean>;
+  signin: (username: string, password: string, loginMethod: 'email' | 'phone') => Promise<boolean>;
+  signup: (email: string, phone: string, password: string) => Promise<boolean>;
   logout: () => void;
   
   // Token persistence
@@ -37,11 +37,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   // Sign in function
-  signin: async (username: string, password: string) => {
+  signin: async (username: string, password: string, loginMethod: 'email' | 'phone') => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(`${BACKEND_URL}/api/v1/auth/signin`, {
         username,
+        loginMethod,  
         password
       });
 
@@ -78,11 +79,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   // Sign up function
-  signup: async (username: string, password: string) => {
+  signup: async (email: string, phone: string, password: string) => {
+    console.log(email, phone, password);
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(`${BACKEND_URL}/api/v1/auth/signup`, {
-        username,
+        email,
+        phone,
         password
       });
 

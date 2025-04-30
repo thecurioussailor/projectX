@@ -49,7 +49,7 @@ const Testimonials = ({ currentProduct }: TestimonialsProps) => {
                 />
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 px-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-4">
                 {testimonials.map((testimonial) => (
                     <TesminonialCard 
                         key={testimonial.id}

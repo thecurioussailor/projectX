@@ -52,7 +52,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                 />
             </div>
-            <div className="relative w-full flex items-center gap-2">
+            <div className="relative w-full flex flex-col items-left gap-2">
                 <label htmlFor="category">Category</label>
                 <select 
                     id="category" 
@@ -71,8 +71,8 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                 </select>
                 <IoIosArrowDown size={20} className="absolute z-50 top-6 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
             </div>
-            <div className="flex items-center gap-4">
-                <div className="relative w-1/2 flex flex-col">
+            <div className="flex flex-col md:flex-row items-center gap-4">
+                <div className="relative w-full md:w-1/2 flex flex-col">
                     <label htmlFor="priceType">Price Type</label>
                     <select 
                         id="priceType" 
@@ -86,7 +86,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     </select>
                     <IoIosArrowDown size={20} className="absolute z-50 top-12 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
                 </div>
-                <div className="w-1/2">
+                <div className="w-full md:w-1/2">
                     <label htmlFor="price">{formData.priceType === "FIXED" ? "Price" : "Minimum Price"}</label>    
                     <input 
                         className="w-full border border-gray-300 rounded-md p-2"

@@ -26,11 +26,11 @@ export interface DigitalPurchase {
     files?: DigitalFile[];     // Optional files property for downloaded files
 }
 
-export interface TelegramSubscription extends TelegramSubscription {
+export interface TelegramSubscription1 extends TelegramSubscription {
     inviteLink: string;
 }
 
-export type PurchaseItem = TelegramSubscription | DigitalPurchase;
+export type PurchaseItem = TelegramSubscription1 | DigitalPurchase;
 interface PurchasedItemsState {
     telegramSubscriptions: TelegramSubscription[];
     digitalPurchases: DigitalPurchase[];

@@ -1,7 +1,7 @@
 import { useKyc } from "../../hooks/useKyc";
 import { useState } from "react";
 const Kyc = () => {
-  const { kycDocument, isLoading, error, uploadDocument } = useKyc();
+  const { kycDocument, isLoading, uploadDocument } = useKyc();
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
   const [documentNumber, setDocumentNumber] = useState<string>("");
@@ -21,9 +21,6 @@ const Kyc = () => {
   if(isLoading) {
     return <div>Loading...</div>;
   }
-  if(error) {
-    return <div>Error: {error}</div>;
-  }
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
       <div className="flex flex-col gap-4 w-full">
@@ -39,8 +36,8 @@ const Kyc = () => {
           <h1 className="text-2xl  font-bold text-[#1B3155]">KYC</h1>
           <p className="text-sm text-gray-500">Upload your KYC document to verify your identity</p>
         </div>
-        <div className="flex gap-4 p-12 pt-0">
-          <div className="flex flex-col gap-4 w-1/3">
+        <div className="flex flex-col lg:flex-row gap-4 p-12 pt-0">
+          <div className="flex flex-col gap-4 w-full lg:w-1/3">
             <h1 className="text-xl font-semibold text-[#1B3155]">Upload KYC Document</h1>
             <div className="flex flex-col gap-2">
               <label>Document Type</label>
@@ -80,8 +77,10 @@ const Kyc = () => {
               Upload
             </button>
           </div>
-          <div className="flex flex-col gap-4 w-2/3 p-4">
-            <h1 className="text-xl font-semibold text-[#1B3155]">KYC Document</h1>
+          {
+            kycDocument ? (
+              <div className="flex flex-col gap-4 w-full lg:w-2/3 p-4">
+                <h1 className="text-xl font-semibold text-[#1B3155]">KYC Document</h1>
             <p>Document Type: {kycDocument?.documentType}</p>
             <p>Document ID: {kycDocument?.documentNumber}</p>
             <p>Document Status: {kycDocument?.status}</p>
@@ -90,8 +89,15 @@ const Kyc = () => {
               className="bg-[#7F37D8] text-white px-4 py-2 rounded-md"
             >
               View Document
-            </button>
-          </div>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4 w-full lg:w-2/3 p-4">
+                <h1 className="text-xl font-semibold text-[#1B3155]">KYC Document</h1>
+                <p>No KYC document uploaded</p>
+              </div>
+            )
+          }
         </div>
       </div>
     </div>

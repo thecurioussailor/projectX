@@ -9,7 +9,7 @@ interface MoneyCardProps {
 const MoneyCard: React.FC<MoneyCardProps> = ({ amount, gradient, title }) => {
   return (
     <div
-      className={`flex flex-row justify-center gap-4 items-center w-72 h-44 rounded-2xl text-white shadow-lg ${gradient}`}
+      className={`flex flex-row justify-center gap-4 items-center w-64 h-44 rounded-2xl text-white shadow-lg ${gradient}`}
     >
       <div className="flex items-end space-x-2">
             <span className=" w-1 h-6 bg-white/60 rounded-sm"></span>

@@ -28,8 +28,8 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
         <div className="flex flex-col gap-4">
             <form onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-4">
-                    <div className="flex gap-4 w-full"> 
-                        <div className="w-1/2 flex flex-col gap-1">
+                    <div className="flex flex-col md:flex-row gap-4 w-full"> 
+                        <div className="w-full md:w-1/2 flex flex-col gap-1">
                             <label htmlFor="title">Title</label>
                             <input 
                                 className="w-full border border-gray-300 rounded-md p-2"
@@ -40,7 +40,7 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                                 onChange={(e) => setFormData({...formData, title: e.target.value})}
                             />
                         </div>
-                        <div className="relative flex flex-col gap-1 w-1/2">
+                        <div className="relative flex flex-col gap-1 w-full md:w-1/2">
                             <label htmlFor="category">Category</label>
                             <select 
                                 id="category" 
@@ -71,8 +71,8 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                         />
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="relative w-1/2 flex flex-col">
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                    <div className="relative w-full md:w-1/2 flex flex-col">
                         <label htmlFor="priceType">Price Type</label>
                         <select 
                             id="priceType" 
@@ -86,7 +86,7 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                         </select>
                         <IoIosArrowDown size={20} className="absolute z-50 top-12 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
                     </div>
-                    <div className="w-1/2">
+                    <div className="w-full md:w-1/2">
                         <label htmlFor="price">{formData.priceType === "FIXED" ? "Price" : "Minimum Price"}</label>    
                         <input 
                             className="w-full border border-gray-300 rounded-md p-2"
@@ -121,9 +121,11 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
             </form>
             <div className="flex flex-col gap-4">
                 <CoverImage productId={currentProduct.id} />
-                <Testimonials currentProduct={currentProduct} />
-                <Gallery productId={currentProduct.id} />
-                <Faq currentProduct={currentProduct} productId={currentProduct.id} />
+                <div className="flex flex-col gap-4">
+                    <Testimonials currentProduct={currentProduct} />
+                    <Gallery productId={currentProduct.id} />
+                    <Faq currentProduct={currentProduct} productId={currentProduct.id} />
+                </div>
             </div>
         </div>
     </div>

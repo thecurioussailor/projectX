@@ -30,7 +30,7 @@ const ChannelTable = () => {
         </div>
     }
     return (
-        <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
+        <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-16 md:mb-0">
             <div className="flex flex-col gap-4 w-full">
                 <div className="relative ml-8 mt-8">
                     <div className="absolute rounded-full bg-[#7E37D8] h-14 w-14 -top-6 -left-16"></div>
@@ -42,24 +42,26 @@ const ChannelTable = () => {
                 </div>
                 <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Channels</h1>
                 {/* tabular view */}
-                <table className="w-full text-left">
-                    <thead className=" border-gray-300 h-20">
-                        <tr className="border-t border-gray-200">
-                            <th className="w-1/12 px-8">#</th>
-                            <th className="w-2/12">Name</th>
-                            <th className="w-1/12 pl-3">Status</th>
-                            <th className="w-1/12">Plans</th>
-                            <th className="w-1/12">Revenue</th>
-                            <th className="w-1/12">Sales</th>
-                            <th className="w-2/12">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {channels.map((channel, index) => (
-                            <ChannelTableRow key={channel.id} channel={channel} index={index} />
-                        ))}
-                    </tbody>
-                </table>
+                <div className="overflow-x-auto lg:overflow-x-hidden">
+                    <table className="w-full text-left min-w-max lg:min-w-full table-auto">
+                        <thead className=" border-gray-300 h-20">
+                            <tr className="border-t border-gray-200">
+                                <th className="lg:w-1/12 px-8">#</th>
+                                <th className="lg:w-2/12 px-4">Name</th>
+                                <th className="lg:w-1/12 px-4">Status</th>
+                                <th className="lg:w-1/12 px-4">Plans</th>
+                                <th className="lg:w-1/12 px-4">Revenue</th>
+                                <th className="lg:w-1/12 px-4">Sales</th>
+                                <th className="lg:w-1/12 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {channels.map((channel, index) => (
+                                <ChannelTableRow key={channel.id} channel={channel} index={index} />
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     )
@@ -103,12 +105,12 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
     return (
         <tr className="border-t border-gray-200 h-20">
             <td className="px-8">{index + 1}</td>
-            <td>{channel.channelName}</td>
-            <td><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${channel.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{channel.status === "ACTIVE" ? "Active" : "Inactive"}</span></div></td>
-            <td className="pl-4">{channel.telegramPlans?.length}</td>
-            <td className="pl-6">{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0)}</td>
-            <td className="pl-3">{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.reduce((acc, subscription) => acc + Number(subscription.planPrice), 0), 0)}</td>
-            <td>
+            <td className="px-4">{channel.channelName}</td>
+            <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${channel.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{channel.status === "ACTIVE" ? "Active" : "Inactive"}</span></div></td>
+            <td className="px-4">{channel.telegramPlans?.length}</td>
+            <td className="px-4">{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0)}</td>
+            <td className="px-4">{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.reduce((acc, subscription) => acc + Number(subscription.planPrice), 0), 0)}</td>
+            <td className="px-4">
                 <div className="flex items-center gap-2">
                     <div className="flex items-center bg-[#7F37D8] rounded-3xl text-white w-40">
                         <button 

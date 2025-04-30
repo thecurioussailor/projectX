@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { PurchaseItem } from "../../store/usePurchasedItemsStore";
+import { isTelegramSubscription } from "./PurchasedItemsTable";
 
 const PurchasedItemSidePop = ({ purchasedItem, onClose, isSub, handle }: { purchasedItem: PurchaseItem, onClose: () => void, isSub: boolean, handle: () => void }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -55,7 +56,7 @@ const PurchasedItemSidePop = ({ purchasedItem, onClose, isSub, handle }: { purch
             <div className="border-b pb-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Amount:</p>
-                    <p className="font-medium text-sm">{isSub ? purchasedItem.planPrice : purchasedItem.price}</p>
+                    <p className="font-medium text-sm">{isTelegramSubscription(purchasedItem) ? purchasedItem.planPrice : purchasedItem.price}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Status:</p>
@@ -63,19 +64,33 @@ const PurchasedItemSidePop = ({ purchasedItem, onClose, isSub, handle }: { purch
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">{isSub ? "Plan Name" : "Product Name"}:</p>
-                    <p className="font-medium text-sm">{isSub ? purchasedItem.planName : purchasedItem.product.title}</p>
+                    <p className="font-medium text-sm">{isTelegramSubscription(purchasedItem) ? purchasedItem.planName : purchasedItem.product.title}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Expiry Date:</p>
-                    <p className="font-medium text-sm">{isSub ? (new Date(purchasedItem.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })) : "-"}</p>
+                    <p className="font-medium text-sm">
+                    {isTelegramSubscription(purchasedItem) 
+                        ? new Date(purchasedItem.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) 
+                        : "-"}
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Created At:</p>
-                    <p className="font-medium text-sm">{purchasedItem.createdAt ? new Date(purchasedItem.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "N/A"}</p>
+                    <p className="font-medium text-sm">
+                    {isTelegramSubscription(purchasedItem) 
+                        ? new Date(purchasedItem.expiryDate).toLocaleDateString('en-US', 
+                            { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        : "-"}
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Updated At:</p>
-                    <p className="font-medium text-sm">{purchasedItem.updatedAt ? new Date(purchasedItem.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "N/A"}</p>
+                    <p className="font-medium text-sm">
+                    {purchasedItem.createdAt 
+                        ? new Date(purchasedItem.createdAt).toLocaleDateString('en-US',
+                            { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        : "N/A"}
+                    </p>
                 </div>
             </div>
             <div className="flex items-center gap-2">

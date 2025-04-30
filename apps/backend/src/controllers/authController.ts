@@ -5,30 +5,72 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
+const generateUsername = (email: string, phone: string): string => {
+  // Generate a string by concatenating the first 4 characters of the email and phone
+  const usernameBase = email.slice(0, 4) + phone.slice(0, 4);
+  
+  // Generate a random 8-character string, you can adjust the logic for your use case
+  const randomPart = Math.random().toString(36).substring(2, 10); // Random 8 chars
+  
+  // Combine the base string with the random part
+  const username = (usernameBase + randomPart).slice(0, 8); // Ensure it is 8 characters long
+
+  return username;
+};
+
 export const signup = async (req: Request, res: Response) => {
   try {
     console.log('signup');
-    const { username, password } = req.body;
+    const { email, phone, password } = req.body;
+    console.log(email, phone, password);
 
-    if (!username || !password) {
+    if (!email || !phone || !password) {
       res.status(400).json({ 
         success: false, 
-        message: 'Username and password are required' 
+        message: 'Email, phone and password are required' 
       });
       return;
     }
 
-    const existingUser = await prismaClient.user.findUnique({
-      where: { username }
+   // Check if the email or phone is already in use
+   const existingUserByEmail = await prismaClient.user.findUnique({
+    where: { email },
+  });
+  const existingUserByPhone = await prismaClient.user.findUnique({
+    where: { phone },
+  });
+
+  if (existingUserByEmail) {
+    res.status(409).json({
+      success: false,
+      message: 'Email is already used.',
     });
+    return;
+  }
 
-    if (existingUser) {
-       res.status(409).json({ 
-        success: false, 
-        message: 'Username already taken' 
-      });
-      return;
-    }
+  if (existingUserByPhone) {
+    res.status(409).json({
+      success: false,
+      message: 'Phone number is already used.',
+    });
+    return;
+  }
+
+   // Generate a unique username
+   let username = generateUsername(email, phone);
+
+   // Check if the generated username is unique
+   let existingUserByUsername = await prismaClient.user.findUnique({
+     where: { username },
+   });
+
+   // If username already exists, regenerate a new one
+   while (existingUserByUsername) {
+     username = generateUsername(email, phone);
+     existingUserByUsername = await prismaClient.user.findUnique({
+       where: { username },
+     });
+   }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -59,6 +101,8 @@ export const signup = async (req: Request, res: Response) => {
       const newUser = await tx.user.create({
         data: {
           username,
+          email,
+          phone,
           password: hashedPassword,
           role
         }
@@ -88,6 +132,8 @@ export const signup = async (req: Request, res: Response) => {
     const token = jwt.sign({
       id: result.newUser.id,
       username: result.newUser.username,
+      email: result.newUser.email,
+      phone: result.newUser.phone,
       role: result.newUser.role
     }, process.env.JWT_SECRET!);
 
@@ -98,6 +144,8 @@ export const signup = async (req: Request, res: Response) => {
         user: {
           id: result.newUser.id,
           username: result.newUser.username,
+          email: result.newUser.email,
+          phone: result.newUser.phone,
           role: result.newUser.role
         },
         token
@@ -114,19 +162,42 @@ export const signup = async (req: Request, res: Response) => {
 
 export const signin = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, loginMethod } = req.body;
+    
+    const emailOrPhone = username;
 
-    if (!username || !password) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'Username and password are required' 
+    if (!emailOrPhone || !password || !loginMethod) {
+      res.status(400).json({
+        success: false,
+        message: 'Email/Phone, password, and login method are required',
       });
-      return;
+      return ;
     }
 
+    // Validate login method (either 'email' or 'phone')
+    if (loginMethod !== 'email' && loginMethod !== 'phone') {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid login method',
+      });
+      return ;
+    }
+
+
+    // Find user by email or phone
     const user = await prismaClient.user.findUnique({
-      where: { username }
+      where: loginMethod === 'email'
+        ? { email: emailOrPhone } // Search by email
+        : { phone: emailOrPhone }, // Search by phone
     });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+      return ;
+    }
 
     if (!user) {
         res.status(401).json({ 
@@ -150,6 +221,8 @@ export const signin = async (req: Request, res: Response) => {
     const token = jwt.sign({
       id: user.id,
       username: user.username,
+      email: user.email,
+      phone: user.phone,
       role: user.role
     }, process.env.JWT_SECRET!);
 
@@ -160,6 +233,8 @@ export const signin = async (req: Request, res: Response) => {
         user: {
           id: user.id,
           username: user.username,
+          email: user.email,
+          phone: user.phone,
           role: user.role
         },
         token

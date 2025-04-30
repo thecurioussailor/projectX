@@ -11,32 +11,38 @@ const ChannelSubscriber = ({ channelId }: { channelId: string }) => {
   }, [channelId, fetchChannelSubscribers]);
 
   return (
-    <div className="flex justify-between gap-4 bg-white rounded-3xl w-full">
+    <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
             <div className="flex flex-col gap-4 w-full">
-                <div className="flex flex-col gap-2 px-8 py-10">
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-xl  font-semibold ">Subscribers</h1>
-                    </div>
+                <div className="relative ml-8 mt-8">
+                    <div className="absolute rounded-full bg-[#7E37D8] h-14 w-14 -top-6 -left-16"></div>
+                    <div className="absolute rounded-full bg-[#7E37D8] h-1 w-1 top-2 left-4"></div>
+                    <div className="absolute rounded-full bg-[#FE80B2] h-8 w-8 top-4 -left-12"></div>
+                    <div className="absolute rounded-full bg-[#FE80B2] h-2 w-2 -top-2 left-2"></div>
+                    <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
+                    <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
+                    <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Subscribers</h1>
                 {/* tabular view */}
-                <table className="w-full text-left">
-                    <thead className=" border-gray-300 h-20">
-                        <tr className="border-t border-gray-200">
-                            <th className="w-1/12 px-8">#</th>
-                            <th className="w-2/12">Name</th>
-                            <th className="w-1/12 pl-3">Status</th>
-                            <th className="w-1/12">Plan</th>
-                            <th className="w-1/12">Amount</th>
-                            <th className="w-1/12">Start Date</th>
-                            <th className="w-1/12">Expiry Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {subscribers.map((subscriber, index) => (
-                            <SubscriberRow key={subscriber.id} subscriber={subscriber} index={index} />
-                        ))}
-                    </tbody>
-                </table>
+                <div className="overflow-x-auto lg:overflow-x-hidden">
+                    <table className="w-full text-left min-w-max lg:min-w-full">
+                        <thead className=" border-gray-300 h-20">
+                            <tr className="border-t border-gray-200">
+                                <th className="w-1/12 px-8">#</th>
+                                <th className="w-2/12">Name</th>
+                                <th className="w-1/12 pl-3">Status</th>
+                                <th className="w-1/12">Plan</th>
+                                <th className="w-1/12">Amount</th>
+                                <th className="w-1/12">Start Date</th>
+                                <th className="w-1/12">Expiry Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {subscribers.map((subscriber, index) => (
+                                <SubscriberRow key={subscriber.id} subscriber={subscriber} index={index} />
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
   )
@@ -74,8 +80,8 @@ const SubscriberRow = ({ subscriber, index }: { subscriber: Subscriber, index: n
             <td>{subscriber.status}</td>
             <td>{subscriber.plan.name}</td>
             <td>{subscriber.plan.price}</td>
-            <td>{subscriber.createdAt}</td>
-            <td>{subscriber.expiryDate}</td>
+            <td>{new Date(subscriber.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+            <td>{new Date(subscriber.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
         </tr>  
     )
 }
