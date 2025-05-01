@@ -94,8 +94,8 @@ const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) =
   };
 
   return (
-    <div className="fixed flex justify-center items-center inset-0 bg-black/50 w-full h-full overflow-hidden z-50">
-      <div className="bg-white w-3/4 md:w-2/3 lg:w-1/2 h-auto max-h-[85vh] rounded-3xl shadow-md flex flex-col overflow-hidden">
+    <div className="fixed flex justify-center items-center inset-0 bg-black/50 w-full h-full overflow-hidden z-50 p-2">
+      <div className="bg-white w-full md:w-2/3 lg:w-1/2 h-full max-h-[85vh] rounded-3xl shadow-md flex flex-col overflow-hidden">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-xl font-semibold">Create Platform Plan</h2>
           <button className="text-gray-500 hover:text-gray-700" onClick={() => setOpen(false)}>
@@ -117,7 +117,7 @@ const CreatePlatformPlanForm = ({setOpen}: {setOpen: (open: boolean) => void}) =
           )}
           
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col col-span-2 gap-2">
                 <label htmlFor="name" className="font-medium">Plan Name*</label>
                 <input 

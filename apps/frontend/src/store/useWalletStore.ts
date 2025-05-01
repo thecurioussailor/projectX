@@ -12,6 +12,13 @@ interface Wallet {
     totalWithdrawn: number;
     lastUpdated: string;
     createdAt: string;
+    user: User;
+}
+
+interface User {
+    id: string;
+    username: string;
+    email: string;
 }
 
 export interface WithdrawalRequest {
@@ -20,7 +27,6 @@ export interface WithdrawalRequest {
     amount: number;
     status: string;
     paymentMethod: string;
-    paymentDetails: string;
     adminNotes: string;
     processedAt: string | null;
     processedBy: string | null;

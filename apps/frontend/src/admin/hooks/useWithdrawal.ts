@@ -11,6 +11,8 @@ export const useWithdrawal = () => {
         error,
         fetchWithdrawals: fetchWithdrawalsStore,
         fetchWithdrawalById: fetchWithdrawalByIdStore,
+        approveWithdrawal: approveWithdrawalStore,
+        rejectWithdrawal: rejectWithdrawalStore,
     } = useWithdrawalStore();
 
     const fetchAllWithdrawals = useCallback(async () => {
@@ -27,9 +29,26 @@ export const useWithdrawal = () => {
         return fetchWithdrawalByIdStore(id);
     }, [token, fetchWithdrawalByIdStore]);
 
+    const approveWithdrawal = useCallback(async (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string }) => {
+        if (!token) {
+            throw new Error("You must be logged in to create a product");
+        };
+        await approveWithdrawalStore(id, data);
+        return fetchAllWithdrawals();   
+    }, [token, approveWithdrawalStore, fetchAllWithdrawals]);    
+
+    const rejectWithdrawal = useCallback(async (id: string, data: { adminNotes: string }) => {
+        if (!token) {
+            throw new Error("You must be logged in to create a product");
+        };
+        await rejectWithdrawalStore(id, data);
+        return fetchAllWithdrawals();
+    }, [token, rejectWithdrawalStore, fetchAllWithdrawals]); 
+    
+
     useEffect(() => {
         fetchAllWithdrawals();
-    }, [token, fetchAllWithdrawals]);
+    }, [token, fetchAllWithdrawals, approveWithdrawal, rejectWithdrawal]);
 
     return {
         withdrawals,
@@ -38,5 +57,7 @@ export const useWithdrawal = () => {
         error,
         fetchAllWithdrawals,
         fetchWithdrawalById,
+        approveWithdrawal,
+        rejectWithdrawal,
     }
 }

@@ -103,22 +103,95 @@ export const adminProfile = async (req: Request, res: Response) => {
 export const approveWithdrawalRequest = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
-        if(!userId) {
+        const { withdrawalId } = req.params;
+        const { status, transactionId, paymentMethod, bankName, accountNumber } = req.body;
+        if(!userId || req.user?.role !== "ADMIN") {
             res.status(401).json({
                 success: false,
                 message: 'Unauthorized'
             });
+            return;
         }
+        const withdrawal = await prismaClient.withdrawalRequest.findUnique({
+            where: { id: withdrawalId }
+        });
+        if(!withdrawal) {
+            res.status(404).json({
+                success: false,
+                message: 'Withdrawal request not found' 
+            });
+            return;
+        }
+        const updatedWithdrawal = await prismaClient.withdrawalRequest.update({
+            where: { id: withdrawalId },
+            data: { 
+                status,
+                paymentMethod,
+                paymentDetails: {
+                    bankName,
+                    accountNumber
+                },
+                transactionId, 
+                processedAt: new Date(), 
+                processedBy: req.user?.role
+            }
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Withdrawal request approved successfully',
+            data: updatedWithdrawal
+        });
     } catch (error) {
-        
+        console.error('Approve withdrawal request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        }); 
     }
 }
 
 export const rejectWithdrawalRequest = async (req: Request, res: Response) => {
     try {
-        
+        const userId = req.user?.id;
+        const { withdrawalId } = req.params;
+        const { adminNotes } = req.body;
+        if(!userId || req.user?.role !== "ADMIN") {
+            res.status(401).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+            return;
+        }
+        const withdrawal = await prismaClient.withdrawalRequest.findUnique({
+            where: { id: withdrawalId }
+        }); 
+        if(!withdrawal) {
+            res.status(404).json({
+                success: false,
+                message: 'Withdrawal request not found'
+            });
+            return;
+        }
+        const updatedWithdrawal = await prismaClient.withdrawalRequest.update({
+            where: { id: withdrawalId },
+            data: { 
+                status: "REJECTED", 
+                adminNotes, 
+                processedAt: new Date(), 
+                processedBy: req.user?.role 
+            }
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Withdrawal request rejected successfully',
+            data: updatedWithdrawal
+        });
     } catch (error) {
-        
+        console.error('Reject withdrawal request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
     }
 }
 

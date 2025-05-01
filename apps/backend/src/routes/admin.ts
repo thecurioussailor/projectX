@@ -11,8 +11,8 @@ adminRouter.get("/profile", authenticate, authorizeAdmin, adminController.adminP
 
 //Withdrawal Requests
 adminRouter.get("/withdrawals", authenticate, authorizeAdmin, adminController.getAllWithdrawalRequests);
-adminRouter.post("/withdrawals/:id/approve", authenticate, authorizeAdmin, adminController.approveWithdrawalRequest);
-adminRouter.post("/withdrawals/:id/reject", authenticate, authorizeAdmin, adminController.rejectWithdrawalRequest);
+adminRouter.post("/withdrawals/:withdrawalId/approve", authenticate, authorizeAdmin, adminController.approveWithdrawalRequest);
+adminRouter.post("/withdrawals/:withdrawalId/reject", authenticate, authorizeAdmin, adminController.rejectWithdrawalRequest);
 
 adminRouter.get("/users", authenticate, authorizeAdmin, adminUserController.getAllUsers);
 adminRouter.get("/users/:id", authenticate, authorizeAdmin, adminUserController.getUserById);

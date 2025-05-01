@@ -1,35 +1,34 @@
 import { FiAlignCenter } from "react-icons/fi";
-import { CiSearch } from "react-icons/ci";
 import { FaUser } from "react-icons/fa";
 import { useState, useRef, useEffect } from "react";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useAdminSidebar } from "../context/AdminSidebarContext";
 import userImage from "../../assets/images/profileprojectx.png";
-import notification from "../../assets/images/notificationBell.png";
-const AdminNavbar = () => {
+import logo from "../../assets/images/tinywalletLogo.png";
+const AdminNavbar = ({isMobile}: {isMobile: boolean}) => {
   const { toggleSidebar, isSidebarOpen } = useAdminSidebar();
 
   return (
     <nav className="flex justify-between items-center px-8 py-6 shadow-sm">
-      <div className="flex w-1/3 items-center gap-4">
-        <Link to="/">
-          <h1 className="text-3xl font-bold">projectX</h1>
+      <div className="flex md:w-1/3 w-full items-center gap-4">
+      <Link to="/">
+          <img src={logo} alt="TinyWallet" className="w-48" />
         </Link>
         <button 
           onClick={toggleSidebar}
-          className={`rounded-full p-2 mt-2 transition-colors ${
+          className={`${isMobile ? 'hidden' : ''} rounded-full p-2 mt-2 transition-colors ${
             isSidebarOpen 
               ? 'bg-[#7F37D8] text-white' 
               : 'bg-[#fbf9fe] text-[#7F37D8]'
-          }`}
+          }`} 
           aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
           <FiAlignCenter size={20}/>
         </button>
       </div>
-      <div className="w-2/3">
-        <ProfileBar />
+      <div className="w-full md:w-2/3">
+        <ProfileBar/>
       </div>
     </nav>
   );
@@ -63,24 +62,8 @@ const ProfileBar = () => {
   }, []);
 
   return (
-    <div className="flex justify-between items-center gap-2 w-full">
-      <div className="flex items-center gap-2 w-96">
-        <div className="text-[#7F37D8]">
-          <CiSearch size={20}/>
-        </div>
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full pl-5 pr-3 text-gray-600 bg-transparent border-0 border-l border-purple-100 focus:outline-none focus:ring-0 placeholder-purple-200"
-        />
-      </div>
+    <div className="flex justify-end md:justify-end md:items-center items-end gap-2 w-full">
       <div className="relative flex gap-8" ref={dropdownRef}>
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"
-        >
-          <img src={notification} width={20}></img>
-        </button>
         <button 
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"

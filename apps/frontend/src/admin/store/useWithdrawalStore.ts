@@ -9,8 +9,14 @@ export interface Withdrawal {
     amount: number;
     status: string;
     paymentMethod: string;
-    paymentDetails: string;
+    paymentDetails: {
+        bankName: string;
+        accountNumber: string;
+    };
     adminNotes: string;
+    processedAt: string | null;
+    processedBy: string | null;
+    transactionId: string | null;
     createdAt: string;
     updatedAt: string;
     wallet: {
@@ -33,6 +39,8 @@ interface WithdrawalState {
     error: string | null;
     fetchWithdrawals: () => Promise<void>;
     fetchWithdrawalById: (id: string) => Promise<void>;
+    approveWithdrawal: (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string }) => Promise<void>;
+    rejectWithdrawal: (id: string, data: { adminNotes: string }) => Promise<void>;
 }
 
 const api = axios.create({
@@ -73,4 +81,22 @@ export const useWithdrawalStore = create<WithdrawalState>((set) => ({
             set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
         }
     },
+    approveWithdrawal: async (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string }) => {
+        set({ isLoading: true });
+        try {
+            await api.post(`/api/v1/admin/withdrawals/${id}/approve`, data);
+            set({ isLoading: false });
+        } catch (error) {
+            set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
+        }
+    },
+    rejectWithdrawal: async (id: string, data: { adminNotes: string }) => {
+        set({ isLoading: true });
+        try {
+            await api.post(`/api/v1/admin/withdrawals/${id}/reject`, data);
+            set({ isLoading: false });
+        } catch (error) {
+            set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
+        }
+    }
 }));
