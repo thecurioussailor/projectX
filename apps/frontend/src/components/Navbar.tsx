@@ -9,6 +9,7 @@ import userImage from "../assets/images/profileprojectx.png";
 import logo from "../assets/images/tinywalletLogo.png";
 import { GoSignOut } from "react-icons/go";
 const Navbar = ({isMobile}: {isMobile: boolean}) => {
+  
   const { toggleSidebar, isSidebarOpen } = useSidebar();
 
   return (

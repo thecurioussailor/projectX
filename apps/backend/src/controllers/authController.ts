@@ -221,6 +221,7 @@ export const signin = async (req: Request, res: Response) => {
     const token = jwt.sign({
       id: user.id,
       username: user.username,
+      name: user.name,
       email: user.email,
       phone: user.phone,
       role: user.role

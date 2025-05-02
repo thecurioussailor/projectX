@@ -1,5 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
-import Bali from "../assets/images/bali.jpg";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useDigitalProduct } from "../hooks/useDigitalProduct";
 import { useEffect, useState } from "react";
 import { GalleryImage, PublicDigitalProduct, Testimonial } from "../store/useDigitalProductStore";
@@ -9,9 +8,8 @@ import { FaStar } from "react-icons/fa";
 import { load } from '@cashfreepayments/cashfree-js';
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Error404 from "../components/ui/Error404";
-
 const PublicDigitalProductPage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { 
     fetchPublicProductBySlug, 
     getCoverImage, 
@@ -19,17 +17,14 @@ const PublicDigitalProductPage = () => {
     handlePaymentCallback,
     getGalleryImage,
     isLoading,
-    error 
   } = useDigitalProduct();
   const { slug } = useParams();
   const [product, setProduct] = useState<PublicDigitalProduct | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const [amount, setAmount] = useState<number>(0);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -114,17 +109,17 @@ const PublicDigitalProductPage = () => {
     }
   };
 
+  const handleSigninRedirect = () => {
+    // Store current location before redirecting
+    localStorage.setItem('returnTo', location.pathname);
+    navigate('/signin');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Error404 error={error} />
     );
   }
 
@@ -138,7 +133,6 @@ const PublicDigitalProductPage = () => {
     <div className="relative w-full min-h-[calc(100vh-100px)]">
       <div className="p-8 md:p-16 lg:px-32 w-full lg:w-3/5">
           <div className="flex items-center gap-4">
-            <img src={Bali} alt="Digital Product" className="w-20 h-20 rounded-full" />
             <div className="flex flex-col gap-1">
               <p className="text-gray-500">Created by</p>
               <p className="font-semibold text-zinc-900 uppercase">{product?.creator?.name}</p>
@@ -174,14 +168,14 @@ const PublicDigitalProductPage = () => {
                 ))}
               </div>
             </div>
-            <div className="flex flex-col gap-6">
+            {galleryImages.length > 0 && <div className="flex flex-col gap-6">
               <p className="text-zinc-900 font-semibold text-2xl">Gallery</p>
               <div className="grid grid-cols-2 gap-4">
                 {galleryImages.map((image) => (
                   <img key={image.id} src={image.imageUrl} alt="Digital Product" className="w-full h-full rounded-md" />
                 ))}
               </div>
-            </div>
+            </div>}
             <div className="flex flex-col gap-2">
               <p className="text-zinc-900 font-semibold text-2xl mb-4">Contact</p>
               <div className="flex flex-col gap-2">
@@ -206,7 +200,7 @@ const PublicDigitalProductPage = () => {
       </div>
       
       {/* Payment sidebar for desktop */}
-      <div className="hidden lg:block fixed top-24 right-32 shadow-lg rounded-3xl w-1/3 bg-white">
+      <div className="hidden lg:block fixed top-28 right-32 shadow-lg rounded-3xl w-1/3 bg-white">
           <div className="flex justify-between items-center px-4 py-8 border-b border-gray-200">
             <h1 className="text-2xl font-semibold">Payment Details</h1>
           </div>
@@ -217,9 +211,8 @@ const PublicDigitalProductPage = () => {
                 className="border border-gray-300 rounded-md p-2"
                 type="text" 
                 id="name" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                value={user?.name || ""}
+                disabled
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -228,9 +221,8 @@ const PublicDigitalProductPage = () => {
                 className="border border-gray-300 rounded-md p-2"
                 type="email" 
                 id="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                value={user?.email || ""}
+                disabled
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -239,9 +231,8 @@ const PublicDigitalProductPage = () => {
                 className="border border-gray-300 rounded-md p-2"
                 type="text" 
                 id="phone" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
+                value={user?.phone || ""}
+                disabled
               />
             </div>
             {product?.priceType === "FIXED" && (
@@ -287,7 +278,7 @@ const PublicDigitalProductPage = () => {
               </div>
             )}
             <div className="flex flex-col gap-2 mt-4">
-              <button 
+              {isAuthenticated ? <button 
                 onClick={() => {
                   if (isAuthenticated) {
                     handlePurchase();
@@ -296,10 +287,15 @@ const PublicDigitalProductPage = () => {
                   }
                 }}  
                 className="bg-[#7F37D8] text-white rounded-3xl p-2 hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                disabled={!name || !email || !phone || amount < (product?.price || 0)}
+                disabled={!user?.name || !user?.email || !user?.phone || amount < (product?.price || 0)}
               >
                 {product?.ctaButtonText || "Pay Now"}
-              </button>
+              </button> : <button 
+                onClick={handleSigninRedirect}
+                className="bg-[#7F37D8] text-white rounded-3xl p-2 hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Sign in to pay
+              </button>}
             </div>
           </div>
       </div>
@@ -316,9 +312,8 @@ const PublicDigitalProductPage = () => {
               className="border border-gray-300 rounded-md p-2"
               type="text" 
               id="name-mobile" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              value={user?.name || ""}
+              disabled
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -327,9 +322,8 @@ const PublicDigitalProductPage = () => {
               className="border border-gray-300 rounded-md p-2"
               type="email" 
               id="email-mobile" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              value={user?.email || ""}
+              disabled
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -338,9 +332,8 @@ const PublicDigitalProductPage = () => {
               className="border border-gray-300 rounded-md p-2"
               type="text" 
               id="phone-mobile" 
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
+              value={user?.phone || ""}
+              disabled
             />
           </div>
           
@@ -388,7 +381,7 @@ const PublicDigitalProductPage = () => {
           )}
           
           <div className="flex flex-col gap-2 mt-4">
-            <button 
+            {isAuthenticated ? <button 
               onClick={() => {
                 if (isAuthenticated) {
                   handlePurchase();
@@ -397,10 +390,15 @@ const PublicDigitalProductPage = () => {
                 }
               }}  
               className="bg-[#7F37D8] text-white rounded-3xl p-2 hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-              disabled={!name || !email || !phone || amount < (product?.price || 0)}
+              disabled={amount < (product?.price || 0)}
             >
-              {product?.ctaButtonText || "Pay Now"}
-            </button>
+              {product?.ctaButtonText|| "Pay Now"}
+            </button> : <button 
+              onClick={handleSigninRedirect}
+              className="bg-[#7F37D8] text-white rounded-3xl p-2 hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              Sign in to pay
+            </button>}
           </div>
         </div>
       </div>

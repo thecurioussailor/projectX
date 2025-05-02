@@ -48,7 +48,7 @@ export const useWithdrawal = () => {
 
     useEffect(() => {
         fetchAllWithdrawals();
-    }, [token, fetchAllWithdrawals, approveWithdrawal, rejectWithdrawal]);
+    }, [token, fetchAllWithdrawals]);
 
     return {
         withdrawals,

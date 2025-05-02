@@ -7,6 +7,9 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export interface User {
   id: number;
   username: string;
+  name: string;
+  email: string;
+  phone: string;
   role: string;
 }
 

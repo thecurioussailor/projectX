@@ -1,16 +1,18 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaUser } from 'react-icons/fa';
+import userImage from "../assets/images/profileprojectx.png";
 import { useEffect } from 'react';
-import { CiSearch } from 'react-icons/ci';
 import { useRef } from 'react';
 import { useState } from 'react';
+import logo from "../assets/images/tinywalletLogo.png";
 const PublicNavbar = () => {
   const { isAuthenticated } = useAuth();
   return (
-    <nav className="flex justify-between items-center px-8 py-6 shadow-sm bg-white">
+    <nav className="flex justify-between items-center px-8 py-6 shadow-sm bg-[#FBF9FE]">
       <div className="flex items-center gap-4">
-        <Link to="/" className="text-3xl font-bold">projectX</Link>
+        <Link to="/">
+          <img src={logo} alt="TinyWallet" className="w-48" />
+        </Link>
       </div>
       <div>
         {isAuthenticated ? <ProfileBar /> : <Link 
@@ -53,22 +55,12 @@ const ProfileBar = () => {
 
   return (
     <div className="flex justify-between items-center gap-2 w-full">
-      <div className="flex items-center gap-2 w-96">
-        <div className="text-[#7F37D8]">
-          <CiSearch size={20}/>
-        </div>
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full pl-5 pr-3 text-gray-600 bg-transparent border-0 border-l border-purple-100 focus:outline-none focus:ring-0 placeholder-purple-200"
-        />
-      </div>
       <div className="relative" ref={dropdownRef}>
-        <button 
+      <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 rounded-full bg-[#fbf9fe] p-2 text-[#7F37D8]"
+          className="flex items-center gap-2 bg-[#fbf9fe] text-[#7F37D8]"
         >
-          <FaUser size={20}/>
+          <img src={userImage} width={120} className="rounded-full w-24 lg:w-28"></img>
         </button>
         
         {isOpen && (

@@ -32,7 +32,13 @@ export const useAuth = (autoRedirect = false) => {
   const handleSignin = async (username: string, password: string, loginMethod: 'email' | 'phone') => {
     const success = await signin(username, password, loginMethod);
     if (success) {
-      navigate('/dashboard');
+      const returnTo = localStorage.getItem('returnTo');
+      if (returnTo) {
+        localStorage.removeItem('returnTo');
+        navigate(returnTo);
+      } else {
+        navigate('/dashboard');
+      }
     }
     return success;
   };
@@ -41,7 +47,13 @@ export const useAuth = (autoRedirect = false) => {
   const handleSignup = async (email: string, phone: string, password: string) => {
     const success = await signup(email, phone, password);
     if (success) {
-      navigate('/dashboard');
+      const returnTo = localStorage.getItem('returnTo');
+      if (returnTo) {
+        localStorage.removeItem('returnTo');
+        navigate(returnTo);
+      } else {
+        navigate('/dashboard');
+      }
     }
     return success;
   };
