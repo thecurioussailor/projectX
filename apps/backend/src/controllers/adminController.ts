@@ -65,6 +65,60 @@ export const adminSignin = async (req: Request, res: Response) => {
       }
 }
 
+export const updateAdminPassword = async (req: Request, res: Response) => {
+    try {   
+        const userId = req.user?.id;
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+        if(!userId) {
+            res.status(401).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+            return;
+        }
+        const user = await prismaClient.user.findUnique({
+            where: { id: userId }
+        });
+        if(!user || user.role !== "ADMIN") {
+            res.status(404).json({
+                success: false,
+                message: 'User not found or not an admin'
+            });
+            return;
+        }
+        const isPasswordValid = await bcrypt.compare(oldPassword, user.password); 
+          
+        if(!isPasswordValid) {
+            res.status(401).json({
+                success: false,
+                message: 'Invalid old password'
+            });
+            return;
+        }
+        if(newPassword !== confirmPassword) {
+            res.status(400).json({
+                success: false,
+                message: 'New password and confirm password do not match'
+            });
+            return;
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await prismaClient.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword }
+        }); 
+        res.status(200).json({
+            success: true,
+            message: 'Password updated successfully'
+        });
+    } catch (error) {
+        console.error('Update password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+}
 export const adminProfile = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
@@ -93,6 +147,92 @@ export const adminProfile = async (req: Request, res: Response) => {
     });
     } catch (error) {
         console.error('Profile error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+}
+
+export const getAdminDashboard = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        if(!userId || req.user?.role !== "ADMIN") {
+            res.status(401).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+            return;
+        }
+
+         // User statistics
+         const totalUsers = await prismaClient.user.count();
+         const totalAdmins = await prismaClient.user.count({
+             where: { role: "ADMIN" }
+         });
+         
+         // Financial data
+         const totalWithdrawalRequests = await prismaClient.withdrawalRequest.count();
+         const pendingWithdrawals = await prismaClient.withdrawalRequest.count({
+             where: { status: "PENDING" }
+         });
+         const totalTransactions = await prismaClient.transaction.count();
+         
+         // Subscription data
+         const totalPlatformSubscriptionPlans = await prismaClient.platformSubscriptionPlan.count();
+         const activeSubscriptions = await prismaClient.userPlatformSubscription.count({
+             where: { status: "ACTIVE" }
+         });
+         
+         // Product data
+         const totalDigitalProducts = await prismaClient.digitalProduct.count();
+         const totalOrders = await prismaClient.order.count();
+         
+         // Verification data
+         const totalKYCDocuments = await prismaClient.kycDocument.count();
+         const pendingKYC = await prismaClient.kycDocument.count({
+             where: { status: "PENDING" }
+         });
+         
+         // Telegram data
+         const totalTelegramAccounts = await prismaClient.telegramAccount.count();
+         const totalTelegramChannels = await prismaClient.telegramChannel.count();
+         const totalTelegramSubscriptions = await prismaClient.telegramSubscription.count();
+ 
+         res.status(200).json({
+             success: true,
+             message: 'Dashboard fetched successfully',
+             data: {
+                 users: {
+                     totalUsers,
+                     totalAdmins
+                 },
+                 finance: {
+                     totalWithdrawalRequests,
+                     pendingWithdrawals,
+                     totalTransactions
+                 },
+                 subscriptions: {
+                     totalPlatformSubscriptionPlans,
+                     activeSubscriptions
+                 },
+                 products: {
+                     totalDigitalProducts,
+                     totalOrders
+                 },
+                 verification: {
+                     totalKYCDocuments,
+                     pendingKYC
+                 },
+                 telegram: {
+                     totalTelegramAccounts,
+                     totalTelegramChannels,
+                     totalTelegramSubscriptions
+                 }
+             }
+         });
+    } catch (error) {
+        console.error('Dashboard error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error'

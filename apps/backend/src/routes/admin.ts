@@ -7,7 +7,10 @@ import * as adminKycController from "../controllers/admin/adminKycController.js"
 export const adminRouter = Router();
 
 adminRouter.post("/signin", adminController.adminSignin);
+adminRouter.post("/update-password", authenticate, authorizeAdmin, adminController.updateAdminPassword);
 adminRouter.get("/profile", authenticate, authorizeAdmin, adminController.adminProfile);
+//Dashboard Routes
+adminRouter.get("/dashboard", authenticate, authorizeAdmin, adminController.getAdminDashboard);
 
 //Withdrawal Requests
 adminRouter.get("/withdrawals", authenticate, authorizeAdmin, adminController.getAllWithdrawalRequests);

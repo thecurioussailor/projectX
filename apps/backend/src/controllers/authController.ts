@@ -249,3 +249,58 @@ export const signin = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const updatePassword = async (req: Request, res: Response) => {
+  try {   
+    const userId = req.user?.id;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    if(!userId) {
+        res.status(401).json({
+            success: false,
+            message: 'Unauthorized'
+        });
+        return;
+    }
+    const user = await prismaClient.user.findUnique({
+        where: { id: userId }
+    });
+    if(!user || user.role !== "USER") {
+        res.status(404).json({
+            success: false,
+            message: 'User not found or not an user'
+        });
+        return;
+    }
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password); 
+      
+    if(!isPasswordValid) {
+        res.status(401).json({
+            success: false,
+            message: 'Invalid old password'
+        });
+        return;
+    }
+    if(newPassword !== confirmPassword) {
+        res.status(400).json({
+            success: false,
+            message: 'New password and confirm password do not match'
+        });
+        return;
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prismaClient.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword }
+    }); 
+    res.status(200).json({
+        success: true,
+        message: 'Password updated successfully'
+    });
+} catch (error) {
+    console.error('Update password error:', error);
+    res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+    });
+}
+}
