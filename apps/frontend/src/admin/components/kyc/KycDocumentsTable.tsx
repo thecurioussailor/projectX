@@ -1,17 +1,10 @@
 import { AdminKycDocument } from "../../store/useAdminKycStore";
 import { useAdminKyc } from "../../hooks/useAdminKyc";
-import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import Error from "../../../components/ui/Error";
+import { useState } from "react";
+import KycDocumentSidePop from "./KycDocumentSidePop";
 const KycDocumentsTable = () => {
-  const { kycDocument, isLoading, error } = useAdminKyc();
-
-  if (isLoading) {
-    return (
-        <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
-            <LoadingSpinner />
-        </div>
-    );
-}
+  const { kycDocument, error } = useAdminKyc();
 
 if (error) {
     return <Error error={error} />;
@@ -58,7 +51,7 @@ if (error) {
 export default KycDocumentsTable
 
 const KycDocumentsTableRow = ({kycDocument, index}: {kycDocument: AdminKycDocument, index: number}) => {
-
+    const [isSidePopOpen, setIsSidePopOpen] = useState(false);
         return (
             <tr className="border-t  border-gray-200 h-20 text-[#1B3155]">
                 <td className="px-8">{index + 1}</td>
@@ -67,8 +60,15 @@ const KycDocumentsTableRow = ({kycDocument, index}: {kycDocument: AdminKycDocume
                 <td className="px-4">{kycDocument.user.username}</td>
                 <td className="px-4">{kycDocument.documentType}</td>
                 <td className="px-4">{kycDocument.documentNumber}</td>
-                <td className="px-4">{kycDocument.status}</td>
-                <td className="px-4">{kycDocument.url}</td>
+                <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${kycDocument.status === "APPROVED" ? "bg-green-500" : kycDocument.status === "REJECTED" ? "bg-red-500" : "bg-yellow-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{kycDocument.status}</span></div></td>
+                <td className="px-4">
+                    <button 
+                    onClick={() => setIsSidePopOpen(true)}
+                    className="text-white bg-[#7e37d8] px-4 py-2 rounded-full">
+                        View
+                    </button>
+                    {isSidePopOpen && <KycDocumentSidePop kycDocumentId={kycDocument.id} onClose={() => setIsSidePopOpen(false)} />}
+                </td>
             </tr>
         )
 }

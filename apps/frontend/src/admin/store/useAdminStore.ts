@@ -17,6 +17,7 @@ interface AdminState {
 
     signin: (username: string, password: string) => Promise<boolean>;
     logout: () => void;
+    updatePassword: (oldPassword: string, newPassword: string, confirmPassword: string) => Promise<boolean>;
     setToken: (token: string) => void;
     setUser: (user: Admin) => void;
 }
@@ -85,6 +86,20 @@ export const useAdminStore = create<AdminState>((set) => ({
 
     setUser: (user: Admin) => {
         set({ user });
+    },
+
+    updatePassword: async (oldPassword: string, newPassword: string, confirmPassword: string) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await api.post(`/api/v1/admin/update-password`, { oldPassword, newPassword, confirmPassword });
+            return response.data.success;
+        } catch (error) {
+            console.error("Update password error:", error);
+            set({ error: "Failed to update password" });
+            return false;
+        } finally {
+            set({ isLoading: false });
+        }
     }
 }));
 

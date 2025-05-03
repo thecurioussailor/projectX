@@ -58,7 +58,7 @@ const ApproveWithdrawRequest = ({ withdrawalId }: { withdrawalId: string }) => {
                     <p className="text-xs text-[#718096]">Account Number:</p>
                     <input type="text" className="w-full p-1 outline-none border border-gray-300 rounded-md focus:ring-1 focus:ring-[#7F37D8] focus:border-transparent" onChange={(e) => setData({ ...data, accountNumber: e.target.value })} />
                 </div>
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md" disabled={isUpdateLoading}>{isUpdateLoading ? <div className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Updating...</div> : "Update"}</button>
+                <button type="submit" className="bg-[#7F37D8] text-white px-4 py-2 rounded-md" disabled={isUpdateLoading}>{isUpdateLoading ? <div className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Updating...</div> : "Update"}</button>
             </form>
             <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold">Reject Withdraw Request</h1>

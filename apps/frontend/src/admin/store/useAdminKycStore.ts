@@ -9,7 +9,7 @@ export interface AdminKycDocument {
     documentNumber: string;
     documentName: string;
     status: string;
-    url: string;
+    presignedUrl: string;
     createdAt: string;
     updatedAt: string;
     user: {
@@ -27,7 +27,7 @@ interface AdminKycState {
     error: string | null;
     getAllKycDocuments: () => Promise<void>;
     getKycDocumentById: (id: string) => Promise<void>;
-    updateKycDocument: (id: string, document: AdminKycDocument) => Promise<void>;
+    updateKycDocument: (id: string, status: string) => Promise<void>;
 }
 
 const api = axios.create({
@@ -68,10 +68,10 @@ export const useAdminKycStore = create<AdminKycState>((set) => ({
             set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
         }
     },
-    updateKycDocument: async (id: string, document: AdminKycDocument) => {
+    updateKycDocument: async (id: string, status: string) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.put(`/api/v1/admin/kyc-documents/${id}`, document);
+            const response = await api.put(`/api/v1/admin/kyc-documents/${id}`, { status });
             const updatedKycDocument = response.data.data;
             set((state) => ({
                 kycDocument: state.kycDocument.map((doc) => doc.id === id ? updatedKycDocument : doc),

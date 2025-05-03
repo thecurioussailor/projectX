@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,12 +9,14 @@ export const useAuth = (autoRedirect = false) => {
   const navigate = useNavigate();
   const { 
     user, 
+    token,
     isAuthenticated, 
     isLoading, 
     error, 
     signin, 
     signup, 
-    logout 
+    logout,
+    updatePassword
   } = useAuthStore();
 
   // Redirect based on authentication status
@@ -64,6 +66,21 @@ export const useAuth = (autoRedirect = false) => {
     navigate('/signin');
   };
 
+  const enhancedUpdatePassword = useCallback(
+    async (oldPassword: string, newPassword: string, confirmPassword: string) => {
+      if (!token) {
+        throw new Error("You must be logged in to update your password");
+      };
+      try {
+        const success = await updatePassword(oldPassword, newPassword, confirmPassword);
+        return success;
+      } catch {
+        return false;
+      }
+    },
+    [updatePassword, token]
+  );
+
   return {
     user,
     isAuthenticated,
@@ -71,6 +88,7 @@ export const useAuth = (autoRedirect = false) => {
     error,
     signin: handleSignin,
     signup: handleSignup,
-    logout: handleLogout
+    logout: handleLogout,
+    updatePassword: enhancedUpdatePassword
   };
 }; 

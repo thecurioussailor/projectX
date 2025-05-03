@@ -26,11 +26,28 @@ interface AuthState {
   signin: (username: string, password: string, loginMethod: 'email' | 'phone') => Promise<boolean>;
   signup: (email: string, phone: string, password: string) => Promise<boolean>;
   logout: () => void;
-  
+  updatePassword: (oldPassword: string, newPassword: string, confirmPassword: string) => Promise<boolean>;
+
   // Token persistence
   setToken: (token: string) => void;
   getToken: () => string | null;
 }
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: BACKEND_URL,
+  headers: {
+      'Content-Type': 'application/json',
+  },
+});
+
+// Add auth interceptor
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // Create auth store
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -45,9 +62,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!token) return;
 
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/v1/users/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/api/v1/users/me`);
       
       if (response.data.success) {
         set({ 
@@ -66,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signin: async (username: string, password: string, loginMethod: 'email' | 'phone') => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/v1/auth/signin`, {
+      const response = await api.post(`/api/v1/auth/signin`, {
         username,
         loginMethod,  
         password
@@ -109,7 +124,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     console.log(email, phone, password);
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/v1/auth/signup`, {
+      const response = await api.post(`/api/v1/auth/signup`, {
         email,
         phone,
         password
@@ -163,4 +178,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   getToken: () => {
     return get().token;
   },
+
+  updatePassword: async (oldPassword: string, newPassword: string, confirmPassword: string) => {
+    set({ isLoading: true, error: null });
+    try {
+        const response = await api.post(`/api/v1/auth/update-password`, { oldPassword, newPassword, confirmPassword });
+        return response.data.success;
+    } catch (error) {
+        console.error("Update password error:", error);
+        set({ error: "Failed to update password" });
+        return false;
+    } finally {
+        set({ isLoading: false });
+    }
+}
 })); 

@@ -1,13 +1,13 @@
 import { useCallback, useEffect } from "react";
 import { useAdminAuth } from "../context/AdminAuthContext";
-import { AdminKycDocument, useAdminKycStore } from "../store/useAdminKycStore";
+import { useAdminKycStore } from "../store/useAdminKycStore";
 
 export const useAdminKyc = () => {
     const { token } = useAdminAuth();
 
     const { 
         kycDocument, 
-        currentKycDocument, 
+        currentKycDocument,
         isLoading, 
         error, 
         getAllKycDocuments: getAllKycDocumentsStore, 
@@ -29,11 +29,11 @@ export const useAdminKyc = () => {
         return getKycDocumentByIdStore(id);
     }, [token, getKycDocumentByIdStore]);
 
-    const updateKycDocumentById = useCallback(async (id: string, document: AdminKycDocument) => {
+    const updateKycDocumentById = useCallback(async (id: string, status: string) => {
         if (!token) {
             throw new Error("You must be logged in to create a product");
         };
-        return updateKycDocumentStore(id, document);
+        return updateKycDocumentStore(id, status);
     }, [token, updateKycDocumentStore]);
 
     useEffect(() => {

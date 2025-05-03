@@ -138,7 +138,7 @@ const SaleSidePop = ({ sale, onClose }: { sale: Sale, onClose: () => void }) => 
             
           </div>
           <div className="pt-4">
-              <button onClick={handlePrint} className="bg-[#7e37d8] text-white px-4 py-2 rounded-md">Print</button>
+              <button onClick={handlePrint} className="bg-[#7e37d8] text-white py-2 px-4 rounded-full">Print</button>
             </div>
         </div>
       </div>

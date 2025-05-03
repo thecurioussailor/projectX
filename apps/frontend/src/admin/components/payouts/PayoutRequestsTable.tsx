@@ -55,7 +55,7 @@ const PayoutRequestsTableRow = ({withdrawal, index}: {withdrawal: Withdrawal, in
             <td className="px-4">{withdrawal.wallet.user.email}</td>
             <td className="px-4">{withdrawal.wallet.user.id}</td>
             <td className="px-4">{withdrawal.amount}</td>
-            <td className="px-4">{withdrawal.status}</td>
+            <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${withdrawal.status === "APPROVED" ? "bg-green-500" : withdrawal.status === "REJECTED" ? "bg-red-500" : "bg-yellow-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{withdrawal.status}</span></div></td>
             <td className="px-4">{withdrawal.paymentMethod}</td>
             <td className="px-4">
                 <button 

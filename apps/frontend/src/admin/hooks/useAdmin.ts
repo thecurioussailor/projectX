@@ -13,7 +13,7 @@ export function useAdmin(options: AdminHookOptions = {}) {
   const { redirectTo, redirectIfFound } = options;
   const navigate = useNavigate();
 
-  const { isAuthenticated, user, token, error, isLoading, signin, logout } = useAdminStore();
+  const { isAuthenticated, user, token, error, isLoading, signin, logout, updatePassword } = useAdminStore();
 
   // Handle redirects based on authentication status
   useEffect(() => {
@@ -48,6 +48,21 @@ export function useAdmin(options: AdminHookOptions = {}) {
     }
   }, [logout, navigate, redirectTo, redirectIfFound]);
 
+  const enhancedUpdatePassword = useCallback(
+    async (oldPassword: string, newPassword: string, confirmPassword: string) => {
+      if (!token) {
+        throw new Error("You must be logged in to update your password");
+      };
+      try {
+        const success = await updatePassword(oldPassword, newPassword, confirmPassword);
+        return success;
+      } catch {
+        return false;
+      }
+    },
+    [updatePassword, token]
+  );
+
   return {
     isAuthenticated,
     isLoading,
@@ -56,5 +71,6 @@ export function useAdmin(options: AdminHookOptions = {}) {
     token,
     signin: enhancedSignin,
     logout: enhancedLogout,
+    updatePassword: enhancedUpdatePassword,
   };
 }
