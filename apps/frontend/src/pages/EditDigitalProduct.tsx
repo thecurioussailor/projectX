@@ -22,7 +22,14 @@ const EditDigitalProduct = () => {
           ) : (
             <button 
               className="font-semibold flex items-center gap-2 text-white py-2 pl-2 pr-4 hover:bg-[#6C2EB9] transition-colors"
-              onClick={() => publishProduct(id as string)}
+              onClick={async () => {
+                try {
+                  await publishProduct(id as string)
+                  navigate(`/digital-products`);
+                } catch (error) {
+                  console.error("Error publishing product:", error);
+                }
+              }}
             >
               Publish
             </button>

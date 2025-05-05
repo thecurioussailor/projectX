@@ -71,7 +71,7 @@ const WithdrawalRequestSidePop = ({ withdrawalRequest, onClose }: { withdrawalRe
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Payment Details:</p>
-                    <p className="font-medium text-sm">{withdrawalRequest.paymentDetails}</p>
+                    <p className="font-medium text-sm">{withdrawalRequest.paymentDetails.bankName} - {withdrawalRequest.paymentDetails.accountNumber}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Admin Notes:</p>

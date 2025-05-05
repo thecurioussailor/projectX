@@ -27,6 +27,10 @@ export interface WithdrawalRequest {
     amount: number;
     status: string;
     paymentMethod: string;
+    paymentDetails: {
+        bankName: string;
+        accountNumber: string;
+    };
     adminNotes: string;
     processedAt: string | null;
     processedBy: string | null;

@@ -69,7 +69,7 @@ export const createWithdrawalRequest = async (req: Request, res: Response) => {
                 id: Number(userId)
             },
             include: {
-                kycDocuments: true
+                kycDocument: true
             }
         });
 
@@ -81,7 +81,7 @@ export const createWithdrawalRequest = async (req: Request, res: Response) => {
             return;
         }
 
-        const kycDocument = user.kycDocuments.find(document => document.status === 'APPROVED');
+        const kycDocument = user.kycDocument;
 
         if(!kycDocument) {
             res.status(400).json({
