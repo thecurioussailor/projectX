@@ -237,6 +237,7 @@ model TelegramAccount {
   channels          TelegramChannel[]
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
+  deletedAt         DateTime?
 }
 
 model TelegramChannel {

@@ -9,6 +9,7 @@ export const telegramRouter = Router();
 telegramRouter.post("/send-otp", authenticate, telegramController.sendOtp);
 telegramRouter.post("/verify-otp", authenticate, telegramController.verifyOtp);
 telegramRouter.get("/accounts", authenticate, telegramController.getAccount);
+telegramRouter.delete("/accounts/:accountId", authenticate, telegramController.deleteAccount);
 // channel management
 telegramRouter.post("/channels", authenticate, telegramController.createChannel);
 telegramRouter.get("/channels", authenticate, telegramController.getChannels);

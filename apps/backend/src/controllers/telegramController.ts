@@ -245,14 +245,20 @@ export const getAccount = async (req: Request, res: Response) => {
                 status: "error",
                 message: "Authentication required"
             });
+            return;
         }
 
+        // Option 1: Get accounts through user relation with filter
         const user = await prismaClient.user.findUnique({
             where: { id: userId },
-            include: { telegramAccounts: true }
+            include: { 
+                telegramAccounts: {
+                    where: { deletedAt: null }
+                }
+            }
         });
 
-        if(!user || !user.telegramAccounts) {
+        if(!user || !user.telegramAccounts.length) {
             res.status(404).json({
                 status: "error",
                 message: "Telegram account not found"
@@ -262,11 +268,14 @@ export const getAccount = async (req: Request, res: Response) => {
         
         const telegramAccounts = user.telegramAccounts.map(account => ({
             id: account.id,
+            userId: account.userId,
             telegramNumber: account.telegramNumber,
+            telegramUsername: account.telegramUsername,
             authenticated: account.authenticated,
             verified: account.verified,
             createdAt: account.createdAt,
             updatedAt: account.updatedAt,
+            deletedAt: account.deletedAt
         }));
         
         res.status(200).json({
@@ -281,6 +290,67 @@ export const getAccount = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const deleteAccount = async (req: Request, res: Response) => {
+    const { accountId } = req.params;
+    const userId = req.user?.id;
+
+    try {
+        if(!accountId) {
+            res.status(400).json({
+                status: "error",
+                message: "Account ID is required"
+            });
+            return;
+        }
+
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        const account = await prismaClient.telegramAccount.findUnique({
+            where: { id: accountId }
+        });
+        
+        if(!account) {
+            res.status(404).json({
+                status: "error",
+                message: "Telegram account not found"
+            });
+            return;
+        }
+
+        if(account.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to delete this account"
+            });
+            return;
+        }
+
+        await prismaClient.telegramAccount.update({
+            where: { id: accountId },
+            data: {
+                deletedAt: new Date()
+            }
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Telegram account deleted successfully"
+        });
+    } catch (error) {
+        console.error("Delete account error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to delete account"
+        });
+    }
+};
 
 export const createChannel = async (req: Request, res: Response) => {
     const { channelName, channelDescription, telegramNumber } = req.body;
