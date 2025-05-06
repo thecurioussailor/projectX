@@ -86,7 +86,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                 <div className="w-full md:w-1/2">
                     <label htmlFor="price">{formData.priceType === "FIXED" ? "Price" : "Minimum Price"}</label>    
                     <input 
-                        className="w-full border border-gray-300 rounded-md p-2"
+                        className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
                         type="number" 
                         id="price" 
                         name="price" 
@@ -96,10 +96,10 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     />
                 </div>
                 {formData.priceType === "FIXED" && (
-                    <div>
+                    <div className="w-full">
                         <label htmlFor="discountedPrice">Discounted Price</label>
                         <input 
-                            className="w-full border border-gray-300 rounded-md p-2"
+                            className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2"
                             type="number" 
                             id="discountedPrice" 
                             name="discountedPrice" 

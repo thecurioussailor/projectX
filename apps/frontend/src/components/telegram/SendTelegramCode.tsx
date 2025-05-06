@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTelegram } from "../../hooks/useTelegram";
 
-const SendTelegramCode = ({ onPhoneNumberChange, onSuccess }: { onPhoneNumberChange: (phoneNumber: string) => void, onSuccess: () => void }) => {
+const SendTelegramCode = ({ onPhoneNumberChange, onSuccess } : { onPhoneNumberChange: (phoneNumber: string) => void, onSuccess: () => void }) => {
     const [phoneNumber, setPhoneNumber] = useState("");
     const { sendOtp, isLoading, error } = useTelegram();
 
@@ -20,14 +20,15 @@ const SendTelegramCode = ({ onPhoneNumberChange, onSuccess }: { onPhoneNumberCha
             <label className="text-sm font-medium text-gray-700 text-left" htmlFor="telegram-phone-number">
                 Phone Number
             </label>
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-row gap-2 items-center border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent">
+                <span className="text-sm font-medium text-gray-700 text-left px-2">+91</span>
                 <input
-                    type="tel"
+                    type="number"
                     id="telegram-phone-number"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="Enter your phone number with country code"
-                    className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                    className="w-full p-2 outline-none rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
                     required
                 />
             </div>

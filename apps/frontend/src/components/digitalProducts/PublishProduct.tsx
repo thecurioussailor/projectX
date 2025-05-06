@@ -1,8 +1,14 @@
 import { DigitalProduct } from "../../store/useDigitalProductStore";
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import { useState } from "react";
+import { FaSpinner } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) => {
-  const { updateProduct } = useDigitalProduct();
+  const { updateProduct, publishProduct, unpublishProduct } = useDigitalProduct();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<{
     ctaButtonText: string;
     isLimitedQuantityEnabled: boolean;
@@ -12,9 +18,11 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
     isLimitedQuantityEnabled: currentProduct?.isLimitedQuantityEnabled || false,
     quantity: currentProduct?.quantity || 0,    
   });
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    updateProduct(currentProduct.id, formData);
+    setIsLoading(true);
+    await updateProduct(currentProduct.id, formData);
+    setIsLoading(false);
   }
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -57,8 +65,45 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
             </div>
           )}
         </div>
-        <button type="submit" className="bg-[#7F37D8] mt-4 text-white px-4 py-2 rounded-md">Save</button>
+        <button type="submit" className="bg-[#7F37D8] mt-4 text-white px-4 py-2 rounded-3xl flex items-center gap-2">
+          {isLoading ? <span className="flex items-center gap-2"><FaSpinner size={20} className="animate-spin"/> Saving...</span> : "Save"}
+        </button>
       </form>
+      <div className="flex flex-col gap-2">
+      {currentProduct?.status === "ACTIVE" ? (
+            <button 
+              onClick={async () => {
+                setIsUnpublishing(true);
+                await unpublishProduct(currentProduct.id)
+                setIsUnpublishing(false);
+              }}
+              className=" font-semibold text-white flex justify-center items-center gap-2 bg-[#7F37D8] border-white py-2 px-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
+          >
+            {isUnpublishing ? <span className="flex items-center gap-2"><FaSpinner size={20} className="animate-spin"/> Unpublishing...</span> : "Unpublish"}
+          </button>
+          ) : (
+            <button 
+              className="font-semibold flex justify-center items-center gap-2 bg-[#7F37D8] text-white py-2 pl-2 pr-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
+              onClick={async () => {
+                
+                  setIsPublishing(true);
+                  await publishProduct(currentProduct.id);
+                  setIsPublishing(false);
+                  navigate(`/digital-products`);
+              }}
+            >
+              {isPublishing ? <span className="flex items-center gap-2"><FaSpinner size={20} className="animate-spin"/> Publishing...</span> : "Publish"}
+            </button>
+          )}
+           <button 
+            className="font-semibold flex items-center justify-center gap-2 bg-[#7F37D8] text-white py-2 pl-2 pr-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
+            onClick={() => {
+              navigate(`/d/${currentProduct?.id}`);
+            }}
+           >
+            View Product
+           </button>
+        </div>
     </div>
   )
 }

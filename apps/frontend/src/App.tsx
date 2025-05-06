@@ -73,8 +73,8 @@ export default function App() {
             <Route path="/telegram" element={<Telegram />} />
             <Route path="/telegram/:id/edit" element={<EditTelegramChannel />} />
             <Route path="/link-short" element={<LinkShort />} />
-            <Route path='/digital-products' element={<DigitalProduct />} />
-            <Route path='/digital-products/:id/edit' element={<EditDigitalProduct />} />
+            <Route path="/digital-products" element={<DigitalProduct />} />
+            <Route path="/digital-products/:id/edit" element={<EditDigitalProduct />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/purchased-digital-products/:id" element={<PurchasedDigitalProducts />} />
           </Route>

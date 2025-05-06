@@ -5,7 +5,7 @@ import Gallery from "./Gallery";
 import Faq from "./Faq";
 import { DigitalProduct } from "../../store/useDigitalProductStore";
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
-import LoadingSpinner from "../ui/LoadingSpinner";
+import { FaSpinner } from "react-icons/fa";
 import CoverImage from "./CoverImage";
 const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }) => {
     const { isLoading, updateProduct } = useDigitalProduct();
@@ -24,8 +24,8 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
         updateProduct(currentProduct.id, formData);
     }
   return (
-    <div className="p-4 w-full">
-        <div className="flex flex-col gap-4">
+    <div className="md:p-4 w-full">
+        <div className="flex flex-col gap-4 pb-8">
             <form onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col md:flex-row gap-4 w-full"> 
@@ -116,7 +116,7 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                     className="bg-[#7F37D8] mt-4 text-white px-4 py-2 rounded-md"
                     disabled={isLoading}
                 >
-                    {isLoading ? <LoadingSpinner size="sm" /> : "Save"}
+                    {isLoading ? <span className="flex items-center gap-2"><FaSpinner size={20} className="animate-spin"/> Saving...</span> : "Save"}
                 </button>
             </form>
             <div className="flex flex-col gap-4">

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { DigitalProduct } from "../../store/useDigitalProductStore";
 import { IoIosAdd } from "react-icons/io";
 import TesminonialCard from "../ui/TesminonialCard";
+import { IoCloseOutline } from "react-icons/io5";
 
 interface TestimonialsProps {
     currentProduct: DigitalProduct;
@@ -96,11 +97,13 @@ const CreateTestimonialForm = ({ currentProduct, onClose, onSuccess }: CreateTes
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-2">
             <div className="bg-white p-6 shadow-md rounded-3xl w-full max-w-md">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-bold">Add Testimonial</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
+                    <button onClick={onClose}>
+                        <IoCloseOutline size={30}/>
+                    </button>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-4"> 

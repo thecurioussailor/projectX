@@ -179,7 +179,7 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
   sendOtp: async (phoneNumber: string) => {
     set({ isLoading: true, error: null });
     try {
-      await api.post('/api/v1/telegram/send-otp', { phoneNumber });
+      await api.post('/api/v1/telegram/send-otp', { "phoneNumber": "+91" + phoneNumber });
       set({ isLoading: false });
     } catch (error) {
       set({ 

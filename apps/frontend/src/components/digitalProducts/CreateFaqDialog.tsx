@@ -10,8 +10,8 @@ const CreateFaqDialog = ({ productId, onClose }: { productId: string, onClose: (
     onClose();
   }
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="flex flex-col gap-4 w-1/2 bg-white rounded-3xl shadow-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2">
+      <div className="flex flex-col gap-4 w-full md:w-1/2 bg-white rounded-3xl shadow-lg">
         <div className="flex justify-between py-8 border-b px-8 border-zinc-200 items-center w-full">
           <h1 className="text-2xl">Create FAQ</h1>
             <button onClick={onClose}>

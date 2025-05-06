@@ -106,11 +106,11 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
     return (
         <tr className="border-t border-gray-200 h-20 hover:bg-gray-50">
             <td className="px-8">{index + 1}</td>
-            <td className="px-4">{product.title}</td>
-            <td className="px-4">{product.category}</td>
-            <td className="px-4">{product.price}</td>
+            <td className="px-4">{product?.title}</td>
+            <td className="px-4">{product?.category}</td>
+            <td className="px-4">{product?.price}</td>
             <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${product.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{product.status === "ACTIVE" ? "Active" : "Inactive"}</span></div></td>
-            <td className="px-4">{product._count.orders}</td>
+            <td className="px-4">{product._count?.orders}</td>
             <td className="px-4">
                 <div className="flex relative items-center bg-[#7F37D8] rounded-3xl text-white w-40">
                     <button 

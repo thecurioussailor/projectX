@@ -123,7 +123,7 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
     };
 
     return (
-        <div className="w-full flex flex-col gap-6">
+        <div className="w-full flex flex-col gap-6 pb-12">
             <h2 className="text-xl font-semibold">Upload Files</h2>
             
             <div 
