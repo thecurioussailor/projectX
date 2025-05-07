@@ -4,8 +4,49 @@ import Error from "../ui/Error";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { useState } from "react";
 import SaleSidePop from "./SaleSidePop";
+import { CiSearch } from "react-icons/ci";
 const SalesTable = () => {
     const { sales, isLoading, error } = useSales();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [typeFilter, setTypeFilter] = useState<"ALL" | "DIGITAL_PRODUCT" | "TELEGRAM_PLAN">("ALL");
+    const [sortBy, setSortBy] = useState<"name" | "date" | "amount">("date");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+   
+    // Filter and sort sales
+    const filteredAndSortedSales = sales
+        ?.filter(sale => {
+            const matchesSearch = 
+                (sale.productType === 'DIGITAL_PRODUCT' 
+                    ? sale.digitalProduct?.title?.toLowerCase() ?? ""
+                    : sale.telegramPlan?.name?.toLowerCase() ?? ""
+                ).includes(searchQuery.toLowerCase()) ||
+                sale.user.username.toLowerCase().includes(searchQuery.toLowerCase());
+            
+            const matchesType = typeFilter === "ALL" || sale.productType === typeFilter;
+            
+            return matchesSearch && matchesType;
+        })
+        .sort((a, b) => {
+            if (sortBy === "name") {
+                const nameA = a.productType === 'DIGITAL_PRODUCT' ? a.digitalProduct?.title : a.telegramPlan?.name;
+                const nameB = b.productType === 'DIGITAL_PRODUCT' ? b.digitalProduct?.title : b.telegramPlan?.name;
+                return sortOrder === "asc" 
+                    ? (nameA ?? "").localeCompare(nameB ?? "")
+                    : (nameB ?? "").localeCompare(nameA ?? "");
+            }
+            if (sortBy === "date") {
+                return sortOrder === "asc" 
+                    ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            }
+            if (sortBy === "amount") {
+                return sortOrder === "asc" 
+                    ? Number(a.amount) - Number(b.amount)
+                    : Number(b.amount) - Number(a.amount);
+            }
+            return 0;
+        });
+   
     if (isLoading) {
         return (
             <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
@@ -13,7 +54,6 @@ const SalesTable = () => {
             </div>
         );
     }
-
 
     if (error) {
         return (
@@ -39,7 +79,54 @@ const SalesTable = () => {
                     <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
-                <h1 className="text-2xl pb-10 px-12 font-bold text-[#1B3155]">Sales</h1>
+
+                <div className="flex justify-between items-start px-12">
+                    <h1 className="text-2xl pb-10 px-12 font-bold text-[#1B3155]">Sales</h1>
+                    {/* Search and Filter Section */}
+                    <div className="flex items-center gap-4">
+                        {/* Search Bar */}
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search sales..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                            <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
+                        </div>
+
+                        {/* Type Filter */}
+                        <select
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value as "ALL" | "DIGITAL_PRODUCT" | "TELEGRAM_PLAN")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="ALL" className="text-sm">All Types</option>
+                            <option value="DIGITAL_PRODUCT" className="text-sm">Digital Products</option>
+                            <option value="TELEGRAM_PLAN" className="text-sm">Telegram Plans</option>
+                        </select>
+
+                        {/* Sort Options */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as "name" | "date" | "amount")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="date" className="text-sm">Sort by Date</option>
+                            <option value="name" className="text-sm">Sort by Name</option>
+                            <option value="amount" className="text-sm">Sort by Amount</option>
+                        </select>
+
+                        {/* Sort Order Toggle */}
+                        <button
+                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                        >
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                        </button>
+                    </div>
+                </div>
                 {/* tabular view */}
                 <div className="overflow-x-scroll lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
@@ -55,7 +142,7 @@ const SalesTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {sales?.map((sale, index) => (
+                            {filteredAndSortedSales?.map((sale, index) => (
                                 <SalesTableRow key={index} sale={sale} index={index} />
                             ))}  
                         </tbody>

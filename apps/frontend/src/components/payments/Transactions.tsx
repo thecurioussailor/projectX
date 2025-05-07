@@ -7,7 +7,9 @@ import TransactionSidePop from "./TransactionSidePop";
 
 
 const Transactions = () => {
-    const { transactions, isLoading, error } = useTransaction();
+    const { transactions, isLoading, error } = useTransaction();    
+    
+
     if (isLoading) {
         return (
             <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
@@ -15,7 +17,6 @@ const Transactions = () => {
             </div>
         );
     }
-
 
     if (error) {
         return (
@@ -30,6 +31,7 @@ const Transactions = () => {
             </div>
         );
     }
+
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-16 md:mb-0">
             <div className="flex flex-col gap-4 w-full">
