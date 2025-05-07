@@ -228,8 +228,8 @@ model TelegramAccount {
   id                String      @id @default(cuid())
   userId            Int         
   user              User        @relation(fields: [userId], references: [id])
-  telegramNumber    String?      @unique
-  telegramUsername  String?     @unique
+  telegramNumber    String?
+  telegramUsername  String? 
   session           String?
   phoneCodeHash     String?
   authenticated     Boolean     @default(false)

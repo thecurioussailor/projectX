@@ -9,12 +9,46 @@ import { useNavigate } from "react-router-dom";
 import Error from "../ui/Error";
 import { BsThreeDots } from "react-icons/bs";
 import Warning from "../ui/Warning";
+import { CiSearch } from "react-icons/ci";
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 const DigitalProductTable = () => {
     const { products, isLoading, error, fetchProducts } = useDigitalProduct();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+    const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
+    const [sortBy, setSortBy] = useState<"title" | "price" | "sales">("title");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
+
+    const categories = ["ALL", ...new Set(products.map(product => product.category))];
+    // Filter and sort products
+    const filteredAndSortedProducts = products
+        .filter(product => {
+            const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesStatus = statusFilter === "ALL" || product.status === statusFilter;
+            const matchesCategory = categoryFilter === "ALL" || product.category === categoryFilter;
+            return matchesSearch && matchesStatus && matchesCategory;
+        })
+        .sort((a, b) => {
+            if (sortBy === "title") {
+                return sortOrder === "asc" 
+                    ? a.title.localeCompare(b.title)
+                    : b.title.localeCompare(a.title);
+            }
+            if (sortBy === "price") {
+                return sortOrder === "asc" 
+                    ? Number(a.price) - Number(b.price)
+                    : Number(b.price) - Number(a.price);
+            }
+            if (sortBy === "sales") {
+                return sortOrder === "asc" 
+                    ? (a._count?.orders || 0) - (b._count?.orders || 0)
+                    : (b._count?.orders || 0) - (a._count?.orders || 0);
+            }
+            return 0;
+        });
 
     if (isLoading) {
         return (
@@ -44,7 +78,66 @@ const DigitalProductTable = () => {
                     <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
-                <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Digital Products</h1>
+                <div className="flex justify-between items-start px-12">
+                    <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Digital Products</h1>
+                    {/* Search and Filter Section */}
+                    <div className="flex items-center gap-4">
+                        {/* Search Bar */}
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                            <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
+                        </div>
+
+                        {/* Category Filter */}
+                        <select
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            {categories.map(category => (
+                                <option key={category} value={category} className="text-sm">
+                                    {category}
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* Status Filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="ALL" className="text-sm">All Status</option>
+                            <option value="ACTIVE" className="text-sm">Active</option>
+                            <option value="INACTIVE" className="text-sm">Inactive</option>
+                        </select>
+
+                        {/* Sort Options */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as "title" | "price" | "sales")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="title" className="text-sm">Sort by Title</option>
+                            <option value="price" className="text-sm">Sort by Price</option>
+                            <option value="sales" className="text-sm">Sort by Sales</option>
+                        </select>
+
+                        {/* Sort Order Toggle */}
+                        <button
+                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                        >
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                        </button>
+                    </div>
+                </div>
                 {/* tabular view */}
                 <div className="overflow-x-auto lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
@@ -60,7 +153,7 @@ const DigitalProductTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.map((product, index) => (
+                            {filteredAndSortedProducts.map((product, index) => (
                                 <ProductRow key={product.id} product={product} index={index} />
                             ))}
                         </tbody>

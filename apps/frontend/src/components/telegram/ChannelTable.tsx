@@ -8,15 +8,48 @@ import Warning from "../ui/Warning";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { FaEdit, FaEye, FaEyeSlash, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { CiSearch } from "react-icons/ci";
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 
 const ChannelTable = () => {
     const { channels, fetchChannels, isLoading } = useTelegram();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+    const [sortBy, setSortBy] = useState<"name" | "revenue" | "sales">("name");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     useEffect(() => {
         if (channels.length === 0) {
             fetchChannels();
         }
     }, [fetchChannels, channels.length]);
+
+    // Filter and sort channels
+    const filteredAndSortedChannels = channels
+        .filter(channel => {
+            const matchesSearch = channel.channelName.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesStatus = statusFilter === "ALL" || channel.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            if (sortBy === "name") {
+                return sortOrder === "asc" 
+                    ? a.channelName.localeCompare(b.channelName)
+                    : b.channelName.localeCompare(a.channelName);
+            }
+            if (sortBy === "revenue") {
+                const revenueA = a.telegramPlans?.reduce((acc, plan) => 
+                    acc + plan.subscriptions?.reduce((acc, sub) => acc + Number(sub.planPrice), 0), 0) || 0;
+                const revenueB = b.telegramPlans?.reduce((acc, plan) => 
+                    acc + plan.subscriptions?.reduce((acc, sub) => acc + Number(sub.planPrice), 0), 0) || 0;
+                return sortOrder === "asc" ? revenueA - revenueB : revenueB - revenueA;
+            }
+            if (sortBy === "sales") {
+                const salesA = a.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0) || 0;
+                const salesB = b.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0) || 0;
+                return sortOrder === "asc" ? salesA - salesB : salesB - salesA;
+            }
+            return 0;
+        });
 
     if (isLoading && channels.length === 0) {
         return <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
@@ -40,7 +73,56 @@ const ChannelTable = () => {
                     <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
-                <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Channels</h1>
+
+                <div className="flex justify-between items-start px-12">
+                    <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Channels</h1>
+                    
+                    {/* Search and Filter Section */}
+                    <div className="flex items-center gap-4">
+                        {/* Search Bar */}
+                        
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search channels..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                            <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
+                        </div>
+
+                        {/* Status Filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="ALL" className="text-sm">All Status</option>
+                            <option value="ACTIVE" className="text-sm">Active</option>
+                            <option value="INACTIVE" className="text-sm">Inactive</option>
+                        </select>
+
+                        {/* Sort Options */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as "name" | "revenue" | "sales")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="name" className="text-sm">Sort by Name</option>
+                            <option value="revenue" className="text-sm">Sort by Revenue</option>
+                            <option value="sales" className="text-sm">Sort by Sales</option>
+                        </select>
+
+                        {/* Sort Order Toggle */}
+                        <button
+                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                        >
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                        </button>
+                    </div>
+                </div>
                 {/* tabular view */}
                 <div className="overflow-x-auto lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full table-auto">
@@ -56,7 +138,7 @@ const ChannelTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {channels.map((channel, index) => (
+                            {filteredAndSortedChannels.map((channel, index) => (
                                 <ChannelTableRow key={channel.id} channel={channel} index={index} />
                             ))}
                         </tbody>

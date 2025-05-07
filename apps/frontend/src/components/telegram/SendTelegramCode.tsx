@@ -3,7 +3,7 @@ import { useTelegram } from "../../hooks/useTelegram";
 
 const SendTelegramCode = ({ onPhoneNumberChange, onSuccess } : { onPhoneNumberChange: (phoneNumber: string) => void, onSuccess: () => void }) => {
     const [phoneNumber, setPhoneNumber] = useState("");
-    const { sendOtp, isLoading, error } = useTelegram();
+    const { sendOtp, isLoading } = useTelegram();
 
     const handleGetCode = async () => {
         try {
@@ -32,7 +32,6 @@ const SendTelegramCode = ({ onPhoneNumberChange, onSuccess } : { onPhoneNumberCh
                     required
                 />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
         </div>
         <div className="flex justify-between gap-2">
             <button

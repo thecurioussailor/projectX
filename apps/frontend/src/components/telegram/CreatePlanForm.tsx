@@ -17,7 +17,8 @@ interface CreatePlanFormProps {
 const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
   const [planName, setPlanName] = useState("");
   const [planPrice, setPlanPrice] = useState("");
-  const [planDuration, setPlanDuration] = useState("");
+  const [planDurationType, setPlanDurationType] = useState("Day");
+  const [planDurationValue, setPlanDurationValue] = useState("");
   const { createPlan, fetchPlans, deletePlan, isLoading, error, plans } = useTelegram();
   
   useEffect(() => {
@@ -26,11 +27,22 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
   }, [channel.id, fetchPlans]);
   
   const handleCreatePlan = async () => {
-    if (!planName || !planPrice || !planDuration) return;
+    if (!planName || !planPrice || !planDurationValue) return;
     
     try {
       const price = parseFloat(planPrice);
-      const duration = parseInt(planDuration);
+      let duration = 0;
+      if(planDurationType === "Day") {
+        duration = parseInt(planDurationValue);
+      } else if(planDurationType === "Week") {
+        duration = parseInt(planDurationValue) * 7;
+      } else if(planDurationType === "Month") {
+        duration = parseInt(planDurationValue) * 30;
+      } else if(planDurationType === "Year") {
+        duration = parseInt(planDurationValue) * 365;
+      } else if(planDurationType === "Lifetime") {
+        duration = 365 * 10;
+      }
       
       if (isNaN(price) || isNaN(duration)) {
         throw new Error("Invalid price or duration");
@@ -50,7 +62,8 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       // Reset form
       setPlanName("");
       setPlanPrice("");
-      setPlanDuration("");
+      setPlanDurationType("Day");
+      setPlanDurationValue("");
     } catch (error) {
       console.error("Error creating plan:", error);
     }
@@ -79,7 +92,7 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       {plans && plans.length > 0 && (
         <div className="mb-4">
           <h4 className="text-md font-medium mb-2">Current Plans:</h4>
-          <div className="space-y-2 max-h-24 md:max-h-48 overflow-y-auto">
+          <div className="space-y-2 max-h-44 md:max-h-48 overflow-y-auto">
             {plans.map((plan, index) => (
               <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <div>
@@ -133,28 +146,41 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-gray-700" htmlFor="plan-duration">
-          Duration (days)
+          Duration Type
         </label>
         <select
           id="plan-duration"
-          value={planDuration}
-          onChange={(e) => setPlanDuration(e.target.value)}
+          value={planDurationType}
+          onChange={(e) => setPlanDurationType(e.target.value)}
           className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
         >
-          <option value="1">1 day</option>
-          <option value="7">1 week</option>
-          <option value="15">15 days</option>
-          <option value="30">1 month</option>
-          <option value="365">1 year</option>
-          <option value="730">2 years</option>
+          <option value="Day">Day</option>
+          <option value="Week">Week</option>
+          <option value="Month">Month</option>
+          <option value="Year">Year</option>
+          <option value="Lifetime">Lifetime</option>
         </select>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-gray-700" htmlFor="plan-duration">
+          Duration ({planDurationType})
+        </label>
+        <input
+          type="number"
+          id="plan-duration"
+          value={planDurationValue}
+          onChange={(e) => setPlanDurationValue(e.target.value)}
+          placeholder="e.g. 30"
+          className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+        />
       </div>
       
       {error && <p className="text-red-500 text-sm">{error}</p>}
       
       <button
         onClick={handleCreatePlan}
-        disabled={isLoading || !planName || !planPrice || !planDuration}
+        disabled={isLoading || !planName || !planPrice || !planDurationValue || !planDurationType}
         className="bg-[#7F37D8] text-white py-2 px-4 w-40 rounded-3xl hover:bg-[#6C2EB9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? "Creating..." : "Add Plan"}

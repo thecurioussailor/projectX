@@ -45,6 +45,7 @@ export function useTelegram() {
     sendOtp: storeSendOtp,
     verifyOtp: storeVerifyOtp,
     getAccounts: storeGetAccounts,
+    deleteAccount: storeDeleteAccount,
     createChannel: storeCreateChannel,
     fetchChannels: storeFetchChannels,
     fetchChannelById: storeFetchChannelById,
@@ -91,6 +92,14 @@ export function useTelegram() {
     }
     return storeGetAccounts();
   }, [token, storeGetAccounts]);
+
+  const deleteAccount = useCallback(async (accountId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to delete an account');
+    }
+    return storeDeleteAccount(accountId);
+  }, [token, storeDeleteAccount]);
+
   // Channel methods with authentication check
   const createChannel = useCallback(async (channelName: string, channelDescription: string, telegramNumber: string) => {
     if (!token) {
@@ -236,6 +245,7 @@ export function useTelegram() {
     sendOtp,
     verifyOtp,
     getAccounts,
+    deleteAccount,
     // Channel methods
     createChannel,
     fetchChannels,

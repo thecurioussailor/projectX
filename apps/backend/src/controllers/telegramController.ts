@@ -64,7 +64,7 @@ export const sendOtp = async (req: Request, res: Response) => {
                 telegramAccounts: true
             }
         });
-        
+        console.log("userWithTelegramAccounts", userWithTelegramAccounts);
         if(!userWithTelegramAccounts){
             res.status(404).json({
                 status: "error",
@@ -75,6 +75,7 @@ export const sendOtp = async (req: Request, res: Response) => {
         
         // Create or update telegram account
         if(!userWithTelegramAccounts.telegramAccounts){  
+            console.log("creating new telegram account");
             await prismaClient.telegramAccount.create({
                 data: {
                     user: {
@@ -89,6 +90,7 @@ export const sendOtp = async (req: Request, res: Response) => {
             });
         } else {
             const telegramAccount = userWithTelegramAccounts.telegramAccounts.find(account => account.telegramNumber === phoneNumber);
+            console.log("telegramAccount", telegramAccount);
             if(!telegramAccount){
                 await prismaClient.telegramAccount.create({
                     data: {
@@ -107,7 +109,8 @@ export const sendOtp = async (req: Request, res: Response) => {
                 },
                 data: {
                     phoneCodeHash: phoneCodeHash,
-                    session: stringSession.save()
+                    session: stringSession.save(),
+                    deletedAt: null
                 }
                 });
             }
@@ -156,7 +159,11 @@ export const verifyOtp = async (req: Request, res: Response) => {
                 id: userId
                 },
                 include: {
-                    telegramAccounts: true
+                    telegramAccounts: {
+                        where: {
+                            deletedAt: null
+                        }
+                    }
                 }
         });
         
@@ -169,7 +176,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
         }
         
         const telegramAccount = userWithTelegramAccounts.telegramAccounts.find(account => account.telegramNumber === phoneNumber);
-        
+        console.log("telegramAccount", telegramAccount);
     if(!telegramAccount?.session || !telegramAccount?.phoneCodeHash || !telegramAccount.telegramNumber) {
         res.status(400).json({
                 status: "error",

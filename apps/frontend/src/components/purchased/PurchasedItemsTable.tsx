@@ -5,6 +5,7 @@ import Error from "../ui/Error";
 import { useNavigate } from "react-router-dom";
 import PurchasedItemSidePop from "./PurchasedItemSidePop";
 import { DigitalFile } from "../../store/usePurchasedItemsStore";
+import { CiSearch } from "react-icons/ci";
 
 export interface DigitalPurchase {
     id: string;
@@ -44,6 +45,11 @@ export const isTelegramSubscription = (item: PurchasedItem): item is TelegramSub
 const PurchasedItemsTable = () => {
     const { telegramSubscriptions, digitalPurchases, isLoading, error, getPurchasedItems } = usePurchasedItems();
     const [ purchasedItems, setPurchasedItems] = useState<PurchasedItem[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [typeFilter, setTypeFilter] = useState<"ALL" | "TELEGRAM_PLAN" | "DIGITAL_PRODUCT">("ALL");
+    const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE" | "EXPIRED">("ALL");
+    const [sortBy, setSortBy] = useState<"name" | "date" | "amount">("date");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     useEffect(() => {
         getPurchasedItems();
     }, [getPurchasedItems]);  
@@ -57,6 +63,46 @@ const PurchasedItemsTable = () => {
         }
       }, [telegramSubscriptions, digitalPurchases, isLoading, error]);
 
+      // Filter and sort purchased items
+    const filteredAndSortedItems = purchasedItems
+    .filter(item => {
+        const isSub = isTelegramSubscription(item);
+        const matchesSearch = isSub 
+            ? item.planName.toLowerCase().includes(searchQuery.toLowerCase())
+            : item.product.title.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        const matchesType = typeFilter === "ALL" || 
+            (typeFilter === "TELEGRAM_PLAN" && isSub) ||
+            (typeFilter === "DIGITAL_PRODUCT" && !isSub);
+        
+        const matchesStatus = statusFilter === "ALL" || item.status === statusFilter;
+        
+        return matchesSearch && matchesType && matchesStatus;
+    })
+    .sort((a, b) => {
+        if (sortBy === "name") {
+            const nameA = isTelegramSubscription(a) ? a.planName : a.product.title;
+            const nameB = isTelegramSubscription(b) ? b.planName : b.product.title;
+            return sortOrder === "asc" 
+                ? nameA.localeCompare(nameB)
+                : nameB.localeCompare(nameA);
+        }
+        if (sortBy === "date") {
+            const dateA = isTelegramSubscription(a) ? new Date(a.createdAt) : new Date(a.purchaseDate);
+            const dateB = isTelegramSubscription(b) ? new Date(b.createdAt) : new Date(b.purchaseDate);
+            return sortOrder === "asc" 
+                ? dateA.getTime() - dateB.getTime()
+                : dateB.getTime() - dateA.getTime();
+        }
+        if (sortBy === "amount") {
+            const amountA = isTelegramSubscription(a) ? a.planPrice : Number(a.price);
+            const amountB = isTelegramSubscription(b) ? b.planPrice : Number(b.price);
+            return sortOrder === "asc" 
+                ? amountA - amountB
+                : amountB - amountA;
+        }
+        return 0;
+    });
 
     if (isLoading) {
         return (
@@ -65,7 +111,6 @@ const PurchasedItemsTable = () => {
             </div>
         );
     }
-
 
     if (error) {
         return (
@@ -92,7 +137,65 @@ const PurchasedItemsTable = () => {
                     <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
+                <div className="flex justify-between items-start px-12">
                 <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Purchased</h1>
+                    {/* Search and Filter Section */}
+                    <div className="flex items-center gap-4">
+                        {/* Search Bar */}
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search items..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                            <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
+                        </div>
+
+                        {/* Type Filter */}
+                        <select
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value as "ALL" | "TELEGRAM_PLAN" | "DIGITAL_PRODUCT")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="ALL" className="text-sm">All Types</option>
+                            <option value="TELEGRAM_PLAN" className="text-sm">Telegram Plans</option>
+                            <option value="DIGITAL_PRODUCT" className="text-sm">Digital Products</option>
+                        </select>
+
+                        {/* Status Filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE" | "EXPIRED")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="ALL" className="text-sm">All Status</option>
+                            <option value="ACTIVE" className="text-sm">Active</option>
+                            <option value="INACTIVE" className="text-sm">Inactive</option>
+                            <option value="EXPIRED" className="text-sm">Expired</option>
+                        </select>
+
+                        {/* Sort Options */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as "name" | "date" | "amount")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="date" className="text-sm">Sort by Date</option>
+                            <option value="name" className="text-sm">Sort by Name</option>
+                            <option value="amount" className="text-sm">Sort by Amount</option>
+                        </select>
+
+                        {/* Sort Order Toggle */}
+                        <button
+                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                        >
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                        </button>
+                    </div>
+                </div>
                 <div className="overflow-x-auto lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
                         <thead className="border-gray-300 h-20 text-[#1B3155]">
@@ -108,7 +211,7 @@ const PurchasedItemsTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {purchasedItems.map((item, index) => (
+                            {filteredAndSortedItems.map((item, index) => (
                                 <PurchasedItemRow key={item.id} item={item} index={index} />
                             ))}    
                         </tbody>

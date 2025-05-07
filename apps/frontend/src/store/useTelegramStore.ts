@@ -114,6 +114,7 @@ interface TelegramState {
   sendOtp: (phoneNumber: string) => Promise<void>;
   verifyOtp: (code: string, phoneNumber: string) => Promise<void>;
   getAccounts: () => Promise<void>;
+  deleteAccount: (accountId: string) => Promise<void>;
   // Channel methods
   createChannel: (channelName: string, channelDescription: string, telegramNumber: string) => Promise<TelegramChannel>;
   fetchChannels: () => Promise<void>;
@@ -193,7 +194,7 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
   verifyOtp: async (code: string, phoneNumber: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/api/v1/telegram/verify-otp', { code, phoneNumber });
+      const response = await api.post('/api/v1/telegram/verify-otp', { code, phoneNumber: "+91" + phoneNumber });
       set({ 
         accounts: get().accounts.map(account => 
           account.telegramNumber === phoneNumber 
@@ -222,6 +223,19 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to get accounts', isLoading: false });
+    }
+  },
+
+  deleteAccount: async (accountId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.delete(`/api/v1/telegram/accounts/${accountId}`);
+      set({ 
+        accounts: get().accounts.filter(account => account.id !== accountId),
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to delete account', isLoading: false });
     }
   },
   

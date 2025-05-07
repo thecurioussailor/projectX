@@ -77,7 +77,7 @@ const SubscriberRow = ({ subscriber, index }: { subscriber: Subscriber, index: n
         <tr className="border-t border-gray-200 h-20">
             <td className="px-8">{index + 1}</td>
             <td className="px-4">{subscriber.user.username}</td>
-            <td className="px-4">{subscriber.status}</td>
+            <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${subscriber.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{subscriber.status === "ACTIVE" ? "Active" : "Inactive"}</span></div></td>
             <td className="px-4">{subscriber.plan.name}</td>
             <td className="px-4">{subscriber.plan.price}</td>
             <td className="px-4">{new Date(subscriber.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
