@@ -4,11 +4,50 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import { useState } from "react";
 import TransactionSidePop from "./TransactionSidePop";
+import { CiSearch } from "react-icons/ci";
 
 
 const Transactions = () => {
-    const { transactions, isLoading, error } = useTransaction();    
-    
+    const { transactions, isLoading, error } = useTransaction(); 
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState<"name" | "amount" | "date" | "status">("date");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");   
+
+
+    // Filter and sort transactions
+    const filteredAndSortedTransactions = transactions
+        ?.filter(transaction => {
+            const matchesSearch = 
+                transaction.order?.digitalProduct?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                transaction.order?.telegramPlan?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                transaction.order?.user?.username?.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesSearch;
+        })
+        .sort((a, b) => {
+            if (sortBy === "name") {
+                const nameA = a.order?.digitalProduct?.title || a.order?.telegramPlan?.name || "";
+                const nameB = b.order?.digitalProduct?.title || b.order?.telegramPlan?.name || "";
+                return sortOrder === "asc" 
+                    ? nameA.localeCompare(nameB)
+                    : nameB.localeCompare(nameA);
+            }
+            if (sortBy === "amount") {
+                return sortOrder === "asc" 
+                    ? a.amount - b.amount
+                    : b.amount - a.amount;
+            }
+            if (sortBy === "date") {
+                return sortOrder === "asc" 
+                    ? new Date(a.paymentTime).getTime() - new Date(b.paymentTime).getTime()
+                    : new Date(b.paymentTime).getTime() - new Date(a.paymentTime).getTime();
+            }
+            if (sortBy === "status") {
+                return sortOrder === "asc" 
+                    ? a.status.localeCompare(b.status)
+                    : b.status.localeCompare(a.status);
+            }
+            return 0;
+        });
 
     if (isLoading) {
         return (
@@ -43,7 +82,43 @@ const Transactions = () => {
                     <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
-                <h1 className="text-2xl pb-10 px-12 font-bold text-[#1B3155]">Transactions</h1>
+                <div className="flex justify-between items-start px-12">
+                    <h1 className="text-2xl pb-10 px-12 font-bold text-[#1B3155]">Transactions</h1>
+                    {/* Search and Filter Section */}
+                    <div className="flex items-center gap-4">
+                        {/* Search Bar */}
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search transactions..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                            <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
+                        </div>
+
+                        {/* Sort Options */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as "name" | "amount" | "date" | "status")}
+                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                            <option value="date">Sort by Date</option>
+                            <option value="name">Sort by Name</option>
+                            <option value="amount">Sort by Amount</option>
+                            <option value="status">Sort by Status</option>
+                        </select>
+
+                        {/* Sort Order Toggle */}
+                        <button
+                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                        >
+                            {sortOrder === "asc" ? "↑" : "↓"}
+                        </button>
+                    </div>
+                </div>
                 {/* tabular view */}
                 <div className="overflow-x-scroll lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
@@ -60,7 +135,7 @@ const Transactions = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {transactions?.map((transaction, index) => (
+                            {filteredAndSortedTransactions?.map((transaction, index) => (
                                 <TransactionRow key={index} transaction={transaction} index={index} />
                             ))}
                         </tbody>

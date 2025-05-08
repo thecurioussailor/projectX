@@ -77,13 +77,13 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
                 await unpublishProduct(currentProduct.id)
                 setIsUnpublishing(false);
               }}
-              className=" font-semibold text-white flex justify-center items-center gap-2 bg-[#7F37D8] border-white py-2 px-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
+              className=" font-semibold text-white flex justify-center lg:w-fit items-center gap-2 bg-[#7F37D8] border-white py-2 px-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
           >
             {isUnpublishing ? <span className="flex items-center gap-2"><FaSpinner size={20} className="animate-spin"/> Unpublishing...</span> : "Unpublish"}
           </button>
           ) : (
             <button 
-              className="font-semibold flex justify-center items-center gap-2 bg-[#7F37D8] text-white py-2 pl-2 pr-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
+              className="font-semibold flex justify-center lg:w-fit items-center gap-2 bg-[#7F37D8] text-white py-2 pl-2 pr-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
               onClick={async () => {
                 
                   setIsPublishing(true);
@@ -96,7 +96,7 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
             </button>
           )}
            <button 
-            className="font-semibold flex items-center justify-center gap-2 bg-[#7F37D8] text-white py-2 pl-2 pr-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
+            className="font-semibold flex items-center justify-center lg:w-fit gap-2 bg-[#7F37D8] text-white py-2 pl-2 pr-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
             onClick={() => {
               navigate(`/d/${currentProduct?.id}`);
             }}

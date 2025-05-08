@@ -3,10 +3,16 @@ import { useWallet } from "../../hooks/useWallet";
 import { useState } from "react";
 import CreateWithdrawalRequest from "./CreateWithdrawalRequest";
 import WidrawalRequestsTable from "./WidrawalRequestsTable";
+import { useKyc } from "../../hooks/useKyc";
+import { IoAlertCircleOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
+
 const Wallet = () => {
 
   const { wallet } = useWallet();
   const [showWithdrawalRequest, setShowWithdrawalRequest] = useState(false);
+  const { kycDocument } = useKyc();
+  const [showAlert, setShowAlert] = useState(false);
 
   return (
     <div className="flex flex-col gap-8 w-full">
@@ -24,16 +30,22 @@ const Wallet = () => {
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-4">
                             <span className="text-2xl font-bold text-[#1B3155]">Wallet</span>
-                            <span className="text-gray-500 text-sm">KYC pending</span>
                         </div>
                         <p className="text-gray-500 text-sm">Manage your wallet balance and withdraw funds</p>
                     </div>
                     <div className="pt-4 md:pt-0">
                         <button 
-                            onClick={() => setShowWithdrawalRequest(true)}
+                            onClick={() => {
+                                if(kycDocument?.status !== "APPROVED"){
+                                    setShowAlert(true);
+                                    return;
+                                }
+                                setShowWithdrawalRequest(true)
+                            }}
                             className="bg-[#7E37D8] text-white px-6 py-2 rounded-3xl">
                                 Withdraw
                         </button>
+                        {showAlert && <Alert onCancel={() => setShowAlert(false)} />}
                         {showWithdrawalRequest && <CreateWithdrawalRequest onClose={() => setShowWithdrawalRequest(false)} />}
                     </div>
                 </div>         
@@ -51,3 +63,22 @@ const Wallet = () => {
 }
 
 export default Wallet
+
+const Alert = ({ onCancel }: { onCancel: () => void }) => {
+    const navigate = useNavigate();
+    return (
+      <div className="absolute inset-0 flex justify-center items-center bg-black/50">
+          <div className="flex flex-col gap-2 bg-white p-8 items-center rounded-3xl border border-gray-200">
+              <div className="flex justify-center items-center text-[#7F37D8]">
+                  <IoAlertCircleOutline size={100} />
+              </div>
+              <p className="text-2xl font-bold text-[#7F37D8]">KYC pending</p>
+              <p className="text-gray-500">Please upload your KYC document to withdraw funds</p>
+              <div className="flex gap-4 justify-between mt-6">
+                  <button onClick={onCancel} className="text-gray-500 px-4 py-2 rounded-3xl border border-gray-300 hover:bg-gray-100 transition-all duration-300">Cancel</button>
+                  <button onClick={() => navigate("/settings")} className="bg-[#7F37D8] text-white px-4 py-2 rounded-3xl hover:bg-[#7F37D8]/90 transition-all duration-300">Upload KYC</button>
+              </div>
+          </div>
+      </div>
+    )
+  }

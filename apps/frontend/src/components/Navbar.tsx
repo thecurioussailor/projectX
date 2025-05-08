@@ -1,13 +1,12 @@
 import { FiAlignCenter } from "react-icons/fi";
-import { CiSearch } from "react-icons/ci";
-import { FaUser } from "react-icons/fa";
+import { FaHeart, FaUser, FaProductHunt, FaTelegram } from "react-icons/fa";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 import userImage from "../assets/images/profileprojectx.png";
 import logo from "../assets/images/tinywalletLogo.png";
-import { GoSignOut } from "react-icons/go";
+import { GoScreenFull, GoSignOut } from "react-icons/go";
 const Navbar = ({isMobile}: {isMobile: boolean}) => {
   
   const { toggleSidebar, isSidebarOpen } = useSidebar();
@@ -43,7 +42,9 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const favoritesRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
@@ -64,17 +65,45 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleFavoritesClick = (event: MouseEvent) => {
+      if (favoritesRef.current && !favoritesRef.current.contains(event.target as Node)) {
+        setIsFavoritesOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleFavoritesClick);
+    return () => {
+      document.removeEventListener('mousedown', handleFavoritesClick);
+    };
+  }, []);
+
   return (
-    <div className="flex justify-end md:justify-between md:items-center items-end gap-2 w-full">
-      <div className={`items-center gap-2 w-96 ${isMobile ? 'hidden' : 'flex'}`}>
-        <div className="text-[#7F37D8]">
-          <CiSearch size={20}/>
+    <div className="flex justify-end md:justify-end md:items-center items-end gap-2">
+      <div className={`items-center text-[#7F37D8] gap-10 px-10 ${isMobile ? 'hidden' : 'flex'}`}>
+        <button 
+          className="flex items-center gap-2"
+          onClick={() => {
+            if(!document.fullscreenElement){
+              document.documentElement.requestFullscreen();
+            }else{
+              document.exitFullscreen();
+            }
+          }}
+        >
+          <GoScreenFull size={20}/>
+        </button>
+        <div ref={favoritesRef} className="relative">
+          <button 
+            className="flex items-center gap-2"
+            onClick={() => {
+              setIsFavoritesOpen(!isFavoritesOpen);
+            }}
+          >
+            <FaHeart size={20} className="text-red-500"/>
+          </button>
+          {isFavoritesOpen && <FavoritesButton onClose={() => setIsFavoritesOpen(false)}/>}
         </div>
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full pl-5 pr-3 text-gray-600 bg-transparent border-0 border-l border-purple-100 focus:outline-none focus:ring-0 placeholder-purple-200"
-        />
       </div>
       <div className="relative flex gap-8" ref={dropdownRef}>
         <button 
@@ -113,5 +142,50 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
         )}
       </div>
     </div>
+  );
+};
+
+const FavoritesButton = ({ onClose }: { onClose: () => void }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="absolute -left-32 top-8 mt-2 w-64 bg-white shadow-lg z-10 rounded-xl overflow-clip">
+            <div className="">
+              <div className="flex flex-col gap-1 justify-center items-center text-gray-700 border-b bg-[#6428B0] px-4 py-6">
+                <p className="font-medium text-white text-xl">Favorites</p>
+              </div>
+              <div className="grid grid-cols-3">
+                <button
+                  onClick={() => {
+                    navigate('/link-short');
+                    onClose();
+                  }}
+                  className="w-full flex flex-col justify-center gap-1 items-center text-left text-sm text-gray-700 hover:bg-gray-100 border-b border-r border-gray-200"
+                >
+                  <FaUser />
+                  <span className="text-xs font-semibold">Link</span>
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/digital-products');
+                    onClose();
+                  }}
+                  className="w-full flex flex-col justify-center text-center items-center gap-1 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-r border-gray-200"
+              >
+                  <FaProductHunt/> 
+                  <span className="text-xs font-semibold">Digital Product</span>
+                </button>
+                <button  
+                  onClick={() => {
+                    navigate('/telegram');
+                    onClose();
+                  }}
+                  className="w-full flex flex-col justify-center text-center items-center gap-1 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-r border-gray-200"
+                >
+                  <FaTelegram/>
+                  <span className="text-xs font-semibold">Telegram</span>
+                </button>
+              </div>
+            </div>
+          </div>
   );
 };

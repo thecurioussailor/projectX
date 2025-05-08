@@ -13,7 +13,6 @@ const Dashboard = () => {
     return `${amount.toLocaleString()} INR`;
   };
 
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -93,7 +92,7 @@ const Dashboard = () => {
             <RecentPurchases data={stats?.recentSales}/>
           </div>}
 
-          {(stats.digitalProductStats._count || stats.telegramStats._count) && <div className="w-full lg:w-1/3">
+          {((stats.digitalProductStats._count ?? 0) > 0 || (stats.telegramStats._count ?? 0) > 0) && <div className="w-full lg:w-1/3">
             <PiChartSales 
               total={Number(stats?.digitalProductStats?._count) + Number(stats?.telegramStats?._count)}
               digital={Number(stats?.digitalProductStats?._count)}
