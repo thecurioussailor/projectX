@@ -57,6 +57,23 @@ const PurchasedDigitalProducts = () => {
         }
     };
 
+    const handleDownload = async (url: string, fileName: string) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-[calc(100vh-200px)]">
@@ -120,15 +137,12 @@ const PurchasedDigitalProducts = () => {
                                 
                                 <div className="flex justify-between items-center mt-4">
                                     <span className="text-xs text-gray-500 uppercase">{file.type}</span>
-                                    <a 
-                                        href={file.presignedUrl} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
+                                    <button 
+                                        onClick={() => handleDownload(file.presignedUrl, getFileName(file.presignedUrl))}
                                         className="flex items-center gap-2 px-3 py-1.5 bg-[#7E37D8] text-white rounded-lg hover:bg-[#6a2cb8] text-sm"
-                                        download
                                     >
                                         <FaDownload /> Download
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         ))}

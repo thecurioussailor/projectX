@@ -72,7 +72,7 @@ const SaleSidePop = ({ sale, onClose }: { sale: Sale, onClose: () => void }) => 
             <div className="border-b pb-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Amount:</p>
-                    <p className="font-medium text-sm">${parseFloat(sale.amount.toString()).toFixed(2)}</p>
+                    <p className="font-medium text-sm">{parseFloat(sale.amount.toString()).toFixed(2) + " INR"}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Status:</p>

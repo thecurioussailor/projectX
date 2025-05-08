@@ -40,7 +40,12 @@ export const getUserWallet = async (req: Request, res: Response) => {
         
 
     } catch (error) {
-        
+        console.log("Error fetching wallet", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error
+        });
     }
 }
 export const createWithdrawalRequest = async (req: Request, res: Response) => {
@@ -407,7 +412,7 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                         increment: withdrawableAmount
                     },
                     totalEarnings: {
-                        increment: userAmount
+                        increment: amount
                     },
                     lastUpdated: new Date()
                 }

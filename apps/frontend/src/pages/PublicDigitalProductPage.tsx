@@ -287,7 +287,7 @@ const PublicDigitalProductPage = () => {
                   }
                 }}  
                 className="bg-[#7F37D8] text-white rounded-3xl p-2 hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                disabled={!user?.name || !user?.email || !user?.phone || amount < (product?.price || 0)}
+                disabled={!user?.name || !user?.email || !user?.phone}
               >
                 {product?.ctaButtonText || "Pay Now"}
               </button> : <button 
