@@ -46,7 +46,7 @@ const UpdatePassword = () => {
                         type="password" 
                         id="oldPassword" 
                         required
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#7F37D8] focus:border-transparent" />
+                        className="lg:w-1/2 focus:border-transparent w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8]" />
                 </div>
                 <div className="flex flex-col gap-4">
                     <label htmlFor="newPassword">New Password</label>
@@ -56,7 +56,7 @@ const UpdatePassword = () => {
                         type="password" 
                         id="newPassword" 
                         required
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#7F37D8] focus:border-transparent" />
+                        className="lg:w-1/2 focus:border-transparent w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8]" />
                 </div>
                 <div className="flex flex-col gap-4">
                     <label htmlFor="confirmPassword">Confirm Password</label>
@@ -66,9 +66,9 @@ const UpdatePassword = () => {
                         type="password" 
                         id="confirmPassword" 
                         required
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#7F37D8] focus:border-transparent" />
+                        className="lg:w-1/2 focus:border-transparent w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8]" />
                 </div>
-                <button type="submit" className="bg-[#7F37D8] text-white px-4 py-2 rounded-md" disabled={isLoading}>{isLoading ? <span className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Updating...</span> : "Update Password"}</button>
+                <button type="submit" className="bg-[#7F37D8] lg:w-1/2 text-white px-4 py-2 rounded-md" disabled={isLoading}>{isLoading ? <span className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Updating...</span> : "Update Password"}</button>
             </form>
         </div>
     </div>

@@ -86,6 +86,7 @@ model Wallet {
   withdrawableBalance Decimal   @default(0.0)  // Amount available for withdrawal
   pendingBalance      Decimal   @default(0.0)  // Amount not yet available
   totalEarnings       Decimal   @default(0.0)  // Lifetime earnings
+  totalCharges        Decimal   @default(0.0)  // Total charges so far
   totalWithdrawn      Decimal   @default(0.0)  // Total withdrawn so far
 
   lastUpdated         DateTime  @default(now())

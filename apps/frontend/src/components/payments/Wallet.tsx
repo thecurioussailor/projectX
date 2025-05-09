@@ -51,6 +51,7 @@ const Wallet = () => {
                 </div>         
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 py-8 px-8 border-t justify-items-center border-gray-200">
                     <MoneyCard amount={wallet?.totalEarnings || 0} gradient="bg-gradient-to-r from-green-400 to-emerald-500" title="Total Earnings" />
+                    <MoneyCard amount={wallet?.totalCharges || 0} gradient="bg-gradient-to-r from-blue-400 to-blue-500" title="Total Charges" />
                     <MoneyCard amount={wallet?.totalBalance || 0} gradient="bg-gradient-to-r from-indigo-500 to-indigo-700" title="Total Balance" />
                     <MoneyCard amount={wallet?.withdrawableBalance || 0} gradient="bg-gradient-to-r from-rose-400 to-red-500" title="Withdrawable Balance" />
                     <MoneyCard amount={wallet?.totalWithdrawn || 0} gradient="bg-gradient-to-r from-rose-400 to-red-500" title="Total Withdrawals" />

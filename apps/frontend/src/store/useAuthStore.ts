@@ -24,7 +24,7 @@ interface AuthState {
   loadUser: () => Promise<void>;
   // Auth actions
   signin: (username: string, password: string, loginMethod: 'email' | 'phone') => Promise<boolean>;
-  signup: (email: string, phone: string, password: string) => Promise<boolean>;
+  signup: (email: string, fullName: string, phone: string, password: string) => Promise<boolean>;
   logout: () => void;
   updatePassword: (oldPassword: string, newPassword: string, confirmPassword: string) => Promise<boolean>;
 
@@ -120,12 +120,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   // Sign up function
-  signup: async (email: string, phone: string, password: string) => {
+  signup: async (email: string, fullName: string, phone: string, password: string) => {
     console.log(email, phone, password);
     set({ isLoading: true, error: null });
     try {
       const response = await api.post(`/api/v1/auth/signup`, {
         email,
+        fullName,
         phone,
         password
       });

@@ -21,13 +21,13 @@ const generateUsername = (email: string, phone: string): string => {
 export const signup = async (req: Request, res: Response) => {
   try {
     console.log('signup');
-    const { email, phone, password } = req.body;
-    console.log(email, phone, password);
+    const { email, fullName, phone, password } = req.body;
+    console.log(email, fullName, phone, password);
 
-    if (!email || !phone || !password) {
+    if (!email || !fullName || !phone || !password) {
       res.status(400).json({ 
         success: false, 
-        message: 'Email, phone and password are required' 
+        message: 'Email, fullName, phone and password are required' 
       });
       return;
     }
@@ -101,6 +101,7 @@ export const signup = async (req: Request, res: Response) => {
       const newUser = await tx.user.create({
         data: {
           username,
+          name: fullName,
           email,
           phone,
           password: hashedPassword,
@@ -143,6 +144,7 @@ export const signup = async (req: Request, res: Response) => {
       data: {
         user: {
           id: result.newUser.id,
+          name: result.newUser.name,
           username: result.newUser.username,
           email: result.newUser.email,
           phone: result.newUser.phone,

@@ -46,8 +46,8 @@ export const useAuth = (autoRedirect = false) => {
   };
 
   // Handle signup with navigation
-  const handleSignup = async (email: string, phone: string, password: string) => {
-    const success = await signup(email, phone, password);
+  const handleSignup = async (email: string, fullName: string, phone: string, password: string) => {
+    const success = await signup(email, fullName, phone, password);
     if (success) {
       const returnTo = localStorage.getItem('returnTo');
       if (returnTo) {

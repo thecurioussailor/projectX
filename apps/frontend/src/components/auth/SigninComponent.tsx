@@ -19,7 +19,7 @@ const SigninComponent = ({ setIsSignin }: { setIsSignin: () => void }) => {
 
       {/* Left Section (Form) */}
       <div className="flex-1 flex p-6 bg-white">
-        <div className="w-full max-w-md space-y-6">
+        <div className="w-full max-w-md space-y-1">
 
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-800">Sign In</h1>
@@ -29,8 +29,8 @@ const SigninComponent = ({ setIsSignin }: { setIsSignin: () => void }) => {
           </div>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 p-3 rounded">
-              {error}
+            <div className="text-red-500">
+              {error + ". " + "Try again"}
             </div>
           )}
 

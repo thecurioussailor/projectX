@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 const SignupComponent = ({setIsSignin}: {setIsSignin: () => void}) => {
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -10,8 +11,8 @@ const SignupComponent = ({setIsSignin}: {setIsSignin: () => void}) => {
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!email || !phone || !password) return;
-    await signup(email, phone, password);
+    if (!email || !fullName || !phone || !password) return;
+    await signup(email, fullName, phone, password);
   };
   
   return (
@@ -33,19 +34,17 @@ const SignupComponent = ({setIsSignin}: {setIsSignin: () => void}) => {
 
       {/* Right Section (Form) */}
       <div className="flex-1 flex p-6 bg-white">
-        <div className="w-full max-w-md space-y-6">
+        <div className="w-full max-w-md space-y-1 h-96 overflow-y-scroll [&::-webkit-scrollbar]:hidden">
 
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-800">Sign Up</h1>
             <p className="mt-2 text-gray-600 text-sm">Enter your Email, Phone, and Password</p>
           </div>
-
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 p-3 rounded">
-              {error}
+            <div className="text-red-500">
+              {error + ". " + "Try again"}
             </div>
           )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Email Input */}
@@ -60,7 +59,18 @@ const SignupComponent = ({setIsSignin}: {setIsSignin: () => void}) => {
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
               />
             </div>
-
+            {/* Name Input */}
+            <div>
+              <label className="block text-gray-700 mb-1 text-sm">Name</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                placeholder="Enter your name"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
+              />
+            </div>
             {/* Phone Input */}
             <div>
               <label className="block text-gray-700 mb-1 text-sm">Phone Number</label>

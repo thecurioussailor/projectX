@@ -334,6 +334,7 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                     userId: Number(userId),
                     totalBalance: 0,
                     withdrawableBalance: 0,
+                    totalCharges: 0,
                     pendingBalance: 0,
                     totalEarnings: 0,
                     totalWithdrawn: 0
@@ -414,6 +415,9 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                     totalEarnings: {
                         increment: amount
                     },
+                    totalCharges: {
+                        increment: platformFee
+                    },
                     lastUpdated: new Date()
                 }
             });
@@ -443,7 +447,10 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                     increment: withdrawableAmount
                 },
                 totalEarnings: {
-                    increment: userAmount
+                    increment: amount
+                },
+                totalCharges: {
+                    increment: platformFee
                 },
                 lastUpdated: new Date()
             }

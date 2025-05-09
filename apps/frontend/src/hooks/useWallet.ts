@@ -7,6 +7,7 @@ interface WalletInterface {
   id: string;
   totalBalance: number;
   withdrawableBalance: number;
+  totalCharges: number;
   pendingBalance: number;
   totalEarnings: number;
   totalWithdrawn: number;
