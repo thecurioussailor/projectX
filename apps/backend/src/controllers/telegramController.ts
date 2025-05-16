@@ -563,7 +563,7 @@ export const getChannels = async (req: Request, res: Response) => {
             return;
         }
         
-        const channels = userWithTelegramAccounts.telegramAccounts.flatMap(account => account.channels);
+        const channels = userWithTelegramAccounts.telegramAccounts.flatMap(account => account.channels.filter(channel => channel.deletedAt === null));
         
         res.status(200).json({
             status: "success",

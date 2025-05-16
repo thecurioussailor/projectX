@@ -6,6 +6,7 @@ import { StringSession } from "telegram/sessions/index.js";
 import { TelegramClient, Api } from "telegram";
 import { updateWalletBalance } from "./walletController.js";
 import dotenv from "dotenv";
+import TelegramBot from 'node-telegram-bot-api';
 
 dotenv.config();
 const apiId: number = Number(process.env.TELEGRAM_API_ID);
@@ -291,120 +292,159 @@ const createTelegramSubscription = async (order: any) => {
     });
 };
 
+// const generateTelegramInviteLink = async (order: any, subscription: any) => {
+//     try {
+//         if (!order.telegramPlan) {
+//             const plan = await prismaClient.telegramPlan.findUnique({
+//                 where: { id: order.telegramPlanId },
+//                 include: { channel: true }
+//             });
+            
+//             if (!plan) {
+//                 throw new Error("Telegram plan not found");
+//             }
+            
+//             order.telegramPlan = plan;
+//         }
+
+//         const channel = await prismaClient.telegramChannel.findUnique({
+//             where: { id: order.telegramPlan.channelId }
+//         });
+        
+//         if (!channel || !channel.telegramChannelId) {
+//             throw new Error("Channel ID not found");
+//         }
+        
+//         const telegramAccount = await prismaClient.telegramAccount.findFirst({
+//             where: { 
+//                 channels: {
+//                     some: {
+//                         id: channel.id
+//                     }
+//                 }
+//             }
+//         });
+        
+//         if (!telegramAccount || !telegramAccount.session) {
+//             throw new Error("Telegram account session not found");
+//         }
+        
+//         // Initialize Telegram client with the session
+//         const client = new TelegramClient(
+//             new StringSession(telegramAccount.session),
+//             apiId,
+//             apiHash,
+//             { connectionRetries: 5 }
+//         );
+//         await client.connect();
+        
+//         if (!await client.isUserAuthorized()) {
+//             throw new Error("Telegram account not authorized");
+//         }
+
+//         console.log("Fetching dialogs to locate the channel...");
+//         const dialogs = await client.getDialogs({});
+//         console.log(`Found ${dialogs.length} dialogs`);
+
+
+//         // Find our channel in dialogs
+//         const targetChannelId = channel.telegramChannelId;
+//         console.log("Looking for channel with ID:", targetChannelId);
+        
+//         let targetChannel = null;
+//         for (const dialog of dialogs) {
+//             console.log("Dialog:", JSON.stringify({
+//                 id: dialog.entity?.id,
+//                 title: dialog.title,
+//                 type: dialog.entity?.className
+//             }));
+            
+//             if (dialog.entity && 
+//                 (dialog.entity.id.toString() === targetChannelId || 
+//                  dialog.entity.id.toString() === `-100${targetChannelId}`)) {
+//                 targetChannel = dialog.entity;
+//                 break;
+//             }
+//         }
+        
+//         if (!targetChannel) {
+//             throw new Error("Channel not found in Telegram dialogs");
+//         }
+        
+//         console.log("Found channel:", JSON.stringify(targetChannel, null, 2));
+        
+//         // Generate a single-use invite link that expires after one use
+//         console.log("Generating invite link...");
+//         const inviteLink = await client.invoke(
+//             new Api.messages.ExportChatInvite({
+//                 peer: targetChannel,
+//                 expireDate: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours expiry
+//                 usageLimit: 1, // Single use only
+//             })
+//         );
+        
+//         console.log("Invite link result:", JSON.stringify(inviteLink, null, 2));
+        
+//         await client.disconnect();
+        
+//         // Make sure we have a valid link
+//         if (!inviteLink || !inviteLink.link) {
+//             throw new Error("Failed to generate invite link");
+//         }
+        
+//         // Store the invite link in the subscription record
+//         if (subscription) {
+//             await prismaClient.telegramSubscription.update({
+//                 where: { id: subscription.id },
+//                 data: { inviteLink: inviteLink.link }
+//             });
+//         }
+        
+//         return inviteLink.link;
+//     } catch (error) {
+//         console.error("Error generating Telegram invite link:", error);
+//         throw error;
+//     }
+// };
+
+// Step 1: Create invite link with approval
 const generateTelegramInviteLink = async (order: any, subscription: any) => {
     try {
-        if (!order.telegramPlan) {
-            const plan = await prismaClient.telegramPlan.findUnique({
-                where: { id: order.telegramPlanId },
-                include: { channel: true }
-            });
-            
-            if (!plan) {
-                throw new Error("Telegram plan not found");
-            }
-            
-            order.telegramPlan = plan;
+      if (!order.telegramPlan?.channel?.telegramChannelId) {
+        throw new Error("Channel ID not found");
+      }
+      
+      let channelId = order.telegramPlan.channel.telegramChannelId;
+      if (!channelId.startsWith('-100') && !channelId.startsWith('-')) {
+        channelId = `-100${channelId}`;
+      }
+      
+      // Initialize bot
+      const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN!);
+      
+      // Create invite link requiring approval (can't set member_limit here)
+      const inviteLink = await bot.createChatInviteLink(channelId, {
+        name: `Subscription: ${subscription.id}`,
+        creates_join_request: true,
+        expire_date: Math.floor(Date.now() / 1000) + 86400 // 24 hours
+      });
+      
+      // Store the invite link
+      await prismaClient.telegramSubscription.update({
+        where: { id: subscription.id },
+        data: { 
+          inviteLink: inviteLink.invite_link,
+          // Store the link ID to revoke it later
+          inviteLinkId: inviteLink.invite_link.split('/').pop()
         }
-
-        const channel = await prismaClient.telegramChannel.findUnique({
-            where: { id: order.telegramPlan.channelId }
-        });
-        
-        if (!channel || !channel.telegramChannelId) {
-            throw new Error("Channel ID not found");
-        }
-        
-        const telegramAccount = await prismaClient.telegramAccount.findFirst({
-            where: { 
-                channels: {
-                    some: {
-                        id: channel.id
-                    }
-                }
-            }
-        });
-        
-        if (!telegramAccount || !telegramAccount.session) {
-            throw new Error("Telegram account session not found");
-        }
-        
-        // Initialize Telegram client with the session
-        const client = new TelegramClient(
-            new StringSession(telegramAccount.session),
-            apiId,
-            apiHash,
-            { connectionRetries: 5 }
-        );
-        await client.connect();
-        
-        if (!await client.isUserAuthorized()) {
-            throw new Error("Telegram account not authorized");
-        }
-
-        console.log("Fetching dialogs to locate the channel...");
-        const dialogs = await client.getDialogs({});
-        console.log(`Found ${dialogs.length} dialogs`);
-
-
-        // Find our channel in dialogs
-        const targetChannelId = channel.telegramChannelId;
-        console.log("Looking for channel with ID:", targetChannelId);
-        
-        let targetChannel = null;
-        for (const dialog of dialogs) {
-            console.log("Dialog:", JSON.stringify({
-                id: dialog.entity?.id,
-                title: dialog.title,
-                type: dialog.entity?.className
-            }));
-            
-            if (dialog.entity && 
-                (dialog.entity.id.toString() === targetChannelId || 
-                 dialog.entity.id.toString() === `-100${targetChannelId}`)) {
-                targetChannel = dialog.entity;
-                break;
-            }
-        }
-        
-        if (!targetChannel) {
-            throw new Error("Channel not found in Telegram dialogs");
-        }
-        
-        console.log("Found channel:", JSON.stringify(targetChannel, null, 2));
-        
-        // Generate a single-use invite link that expires after one use
-        console.log("Generating invite link...");
-        const inviteLink = await client.invoke(
-            new Api.messages.ExportChatInvite({
-                peer: targetChannel,
-                expireDate: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours expiry
-                usageLimit: 1, // Single use only
-            })
-        );
-        
-        console.log("Invite link result:", JSON.stringify(inviteLink, null, 2));
-        
-        await client.disconnect();
-        
-        // Make sure we have a valid link
-        if (!inviteLink || !inviteLink.link) {
-            throw new Error("Failed to generate invite link");
-        }
-        
-        // Store the invite link in the subscription record
-        if (subscription) {
-            await prismaClient.telegramSubscription.update({
-                where: { id: subscription.id },
-                data: { inviteLink: inviteLink.link }
-            });
-        }
-        
-        return inviteLink.link;
+      });
+      
+      return inviteLink.invite_link;
     } catch (error) {
-        console.error("Error generating Telegram invite link:", error);
-        throw error;
+      console.error("Error generating invite link:", error);
+      throw error;
     }
-};
+  };
 
 const createDigitalProductPurchase = async (order: any) => {
     if (!order.userId || !order.digitalProductId) return;

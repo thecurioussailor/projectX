@@ -1,113 +1,209 @@
 import { prismaClient } from "@repo/db";
-import { TelegramClient, Api } from "telegram";
-import { StringSession } from "telegram/sessions";
+import TelegramBot from 'node-telegram-bot-api';
 import cron from "node-cron";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const TELEGRAM_API_ID = Number(process.env.TELEGRAM_API_ID);
-const TELEGRAM_API_HASH = process.env.TELEGRAM_API_HASH || '';
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME || '@NetlySuperBot';
+// Check for required environment variables
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+  console.error('TELEGRAM_BOT_TOKEN is required');
+  process.exit(1);
+}
 
-/**
- * Removes a user from a Telegram channel
- */
-async function removeUserFromChannel(channelId: string, username: string, client: TelegramClient): Promise<boolean> {
-  try {
-    console.log(`Attempting to remove user ${username} from channel ${channelId}...`);
-    
-    // First resolve the username to get user details
-    console.log("Resolving username:", username);
-    const resolveResult = await client.invoke(
-      new Api.contacts.ResolveUsername({
-        username: username.replace('@', '')
-      })
-    );
-    
-    if (!resolveResult || !resolveResult.users || resolveResult.users.length === 0) {
-      console.error(`User ${username} not found`);
-      return false;
-    }
+// Initialize Telegram bot with your bot token
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
-    const targetUser = resolveResult.users[0];
-    console.log("Target user details found");
-    
-    // Create explicit InputUser for the user
-    const inputUser = new Api.InputUser({
-      userId: targetUser.id,
-      accessHash: (targetUser as any).accessHash
-    });
-    
-    // Get the proper channel entity
-    console.log("Fetching dialogs to locate the channel...");
-    const dialogs = await client.getDialogs({});
-    
-    // Find our channel by id in dialogs
-    let targetChannel = null;
-    for (const dialog of dialogs) {
-      if (dialog.entity && 
-          (dialog.entity.id.toString() === channelId || 
-           dialog.entity.id.toString() === `-100${channelId}`)) {
-        targetChannel = dialog.entity;
-        break;
-      }
-    }
-    
-    if (!targetChannel) {
-      console.error(`Channel with ID ${channelId} not found`);
-      return false;
-    }
-    
-    console.log(`Found channel, removing user ${targetUser.id}...`);
-    
-    // Ban the user from the channel (effectively removing them)
-    const kickResult = await client.invoke(
-      new Api.channels.EditBanned({
-        channel: targetChannel,
-        participant: inputUser,
-        bannedRights: new Api.ChatBannedRights({
-          untilDate: 0,  // permanent
-          viewMessages: true,
-          sendMessages: true,
-          sendMedia: true,
-          sendStickers: true,
-          sendGifs: true,
-          sendGames: true,
-          sendInline: true,
-          embedLinks: true
-        })
-      })
-    );
+console.log('Telegram subscription bot service started');
 
-    if (!kickResult) {
-      console.error(`Failed to remove user ${username} from channel`);
-      return false;
-    }
-
-    console.log(`Successfully removed user ${username} from channel ${channelId}`);
-    return true;
-  } catch (error) {
-    console.error(`Error removing user ${username} from channel ${channelId}:`, error);
-    return false;
-  }
+interface ChatMemberUpdate {
+  chat: {
+    id: number;
+    title?: string;
+    type: string;
+  };
+  from: {
+    id: number;
+    first_name: string;
+    username?: string;
+  };
+  date: number;
+  old_chat_member: {
+    user: {
+      id: number;
+      first_name: string;
+      username?: string;
+    };
+    status: string;
+  };
+  new_chat_member: {
+    user: {
+      id: number;
+      first_name: string;
+      username?: string;
+    };
+    status: string;
+  };
 }
 
 /**
- * Main function to check for expired subscriptions and remove users
+ * Main function to monitor user joins through invite links
+ * This will listen to chat member updates in channels
  */
-async function checkExpiredSubscriptions() {
-  console.log("Starting expired subscription check...");
+
+bot.on('message', (msg) => {
+  console.log('Received message:', {
+    chat_id: msg.chat.id,
+    from: msg.from?.username || msg.from?.first_name || 'Unknown',
+    text: msg.text || '[No text]',
+    date: new Date(msg.date * 1000).toISOString()
+  });
+  
+  // Reply to show bot is working
+  bot.sendMessage(msg.chat.id, 'Bot is active and listening!');
+});
+
+// Listen for chat join requests (when someone uses an invite link)
+bot.on('chat_join_request', async (request) => {
+  try {
+    const inviteLink = request.invite_link?.invite_link;
+    if (!inviteLink) return;
+    
+    // Find the subscription with this invite link
+    const subscription = await prismaClient.telegramSubscription.findFirst({
+      where: { 
+        inviteLink: inviteLink,
+        status: 'ACTIVE'
+      }
+    });
+    
+    if (!subscription) return;
+    
+    // Update subscription with user info
+    await prismaClient.telegramSubscription.update({
+      where: { id: subscription.id },
+      data: {
+        telegramUserId: request.from.id.toString(),
+        telegramUsername: request.from.username || null
+      }
+    });
+    
+    // Approve the join request
+    await bot.approveChatJoinRequest(request.chat.id, request.from.id);
+    console.log(`Approved join request for user ${request.from.username || request.from.id}`);
+    
+    // Revoke the invite link to make it one-time use
+    await bot.revokeChatInviteLink(request.chat.id, inviteLink);
+    console.log(`Revoked invite link ${inviteLink} after successful join`);
+    
+  } catch (error) {
+    console.error('Error processing join request:', error);
+  }
+});
+
+bot.on('my_chat_member', (update) => {
+  console.log('Channel membership update:', JSON.stringify(update));
+  // This fires when YOUR bot's status changes in a chat
+});
+
+bot.on('chat_member', async (chatMember: ChatMemberUpdate) => {
+  console.log('Raw chat_member update received:', JSON.stringify(chatMember));
   
   try {
-    // Get all expired subscriptions that haven't been processed yet
+    // Detect any status change to "member" (someone joined)
+    if (chatMember.new_chat_member.status === 'member' && 
+        chatMember.old_chat_member.status !== 'member') {
+      
+      // Log more detailed information
+      console.log('JOIN EVENT DETECTED');
+      console.log('Chat type:', chatMember.chat.type);
+      console.log('Chat ID:', chatMember.chat.id);
+      console.log('User ID:', chatMember.new_chat_member.user.id);
+      console.log('Old status:', chatMember.old_chat_member.status);
+      console.log('New status:', chatMember.new_chat_member.status);
+      
+      // Rest of your code...
+    }
+  } catch (error) {
+    console.error('Error handling chat member update:', error);
+  }
+});
+
+// bot.on('chat_member', async (chatMember: ChatMemberUpdate) => {
+//   console.log('Raw chat_member update received:', JSON.stringify(chatMember));
+//   try {
+//     // Only process if this is a new member joining
+//     if (chatMember.new_chat_member.status === 'member' && 
+//         (chatMember.old_chat_member.status === 'left' || chatMember.old_chat_member.status === 'kicked')) {
+      
+//       const channelId = chatMember.chat.id.toString();
+//       const userTelegramId = chatMember.new_chat_member.user.id.toString();
+//       const username = chatMember.new_chat_member.user.username;
+      
+//       console.log(`User ${username || 'unknown'} (${userTelegramId}) joined channel ${channelId}`);
+      
+//       // Find the subscription with matching invite link for this channel
+//       const telegramChannel = await prismaClient.telegramChannel.findFirst({
+//         where: {
+//           telegramChannelId: channelId,
+//           status: 'ACTIVE'
+//         }
+//       });
+      
+//       if (!telegramChannel) {
+//         console.log(`Channel ${channelId} not found in database or is inactive`);
+//         return;
+//       }
+      
+//       // Find the subscription with a matching invite link that hasn't been used yet
+//       const subscription = await prismaClient.telegramSubscription.findFirst({
+//         where: {
+//           inviteLink: { not: null },
+//           telegramUserId: null, // Not yet used
+//           telegramUsername: null, // Not yet used
+//           plan: {
+//             channelId: telegramChannel.id,
+//             status: 'ACTIVE'
+//           },
+//           status: 'ACTIVE'
+//         }
+//       });
+      
+//       if (!subscription) {
+//         console.log('No pending subscription found for this channel');
+//         return;
+//       }
+      
+//       // Update the subscription with the user's Telegram details
+//       await prismaClient.telegramSubscription.update({
+//         where: { id: subscription.id },
+//         data: {
+//           telegramUserId: userTelegramId,
+//           telegramUsername: username || null
+//         }
+//       });
+      
+//       console.log(`Updated subscription ${subscription.id} with Telegram user ${username || userTelegramId}`);
+//     }
+//   } catch (error) {
+//     console.error('Error handling chat member update:', error);
+//   }
+// });
+
+/**
+ * Scheduled task to remove users with expired subscriptions
+ * Runs every day at midnight
+ */
+cron.schedule('0 0 * * *', async () => {
+  console.log('Running scheduled task to check expired subscriptions');
+  
+  try {
+    // Find all expired subscriptions
     const expiredSubscriptions = await prismaClient.telegramSubscription.findMany({
       where: {
-        status: "ACTIVE",
-        expiryDate: {
-          lt: new Date() // Find subscriptions where expiry date is less than now
-        }
+        expiryDate: { lt: new Date() },
+        status: 'ACTIVE', // Only check active subscriptions
+        telegramUserId: { not: null } // User must be identified
       },
       include: {
         plan: {
@@ -120,101 +216,56 @@ async function checkExpiredSubscriptions() {
     
     console.log(`Found ${expiredSubscriptions.length} expired subscriptions`);
     
-    if (expiredSubscriptions.length === 0) {
-      console.log("No expired subscriptions to process");
-      return;
-    }
-    
-    // Create a client using the bot token
-    const botSession = new StringSession("");
-    const client = new TelegramClient(botSession, TELEGRAM_API_ID, TELEGRAM_API_HASH, {
-      connectionRetries: 5
-    });
-    
-    await client.start({
-      botAuthToken: BOT_TOKEN
-    });
-    
-    console.log("Bot connected to Telegram");
-    
     // Process each expired subscription
     for (const subscription of expiredSubscriptions) {
-      console.log(`Processing expired subscription for user ${subscription.telegramUsername}, plan: ${subscription.planName}`);
-      
       try {
-        if (!subscription.plan?.channel?.telegramChannelId) {
-          console.error("Missing channel ID for subscription:", subscription.id);
+        if (!subscription.plan.channel.telegramChannelId || !subscription.telegramUserId) {
           continue;
         }
         
-        // Remove user from channel
-        const removed = await removeUserFromChannel(
-          subscription.plan.channel.telegramChannelId, 
-          subscription.telegramUsername,
-          client
-        );
+        const channelId = subscription.plan.channel.telegramChannelId;
+        const userId = parseInt(subscription.telegramUserId);
         
-        // Update subscription status regardless of removal success
-        // This prevents the system from trying to process the same subscription repeatedly
+        console.log(`Removing user ${subscription.telegramUsername || userId} from channel ${channelId}`);
+        
+        // Ban the user from the channel
+        await bot.banChatMember(channelId, userId);
+        
+        // Immediately unban so they can rejoin in the future
+        await bot.unbanChatMember(channelId, userId, { only_if_banned: true });
+        
+        // Update subscription status to EXPIRED
         await prismaClient.telegramSubscription.update({
           where: { id: subscription.id },
-          data: { 
-            status: "EXPIRED",
-            updatedAt: new Date() // Using updatedAt instead of processedAt
-          }
+          data: { status: 'EXPIRED' }
         });
         
-        console.log(`Subscription ${subscription.id} marked as expired${removed ? ' and user removed' : ''}`);
-        
-        // Log this action in a more generic way if the subscription log table doesn't exist
-        console.log(`ACTION LOG: Subscription ${subscription.id} for user ${subscription.telegramUsername} expired. User removal ${removed ? 'successful' : 'failed'}.`);
-        
-        // Try to create log entry (only if the model exists)
-        try {
-          // @ts-ignore - We'll catch the error if this table doesn't exist
-          await prismaClient.telegramSubscriptionLog.create({
-            data: {
-              subscriptionId: subscription.id,
-              action: "EXPIRED",
-              success: removed,
-              details: removed 
-                ? `User ${subscription.telegramUsername} removed from channel` 
-                : `Failed to remove user ${subscription.telegramUsername} from channel`
-            }
-          });
-        } catch (logError) {
-          // Just log to console if the table doesn't exist
-          console.log("Could not create log entry - table may not exist");
-        }
-        
-      } catch (subError) {
-        console.error(`Error processing subscription ${subscription.id}:`, subError);
+        console.log(`Successfully removed user and updated subscription ${subscription.id} to EXPIRED`);
+      } catch (error) {
+        console.error(`Error processing expired subscription ${subscription.id}:`, error);
       }
     }
-    
-    await client.disconnect();
-    console.log("Expired subscription check completed");
-    
   } catch (error) {
-    console.error("Error during expired subscription check:", error);
+    console.error('Error checking expired subscriptions:', error);
   }
-}
-
-// Schedule the task to run once per day at midnight
-cron.schedule('0 0 * * *', async () => {
-  console.log("Running scheduled subscription expiration check...");
-  await checkExpiredSubscriptions();
 });
 
-// Also run once on startup for testing
-console.log("Initializing Telegram subscription cron job...");
-checkExpiredSubscriptions().catch(err => {
-  console.error("Initial run failed:", err);
+/**
+ * Error handling for bot
+ */
+bot.on('polling_error', (error: Error) => {
+  console.error('Telegram bot polling error:', error);
 });
 
-// Keep process alive
-console.log("Cron job service is running...");
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  await prismaClient.$disconnect();
+  process.exit(0);
+});
 
-
-
-
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully');
+  await prismaClient.$disconnect();
+  process.exit(0);
+});

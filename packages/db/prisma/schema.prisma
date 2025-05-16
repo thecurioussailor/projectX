@@ -284,7 +284,8 @@ model TelegramSubscription {
   id                String          @id @default(cuid())
   user              User            @relation(fields: [userId], references: [id])  // Customer subscribing
   userId            Int
-  telegramUsername  String   // User’s Telegram username or number
+  telegramUsername  String?   // User's Telegram username or number
+  telegramUserId    String?   // User's Telegram ID
   plan              TelegramPlan      @relation(fields: [planId], references: [id])
   planId            String
   planName          String
@@ -292,6 +293,7 @@ model TelegramSubscription {
   planDuration      Int
   expiryDate        DateTime
   inviteLink        String?
+  inviteLinkId      String?
   status            TelegramSubscriptionStatus @default(ACTIVE)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt

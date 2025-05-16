@@ -13,8 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "@repo/db": "workspace:*",
+    "@types/node-telegram-bot-api": "^0.64.8",
     "dotenv": "^16.0.3",
     "node-cron": "^3.0.2",
+    "node-telegram-bot-api": "^0.66.0",
     "telegram": "^2.15.5",
     "ts-node": "^10.9.1"
   },

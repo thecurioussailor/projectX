@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiArrowRight, FiShield, FiGlobe, FiMessageCircle, FiLink } from 'react-icons/fi';
-
+import logo from '../assets/images/tinywalletLogo.png';
 const LandingPage = () => {
   const { isAuthenticated } = useAuth();
 
@@ -13,7 +13,9 @@ const LandingPage = () => {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <span className="text-2xl font-bold text-[#7F37D8]">projectX</span>
+                <Link to="/">
+                  <img src={logo} alt="TinyWallet" className="w-48" />
+                </Link>
               </div>
             </div>
             <div className="flex items-center">
