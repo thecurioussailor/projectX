@@ -223,8 +223,16 @@ cron.schedule('0 0 * * *', async () => {
           continue;
         }
         
-        const channelId = subscription.plan.channel.telegramChannelId;
-        const userId = parseInt(subscription.telegramUserId);
+         // Format channel ID correctly
+         let channelId = subscription.plan.channel.telegramChannelId;
+        
+         // Ensure channelId starts with -100 for channels
+         if (!channelId.startsWith('-100') && !channelId.startsWith('-')) {
+           channelId = `-100${channelId}`;
+         }
+        
+         // Convert userId to number
+         const userId = parseInt(subscription.telegramUserId);
         
         console.log(`Removing user ${subscription.telegramUsername || userId} from channel ${channelId}`);
         
@@ -249,6 +257,93 @@ cron.schedule('0 0 * * *', async () => {
     console.error('Error checking expired subscriptions:', error);
   }
 });
+
+
+// Add this code to your bot file
+bot.onText(/\/check_expired/, async (msg) => {
+  // Optional: Restrict to admins only
+  // if (msg.from.id !== YOUR_ADMIN_ID) return;
+  
+  bot.sendMessage(msg.chat.id, "Running expired subscription check manually...");
+  console.log("Manual check triggered by", msg.from?.username || msg.from?.id);
+  
+  try {
+    // Call the same function the cron job uses
+    // Get expired subscriptions
+    const expiredSubscriptions = await prismaClient.telegramSubscription.findMany({
+      where: {
+        expiryDate: { lt: new Date() },
+        status: 'ACTIVE',
+        telegramUserId: { not: null }
+      },
+      include: {
+        plan: {
+          include: {
+            channel: true
+          }
+        }
+      }
+    });
+    
+    bot.sendMessage(msg.chat.id, `Found ${expiredSubscriptions.length} expired subscriptions`);
+    
+    // Process each one with the fixed channel ID format
+    for (const subscription of expiredSubscriptions) {
+      try {
+        if (!subscription.plan.channel.telegramChannelId || !subscription.telegramUserId) {
+          continue;
+        }
+        
+        // Format channel ID correctly
+        let channelId = subscription.plan.channel.telegramChannelId;
+        
+        // Ensure channelId starts with -100 for channels
+        if (!channelId.startsWith('-100') && !channelId.startsWith('-')) {
+          channelId = `-100${channelId}`;
+        }
+        
+        const userId = parseInt(subscription.telegramUserId);
+        
+        console.log(`Removing user ${subscription.telegramUsername || userId} from channel ${channelId}`);
+        bot.sendMessage(msg.chat.id, `Removing user ${subscription.telegramUsername || userId} from channel ${channelId}`);
+        
+        // Ban the user from the channel
+        await bot.banChatMember(channelId, userId);
+        
+        // Immediately unban so they can rejoin in the future
+        await bot.unbanChatMember(channelId, userId, { only_if_banned: true });
+        
+        // Update subscription status
+        await prismaClient.telegramSubscription.update({
+          where: { id: subscription.id },
+          data: { status: 'EXPIRED' }
+        });
+        
+        bot.sendMessage(msg.chat.id, `Successfully removed user from channel and marked subscription ${subscription.id} as expired`);
+      } catch (error) {
+        console.error(`Error processing subscription ${subscription.id}:`, error);
+        bot.sendMessage(msg.chat.id, `Error with subscription ${subscription.id}: ${error instanceof Error ? error.message : String(error)}`);
+        
+        // Still mark as expired even if removal fails
+        try {
+          await prismaClient.telegramSubscription.update({
+            where: { id: subscription.id },
+            data: { status: 'EXPIRED' }
+          });
+          bot.sendMessage(msg.chat.id, `Marked subscription as expired despite removal failure`);
+        } catch (updateError) {
+          console.error(`Failed to update subscription status:`, updateError);
+        }
+      }
+    }
+    
+    bot.sendMessage(msg.chat.id, "Expired subscription check completed");
+  } catch (error) {
+    console.error("Manual check error:", error);
+    bot.sendMessage(msg.chat.id, "Error during check: " + (error as Error).message);
+  }
+});
+
 
 /**
  * Error handling for bot
