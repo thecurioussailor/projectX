@@ -36,68 +36,71 @@ import AdminPayoutManagement from './admin/pages/AdminPayoutManagement'
 import UserDetails from './admin/pages/UserDetails'
 import AdminEditPlatformPlan from './admin/pages/AdminEditPlatformPlan'
 import AdminKyc from './admin/pages/AdminKyc'
+import { ToastProvider } from './components/ui/Toast'
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes with PublicLayout */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/signin" element={<Signin />} />
-          <Route path="/admin/signin" element={<AdminSignin />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/payment-failed" element={<PaymentFailed />} />
-          <Route path="/payment-callback" element={<PaymentCallback />} />
-          <Route element={<PublicLayout />}>
-            <Route path="/c/:slug" element={<PublicChannelPage />} />
-            <Route path="/d/:slug" element={<PublicDigitalProductPage />} />
-          </Route>
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes with PublicLayout */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/signin" element={<Signin />} />
+            <Route path="/admin/signin" element={<AdminSignin />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-failed" element={<PaymentFailed />} />
+            <Route path="/payment-callback" element={<PaymentCallback />} />
+            <Route element={<PublicLayout />}>
+              <Route path="/c/:slug" element={<PublicChannelPage />} />
+              <Route path="/d/:slug" element={<PublicDigitalProductPage />} />
+            </Route>
 
-          {/* Protected Routes with AuthLayout */}
-          <Route
-            element={
-              <SidebarProvider>
-                <ProtectedRoute>
-                  <AuthLayout />
-                </ProtectedRoute>
-              </SidebarProvider>
-            }
-          >
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/sales" element={<Sales />} />
-            <Route path="/purchased" element={<Purchased />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/telegram" element={<Telegram />} />
-            <Route path="/telegram/:id/edit" element={<EditTelegramChannel />} />
-            <Route path="/link-short" element={<LinkShort />} />
-            <Route path="/digital-products" element={<DigitalProduct />} />
-            <Route path="/digital-products/:id/edit" element={<EditDigitalProduct />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/purchased-digital-products/:id" element={<PurchasedDigitalProducts />} />
-          </Route>
-          {/* Protected Routes with AuthLayout */}
-          <Route path="/admin" element={
-            <AdminAuthProvider>
-              <AdminSidebarProvider>
-                <AdminProtectedRoute>
-                  <AdminAuthLayout />
-                </AdminProtectedRoute>
-              </AdminSidebarProvider>
-            </AdminAuthProvider>
-            }>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="user-management" element={<AdminUserManagement />} />
-            <Route path="user-management/:id" element={<UserDetails />} />
-            <Route path="plan-management" element={<AdminPlanManagement />} />
-            <Route path="plan-management/:id" element={<AdminEditPlatformPlan />} />
-            <Route path="payout-management" element={<AdminPayoutManagement />} />
-            <Route path="kyc-documents" element={<AdminKyc />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
-          
-        </Routes>
-      </BrowserRouter>
+            {/* Protected Routes with AuthLayout */}
+            <Route
+              element={
+                <SidebarProvider>
+                  <ProtectedRoute>
+                    <AuthLayout />
+                  </ProtectedRoute>
+                </SidebarProvider>
+              }
+            >
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/sales" element={<Sales />} />
+              <Route path="/purchased" element={<Purchased />} />
+              <Route path="/payments" element={<Payments />} />
+              <Route path="/telegram" element={<Telegram />} />
+              <Route path="/telegram/:id/edit" element={<EditTelegramChannel />} />
+              <Route path="/link-short" element={<LinkShort />} />
+              <Route path="/digital-products" element={<DigitalProduct />} />
+              <Route path="/digital-products/:id/edit" element={<EditDigitalProduct />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/purchased-digital-products/:id" element={<PurchasedDigitalProducts />} />
+            </Route>
+            {/* Protected Routes with AuthLayout */}
+            <Route path="/admin" element={
+              <AdminAuthProvider>
+                <AdminSidebarProvider>
+                  <AdminProtectedRoute>
+                    <AdminAuthLayout />
+                  </AdminProtectedRoute>
+                </AdminSidebarProvider>
+              </AdminAuthProvider>
+              }>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="user-management" element={<AdminUserManagement />} />
+              <Route path="user-management/:id" element={<UserDetails />} />
+              <Route path="plan-management" element={<AdminPlanManagement />} />
+              <Route path="plan-management/:id" element={<AdminEditPlatformPlan />} />
+              <Route path="payout-management" element={<AdminPayoutManagement />} />
+              <Route path="kyc-documents" element={<AdminKyc />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
+            
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   )
 }

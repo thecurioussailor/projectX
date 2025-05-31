@@ -5,7 +5,7 @@ import Error from "../ui/Error";
 import { useNavigate } from "react-router-dom";
 import PurchasedItemSidePop from "./PurchasedItemSidePop";
 import { DigitalFile } from "../../store/usePurchasedItemsStore";
-import { CiSearch } from "react-icons/ci";
+import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
 
 export interface DigitalPurchase {
     id: string;
@@ -50,6 +50,7 @@ const PurchasedItemsTable = () => {
     const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE" | "EXPIRED">("ALL");
     const [sortBy, setSortBy] = useState<"name" | "date" | "amount">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+    const [isGridView, setIsGridView] = useState(false);
     useEffect(() => {
         getPurchasedItems();
     }, [getPurchasedItems]);  
@@ -194,9 +195,31 @@ const PurchasedItemsTable = () => {
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
+
+                        <div className="cursor-pointer flex items-center gap-2">
+                            <button 
+                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(true)}
+                            >
+                                <CiCircleList size={20} />
+                            </button>
+                            <button 
+                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(false)}
+                            >
+                                <CiGrid41 size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div className="overflow-x-auto lg:overflow-x-hidden">
+                {/* Grid View */}
+                {isGridView && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-10">
+                    {filteredAndSortedItems.map((item, index) => (
+                        <PurchasedItemCard key={item.id} item={item} index={index} />
+                    ))}
+                </div>}
+                {/* Table View */}
+                {!isGridView && <div className="overflow-x-auto lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
                         <thead className="border-gray-300 h-20 text-[#1B3155]">
                             <tr className="border-t border-gray-200">
@@ -216,7 +239,7 @@ const PurchasedItemsTable = () => {
                             ))}    
                         </tbody>
                     </table>
-                </div>
+                </div>}
             </div>
         </div>
     );
@@ -262,6 +285,96 @@ const PurchasedItemRow = ({ item, index }: { item: PurchasedItem, index: number 
                 {isSidePopOpen && <PurchasedItemSidePop purchasedItem={item} onClose={() => setIsSidePopOpen(false)} isSub={isSub} handle={() => handleRowClick()}/>}
             </td>
         </tr>
+    );
+};
+
+const PurchasedItemCard = ({ item, index }: { item: PurchasedItem, index: number }) => {
+    const isSub = isTelegramSubscription(item);
+    const navigate = useNavigate(); 
+    const [isSidePopOpen, setIsSidePopOpen] = useState(false);
+    
+    const handleItemClick = () => {
+        if (isSub) {
+            window.open(item.inviteLink, "_blank", "noopener,noreferrer");
+        } else {
+            navigate(`/purchased-digital-products/${item.id}`);
+        }
+    };
+    
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#1B3155]">#{index + 1}</span>
+                    <span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-3 py-1">
+                        {isSub ? "TELEGRAM PLAN" : "DIGITAL PRODUCT"}
+                    </span>
+                </div>
+                <span className="text-sm text-gray-500">
+                    {new Date(isSub ? item.createdAt : item.purchaseDate).toLocaleDateString("en-US", { 
+                        month: "short", 
+                        day: "numeric",
+                        year: "numeric"
+                    })}
+                </span>
+            </div>
+
+            {/* Product Name */}
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold text-[#1B3155] line-clamp-2">
+                    {isSub ? item.planName : item.product.title}
+                </h3>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Price</span>
+                    <span className="text-lg font-bold text-[#7e37d8]">₹{isSub ? item.planPrice : item.price}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Status</span>
+                    <div className="flex items-center gap-2">
+                        <div className={`${item.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div>
+                        <span className="text-sm font-medium">{item.status}</span>
+                    </div>
+                </div>
+
+                {isSub && (
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Expires</span>
+                        <span className="text-sm font-medium text-gray-700">
+                            {new Date(item.expiryDate).toLocaleDateString("en-US", { 
+                                month: "short", 
+                                day: "numeric",
+                                year: "numeric"
+                            })}
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+                <button 
+                    onClick={() => setIsSidePopOpen(true)}
+                    className="flex-1 bg-[#7e37d8] hover:bg-[#6b2db5] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                    View Details
+                </button>
+                <button 
+                    onClick={handleItemClick}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                    {isSub ? "Join Channel" : "Download"}
+                </button>
+            </div>
+
+            {/* Side Pop Modal */}
+            {isSidePopOpen && <PurchasedItemSidePop purchasedItem={item} onClose={() => setIsSidePopOpen(false)} isSub={isSub} handle={handleItemClick}/>}
+        </div>
     );
 };
 

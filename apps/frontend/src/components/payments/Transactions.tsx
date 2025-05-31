@@ -4,7 +4,7 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import { useState } from "react";
 import TransactionSidePop from "./TransactionSidePop";
-import { CiSearch } from "react-icons/ci";
+import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
 
 
 const Transactions = () => {
@@ -12,6 +12,7 @@ const Transactions = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<"name" | "amount" | "date" | "status">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");   
+    const [isGridView, setIsGridView] = useState(false);
 
 
     // Filter and sort transactions
@@ -117,10 +118,31 @@ const Transactions = () => {
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
+
+                        <div className="cursor-pointer flex items-center gap-2">
+                            <button 
+                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(true)}
+                            >
+                                <CiCircleList size={20} />
+                            </button>
+                            <button 
+                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(false)}
+                            >
+                                <CiGrid41 size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
+                {/* Grid View */}
+                {isGridView && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-10">
+                    {filteredAndSortedTransactions?.map((transaction, index) => (
+                        <TransactionCard key={index} transaction={transaction} index={index} />
+                    ))}
+                </div>}
                 {/* tabular view */}
-                <div className="overflow-x-scroll lg:overflow-x-hidden">
+                {!isGridView && <div className="overflow-x-scroll lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
                         <thead className=" border-gray-300 h-20">
                             <tr className="border-t border-gray-200">
@@ -140,7 +162,7 @@ const Transactions = () => {
                             ))}
                         </tbody>
                     </table>
-                </div>
+                </div>}
             </div>
         </div>
   )
@@ -168,5 +190,69 @@ const TransactionRow = ({transaction, index}: {transaction: Transaction, index: 
                 {isSidePopOpen && <TransactionSidePop transaction={transaction} onClose={() => setIsSidePopOpen(false)} />}
             </td>
         </tr>
+    )
+}
+
+const TransactionCard = ({transaction, index}: {transaction: Transaction, index: number}) => {
+    const [isSidePopOpen, setIsSidePopOpen] = useState(false);
+    
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#1B3155]">#{index + 1}</span>
+                    <span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-3 py-1">
+                        {transaction.order?.productType?.replace('_', ' ')}
+                    </span>
+                </div>
+                <span className="text-sm text-gray-500">
+                    {new Date(transaction.paymentTime).toLocaleDateString("en-US", { 
+                        month: "short", 
+                        day: "numeric",
+                        year: "numeric"
+                    })}
+                </span>
+            </div>
+
+            {/* Product Name */}
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold text-[#1B3155] line-clamp-2">
+                    {transaction.order?.digitalProduct?.title || transaction.order?.telegramPlan?.name}
+                </h3>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Amount</span>
+                    <span className="text-lg font-bold text-[#7e37d8]">₹{transaction.amount}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Customer</span>
+                    <span className="text-sm font-medium text-[#158DF7]">{transaction.order?.user?.username}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Status</span>
+                    <div className="flex items-center gap-2">
+                        <div className={`${transaction.status === "SUCCESS" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div>
+                        <span className="text-sm font-medium">{transaction.status === "SUCCESS" ? "Success" : "Failed"}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Action Button */}
+            <button 
+                onClick={() => setIsSidePopOpen(true)}
+                className="w-full bg-[#7e37d8] hover:bg-[#6b2db5] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+            >
+                View Details
+            </button>
+
+            {/* Side Pop Modal */}
+            {isSidePopOpen && <TransactionSidePop transaction={transaction} onClose={() => setIsSidePopOpen(false)} />}
+        </div>
     )
 }

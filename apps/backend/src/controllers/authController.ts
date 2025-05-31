@@ -253,6 +253,7 @@ export const signin = async (req: Request, res: Response) => {
 };
 
 export const updatePassword = async (req: Request, res: Response) => {
+  console.log('updatePassword******');
   try {   
     const userId = req.user?.id;
     const { oldPassword, newPassword, confirmPassword } = req.body;

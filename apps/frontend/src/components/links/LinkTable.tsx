@@ -5,8 +5,10 @@ import { useState, useEffect } from "react";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import { IoAlertCircleOutline } from "react-icons/io5";
-import { CiSearch } from "react-icons/ci";
+import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 const LinkTable = () => {
     const { links, fetchLinks, isLoading, deleteLink, error } = useLink();
     const [copied, setCopied] = useState<string | null>(null);
@@ -14,6 +16,8 @@ const LinkTable = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<"url" | "clicks" | "date">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+    const [isGridView, setIsGridView] = useState(false);
+
     useEffect(() => {
         fetchLinks();
     }, [fetchLinks]);
@@ -125,10 +129,31 @@ const LinkTable = () => {
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
+
+                        <div className="cursor-pointer flex items-center gap-2">
+                            <button 
+                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(true)}
+                            >
+                                <CiCircleList size={20} />
+                            </button>
+                            <button 
+                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(false)}
+                            >
+                                <CiGrid41 size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
-                {/* tabular view */}
-                <div className="overflow-x-auto lg:overflow-x-hidden">
+                {/* Grid View */}
+                {isGridView && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-10">
+                    {filteredAndSortedLinks.map((link, index) => (
+                        <LinkCard key={link.id} link={link} index={index} copied={copied} copyToClipboard={copyToClipboard} deleteLink={deleteLink} />
+                    ))}
+                </div>}
+                {/* Table View */}
+                {!isGridView && <div className="overflow-x-auto lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
                         <thead className="border-gray-300 h-20">
                             <tr className="border-t border-gray-200">
@@ -174,13 +199,99 @@ const LinkTable = () => {
                         ))}
                     </tbody>
                 </table>
-                </div>
+                </div>}
             </div>
         </div>
     );
 };
 
 export default LinkTable;
+
+const LinkCard = ({ link, index, copied, copyToClipboard, deleteLink }: { 
+    link: {
+        id: string;
+        originalUrl: string;
+        shortId: string;
+        clicks: number;
+        createdAt: string;
+    }, 
+    index: number, 
+    copied: string | null, 
+    copyToClipboard: (id: string) => void, 
+    deleteLink: (id: string) => void 
+}) => {
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+    
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#1B3155]">#{index + 1}</span>
+                    <span className="bg-green-100 text-green-600 text-xs font-semibold rounded-full px-3 py-1 flex items-center gap-1">
+                        <div className="bg-green-500 w-2 h-2 rounded-full"></div>
+                        Active
+                    </span>
+                </div>
+                <span className="text-sm text-gray-500">
+                    {new Date(link.createdAt).toLocaleDateString("en-US", { 
+                        month: "short", 
+                        day: "numeric",
+                        year: "numeric"
+                    })}
+                </span>
+            </div>
+
+            {/* Original URL */}
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold text-[#1B3155] line-clamp-2 break-all">
+                    {link.originalUrl}
+                </h3>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Clicks</span>
+                    <span className="text-lg font-bold text-[#7e37d8]">{link.clicks}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Short Link</span>
+                    <span className="text-sm font-medium text-[#158DF7]">{link.shortId}</span>
+                </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+                <button 
+                    onClick={() => copyToClipboard(link.shortId)}
+                    className="flex-1 bg-[#7e37d8] hover:bg-[#6b2db5] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                    {copied === link.shortId ? <GoCheck size={16} /> : <GoCopy size={16} />}
+                    {copied === link.shortId ? "Copied!" : "Copy Link"}
+                </button>
+                <button 
+                    onClick={() => setShowDeleteAlert(true)}
+                    className="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                >
+                    <FaTrash size={16} />
+                </button>
+            </div>
+
+            {/* Delete Alert Modal */}
+            {showDeleteAlert && (
+                <Alert 
+                    onCancel={() => setShowDeleteAlert(false)} 
+                    onDelete={() => {
+                        deleteLink(link.id);
+                        setShowDeleteAlert(false);
+                    }}
+                />
+            )}
+        </div>
+    );
+};
 
 const Alert = ({ onCancel, onDelete }: { onCancel: () => void, onDelete: () => void }) => {
     return (

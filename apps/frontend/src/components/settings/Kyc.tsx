@@ -1,26 +1,46 @@
 import { useKyc } from "../../hooks/useKyc";
 import { useState } from "react";
+import { useToast } from "../ui/Toast";
+import { FaSpinner } from "react-icons/fa";
+
 const Kyc = () => {
   const { kycDocument, isLoading, uploadDocument } = useKyc();
+  const { showToast } = useToast();
   const [file, setFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState<string>("");
+  const [documentType, setDocumentType] = useState<string>("PAN");
   const [documentNumber, setDocumentNumber] = useState<string>("");
 
   const handleUpload = async () => {
-    if (file) {
+    // Validation
+    if (!file) {
+      showToast('Please select a file to upload', 'error');
+      return;
+    }
+    
+    if (!documentType) {
+      showToast('Please select a document type', 'error');
+      return;
+    }
+    
+    if (!documentNumber.trim()) {
+      showToast('Please enter a document number', 'error');
+      return;
+    }
+
+    try {
       await uploadDocument(file, documentType, documentNumber);
+      showToast('KYC document uploaded successfully!', 'success');
       setFile(null);
-      setDocumentType("");
+      setDocumentType("PAN");
       setDocumentNumber("");
+    } catch {
+      showToast('Failed to upload document. Please try again.', 'error');
     }
   }
   const handleViewDocument = async () => {
     window.open(kycDocument?.url, "_blank");
   }
 
-  if(isLoading) {
-    return <div>Loading...</div>;
-  }
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
       <div className="flex flex-col gap-4 w-full">
@@ -73,8 +93,9 @@ const Kyc = () => {
             <button 
               onClick={handleUpload}
               className="bg-[#7F37D8] text-white px-4 py-2 rounded-md"
+              disabled={isLoading}
             >
-              Upload
+               {isLoading ? <span className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Uploading...</span> : "Upload"}
             </button>
           </div>
           {

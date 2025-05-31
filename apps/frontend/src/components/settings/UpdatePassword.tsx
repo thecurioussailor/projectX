@@ -1,28 +1,40 @@
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { FaSpinner } from "react-icons/fa";
+import { useToast } from "../ui/Toast";
 const UpdatePassword = () => {
     const { updatePassword } = useAuth();
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const { showToast } = useToast();
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         if(oldPassword === newPassword) {
+            showToast('New password must be different from old password', 'error');
             setIsLoading(false);
             return;
         }
         if(newPassword !== confirmPassword) {
+            showToast('New password and confirm password do not match', 'error');
             setIsLoading(false);
             return;
         }
-        await updatePassword(oldPassword, newPassword, confirmPassword);
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setIsLoading(false);
+        try {
+            await updatePassword(oldPassword, newPassword, confirmPassword);
+            setOldPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setIsLoading(false);
+            showToast('Password updated successfully', 'success');
+        } catch (error) {
+            console.log(error);
+            showToast('Failed to update password. Please try again.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
     }
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-16 md:mb-0">

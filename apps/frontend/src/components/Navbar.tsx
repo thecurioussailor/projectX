@@ -148,21 +148,21 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
 const FavoritesButton = ({ onClose }: { onClose: () => void }) => {
   const navigate = useNavigate();
   return (
-    <div className="absolute -left-32 top-8 mt-2 w-64 bg-white shadow-lg z-10 rounded-xl overflow-clip">
+    <div className="absolute -left-52 top-8 mt-2 w-96 bg-white shadow-lg z-10 rounded-xl overflow-clip">
             <div className="">
-              <div className="flex flex-col gap-1 justify-center items-center text-gray-700 border-b bg-[#6428B0] px-4 py-6">
+              <div className="flex flex-col gap-1 justify-center items-center text-gray-700 border-b bg-[#7F37D8] px-4 py-6">
                 <p className="font-medium text-white text-xl">Favorites</p>
               </div>
-              <div className="grid grid-cols-3">
+              <div className="grid grid-cols-3 pt-4">
                 <button
                   onClick={() => {
                     navigate('/link-short');
                     onClose();
                   }}
-                  className="w-full flex flex-col justify-center gap-1 items-center text-left text-sm text-gray-700 hover:bg-gray-100 border-b border-r border-gray-200"
+                  className="w-full flex flex-col justify-center py-5 gap-1 items-center text-left text-sm text-gray-700 hover:bg-gray-100 border-b border-r border-gray-200"
                 >
-                  <FaUser />
-                  <span className="text-xs font-semibold">Link</span>
+                  <FaUser size={20}/>
+                  <span className="text-sm font-semibold">Link</span>
                 </button>
                 <button
                   onClick={() => {
@@ -171,7 +171,7 @@ const FavoritesButton = ({ onClose }: { onClose: () => void }) => {
                   }}
                   className="w-full flex flex-col justify-center text-center items-center gap-1 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-r border-gray-200"
               >
-                  <FaProductHunt/> 
+                  <FaProductHunt size={20}/> 
                   <span className="text-xs font-semibold">Digital Product</span>
                 </button>
                 <button  
@@ -181,7 +181,7 @@ const FavoritesButton = ({ onClose }: { onClose: () => void }) => {
                   }}
                   className="w-full flex flex-col justify-center text-center items-center gap-1 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-r border-gray-200"
                 >
-                  <FaTelegram/>
+                  <FaTelegram size={20}/>
                   <span className="text-xs font-semibold">Telegram</span>
                 </button>
               </div>

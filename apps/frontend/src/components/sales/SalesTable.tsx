@@ -4,13 +4,14 @@ import Error from "../ui/Error";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { useState } from "react";
 import SaleSidePop from "./SaleSidePop";
-import { CiSearch } from "react-icons/ci";
+import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
 const SalesTable = () => {
     const { sales, isLoading, error } = useSales();
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<"ALL" | "DIGITAL_PRODUCT" | "TELEGRAM_PLAN">("ALL");
     const [sortBy, setSortBy] = useState<"name" | "date" | "amount">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+    const [isGridView, setIsGridView] = useState(false);
    
     // Filter and sort sales
     const filteredAndSortedSales = sales
@@ -125,10 +126,31 @@ const SalesTable = () => {
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
+
+                        <div className="cursor-pointer flex items-center gap-2">
+                            <button 
+                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(true)}
+                            >
+                                <CiCircleList size={20} />
+                            </button>
+                            <button 
+                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(false)}
+                            >
+                                <CiGrid41 size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
+                {/* Grid View */}
+                {isGridView && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-10">
+                    {filteredAndSortedSales?.map((sale, index) => (
+                        <SalesTableCard key={index} sale={sale} index={index} />
+                    ))}
+                </div>}
                 {/* tabular view */}
-                <div className="overflow-x-scroll lg:overflow-x-hidden">
+                {!isGridView && <div className="overflow-x-scroll lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
                         <thead className=" border-gray-300 h-20">
                             <tr className="border-t border-gray-200 text-[#1B3155]">
@@ -147,7 +169,7 @@ const SalesTable = () => {
                             ))}  
                         </tbody>
                     </table>
-                </div>
+                </div>}
             </div>
         </div>
     )
@@ -174,5 +196,66 @@ const SalesTableRow = ({sale, index}: {sale: Sale, index: number}) => {
                 {isSidePopOpen && <SaleSidePop sale={sale} onClose={() => setIsSidePopOpen(false)} />}
             </td>
         </tr>
+    )
+}
+
+const SalesTableCard = ({sale, index}: {sale: Sale, index: number}) => {
+    const [isSidePopOpen, setIsSidePopOpen] = useState(false);
+    
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#1B3155]">#{index + 1}</span>
+                    <span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-3 py-1">
+                        {sale.productType.replace('_', ' ')}
+                    </span>
+                </div>
+                <span className="text-sm text-gray-500">
+                    {new Date(sale.createdAt).toLocaleDateString("en-US", { 
+                        month: "short", 
+                        day: "numeric",
+                        year: "numeric"
+                    })}
+                </span>
+            </div>
+
+            {/* Product Name */}
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold text-[#1B3155] line-clamp-2">
+                    {sale.productType === 'DIGITAL_PRODUCT' ? sale?.digitalProduct?.title : sale?.telegramPlan?.name}
+                </h3>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Price</span>
+                    <span className="text-lg font-bold text-[#7e37d8]">₹{sale.amount}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Customer</span>
+                    <span className="text-sm font-medium text-[#158DF7]">{sale.user.username}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Status</span>
+                    <span className="text-sm font-medium text-green-600">{sale.status}</span>
+                </div>
+            </div>
+
+            {/* Action Button */}
+            <button 
+                onClick={() => setIsSidePopOpen(true)}
+                className="w-full bg-[#7e37d8] hover:bg-[#6b2db5] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+            >
+                View Details
+            </button>
+
+            {/* Side Pop Modal */}
+            {isSidePopOpen && <SaleSidePop sale={sale} onClose={() => setIsSidePopOpen(false)} />}
+        </div>
     )
 }

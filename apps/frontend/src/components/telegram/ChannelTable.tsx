@@ -8,7 +8,7 @@ import Warning from "../ui/Warning";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { FaEdit, FaEye, FaEyeSlash, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { CiSearch } from "react-icons/ci";
+import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 
 const ChannelTable = () => {
@@ -17,6 +17,7 @@ const ChannelTable = () => {
     const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
     const [sortBy, setSortBy] = useState<"name" | "revenue" | "sales">("name");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [isGridView, setIsGridView] = useState(false);
     useEffect(() => {
         if (channels.length === 0) {
             fetchChannels();
@@ -121,10 +122,31 @@ const ChannelTable = () => {
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
+
+                        <div className="cursor-pointer flex items-center gap-2">
+                            <button 
+                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(true)}
+                            >
+                                <CiCircleList size={20} />
+                            </button>
+                            <button 
+                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(false)}
+                            >
+                                <CiGrid41 size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
-                {/* tabular view */}
-                <div className="overflow-x-auto lg:overflow-x-hidden">
+                {/* Grid View */}
+                {isGridView && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-10">
+                    {filteredAndSortedChannels.map((channel, index) => (
+                        <ChannelCard key={channel.id} channel={channel} index={index} />
+                    ))}
+                </div>}
+                {/* Table View */}
+                {!isGridView && <div className="overflow-x-auto lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full table-auto">
                         <thead className=" border-gray-300 h-20">
                             <tr className="border-t border-gray-200">
@@ -143,13 +165,156 @@ const ChannelTable = () => {
                             ))}
                         </tbody>
                     </table>
-                </div>
+                </div>}
             </div>
         </div>
     )
 }
 
 export default ChannelTable;
+
+const ChannelCard = ({ channel, index }: { channel: TelegramChannel, index: number }) => {
+    const [copied, setCopied] = useState(false);
+    const [showWarning, setShowWarning] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    const { unpublishChannel, publishChannel, deleteChannel } = useTelegram();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setShowMenu(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []); 
+
+    const handleShare = (channelId: string) => {
+        const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
+        window.open(shareableLink, '_blank');
+    };
+
+    const handleCopy = (channelId: string) => {
+        const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
+        navigator.clipboard.writeText(shareableLink).then(() => {
+            setCopied(true);
+            setTimeout(() => {
+                setCopied(false);
+            }, 2000);
+        });
+    };
+
+    const revenue = channel.telegramPlans?.reduce((acc, plan) => 
+        acc + plan.subscriptions?.reduce((acc, subscription) => acc + Number(subscription.planPrice), 0), 0) || 0;
+    const sales = channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0) || 0;
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#1B3155]">#{index + 1}</span>
+                    <span className={`${channel.status === "ACTIVE" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"} text-xs font-semibold rounded-full px-3 py-1 flex items-center gap-1`}>
+                        <div className={`${channel.status === "ACTIVE" ? "bg-green-500" : "bg-red-500"} w-2 h-2 rounded-full`}></div>
+                        {channel.status === "ACTIVE" ? "Active" : "Inactive"}
+                    </span>
+                </div>
+                <div ref={ref} className="relative">
+                    <button 
+                        onClick={() => setShowMenu(!showMenu)}
+                        className="text-[#7F37D8] p-2 hover:bg-gray-100 rounded-full"
+                    >
+                        <HiOutlineDotsVertical />
+                    </button>
+                    {showMenu && (
+                        <div className="absolute z-10 -bottom-32 right-0 border border-gray-200 rounded-lg bg-white shadow-lg">
+                            <div className="flex flex-col rounded-lg overflow-hidden">
+                                <button 
+                                    onClick={() => navigate(`/telegram/${channel.id}/edit`)}        
+                                    className="px-4 py-2 flex items-center gap-2 hover:bg-purple-600 hover:text-white text-left">
+                                    <FaEdit size={15}/> Edit
+                                </button>
+                                {channel.status === "ACTIVE" ? (
+                                    <button onClick={() => unpublishChannel(channel.id)} className="px-4 py-2 flex items-center gap-2 hover:bg-purple-600 hover:text-white text-left">
+                                        <FaEyeSlash size={15}/> Unpublish
+                                    </button>
+                                ) : (
+                                    <button onClick={() => publishChannel(channel.id)} className="px-4 py-2 flex items-center gap-2 hover:bg-purple-600 hover:text-white text-left">
+                                        <FaEye size={15}/> Publish
+                                    </button>
+                                )}
+                                <button onClick={() => deleteChannel(channel.id)} className="px-4 py-2 flex items-center gap-2 hover:bg-purple-600 hover:text-white text-left">
+                                    <FaTrash size={15}/> Delete
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Channel Name */}
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold text-[#1B3155] line-clamp-2">
+                    {channel.channelName}
+                </h3>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Plans</span>
+                    <span className="text-lg font-bold text-[#7e37d8]">{channel.telegramPlans?.length || 0}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Sales</span>
+                    <span className="text-sm font-medium text-[#158DF7]">{sales}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Revenue</span>
+                    <span className="text-sm font-medium text-gray-700">₹{revenue}</span>
+                </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+                <button 
+                    onClick={() => {
+                        if(channel.status === "ACTIVE") {
+                            handleShare(channel.id);
+                        } else {
+                            setShowWarning(true);
+                        }
+                    }}
+                    className="flex-1 bg-[#7e37d8] hover:bg-[#6b2db5] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                    disabled={channel.status !== "ACTIVE"}
+                >
+                    <IoShareSocialOutline size={16} />
+                    Share
+                </button>
+                <button 
+                    onClick={() => {
+                        if(channel.status === "ACTIVE") {
+                            handleCopy(channel.id);
+                        } else {
+                            setShowWarning(true);
+                        }
+                    }}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center disabled:opacity-50"
+                    disabled={channel.status !== "ACTIVE"}
+                >
+                    {copied ? <GoCheck size={16} /> : <GoCopy size={16} />}
+                </button>
+            </div>
+
+            {/* Warning Modal */}
+            {showWarning && <Warning title="Channel is inactive" message="Please activate the channel to share it" onCancel={() => setShowWarning(false)} />}
+        </div>
+    );
+};
 
 const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: number }) => {
     const [copied, setCopied] = useState(false);

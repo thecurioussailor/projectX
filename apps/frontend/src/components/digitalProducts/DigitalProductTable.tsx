@@ -9,8 +9,10 @@ import { useNavigate } from "react-router-dom";
 import Error from "../ui/Error";
 import { BsThreeDots } from "react-icons/bs";
 import Warning from "../ui/Warning";
-import { CiSearch } from "react-icons/ci";
+import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
+
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
+
 const DigitalProductTable = () => {
     const { products, isLoading, error, fetchProducts } = useDigitalProduct();
     const [searchQuery, setSearchQuery] = useState("");
@@ -18,6 +20,8 @@ const DigitalProductTable = () => {
     const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
     const [sortBy, setSortBy] = useState<"title" | "price" | "sales">("title");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [isGridView, setIsGridView] = useState(false);
+
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
@@ -136,10 +140,31 @@ const DigitalProductTable = () => {
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
+
+                        <div className="cursor-pointer flex items-center gap-2">
+                            <button 
+                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(true)}
+                            >
+                                <CiCircleList size={20} />
+                            </button>
+                            <button 
+                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                            onClick={() => setIsGridView(false)}
+                            >
+                                <CiGrid41 size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
-                {/* tabular view */}
-                <div className="overflow-x-auto lg:overflow-x-hidden">
+                {/* Grid View */}
+                {isGridView && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-10">
+                    {filteredAndSortedProducts.map((product, index) => (
+                        <ProductCard key={product.id} product={product} index={index} />
+                    ))}
+                </div>}
+                {/* Table View */}
+                {!isGridView && <div className="overflow-x-auto lg:overflow-x-hidden">
                     <table className="w-full text-left min-w-max lg:min-w-full">
                         <thead className=" border-gray-300 h-20">
                             <tr className="border-t border-gray-200">
@@ -158,13 +183,178 @@ const DigitalProductTable = () => {
                             ))}
                         </tbody>
                     </table>
-                </div>
+                </div>}
             </div>
         </div>
   )
 }
 
 export default DigitalProductTable
+
+const ProductCard = ({ product, index }: { product: DigitalProduct, index: number }) => {
+    const [copied, setCopied] = useState(false);
+    const { deleteProduct } = useDigitalProduct();
+    const [showMenu, setShowMenu] = useState(false); 
+    const [showWarning, setShowWarning] = useState(false); 
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+    const navigate = useNavigate();
+    const ref = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setShowMenu(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []); 
+
+    const handleCopyLink = (productId: string) => {
+        setCopied(true);
+        navigator.clipboard.writeText(`${PUBLIC_APP_URL}/d/${productId}`);
+        setTimeout(() => {
+            setCopied(false);
+        }, 2000);
+    }
+
+    const handleShare = (productId: string) => {
+        const shareableLink = `${PUBLIC_APP_URL}/d/${productId}`;
+        window.open(shareableLink, '_blank');
+    };
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#1B3155]">#{index + 1}</span>
+                    <span className={`${product.status === "ACTIVE" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"} text-xs font-semibold rounded-full px-3 py-1 flex items-center gap-1`}>
+                        <div className={`${product.status === "ACTIVE" ? "bg-green-500" : "bg-red-500"} w-2 h-2 rounded-full`}></div>
+                        {product.status === "ACTIVE" ? "Active" : "Inactive"}
+                    </span>
+                </div>
+                <div className="relative">
+                    <button 
+                        ref={ref}
+                        onClick={() => setShowMenu(!showMenu)}
+                        className="text-[#7F37D8] p-2 hover:bg-gray-100 rounded-full"
+                    >
+                        <BsThreeDots size={20}/>
+                    </button>
+                    {showMenu && (
+                        <div className="absolute z-50 -bottom-32 right-0 border border-gray-200 rounded-lg bg-white shadow-lg">
+                            <div className="flex flex-col rounded-lg overflow-hidden">
+                                <button 
+                                    onClick={() => navigate(`/digital-products/${product.id}/edit`)}
+                                    className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left"
+                                >
+                                    <FaEdit size={15}/> Edit
+                                </button>
+                                {product.status === "ACTIVE" ? (
+                                    <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left">
+                                        <FaEyeSlash size={15}/> Unpublish
+                                    </button>
+                                ): (
+                                    <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left">
+                                        <FaEye size={15}/> Publish
+                                    </button>
+                                )}
+                                <button 
+                                    onClick={() => setShowDeleteConfirm(product.id)}   
+                                    className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left"
+                                >
+                                    <FaTrash size={15}/> Delete
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Product Title */}
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold text-[#1B3155] line-clamp-2">
+                    {product.title}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">{product.category}</p>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Price</span>
+                    <span className="text-lg font-bold text-[#7e37d8]">₹{product.price}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Sales</span>
+                    <span className="text-sm font-medium text-[#158DF7]">{product._count?.orders || 0}</span>
+                </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+                <button 
+                    onClick={() => {
+                        if(product.status === "ACTIVE") {
+                            handleShare(product.id); 
+                        } else {
+                            setShowWarning(true)
+                        }
+                    }}
+                    className="flex-1 bg-[#7e37d8] hover:bg-[#6b2db5] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                    disabled={product.status !== "ACTIVE"}
+                >
+                    <IoShareSocialOutline size={16} />
+                    Share
+                </button>
+                <button 
+                    onClick={() => {
+                        if(product.status === "ACTIVE") {
+                            handleCopyLink(product.id);
+                        } else {
+                            setShowWarning(true);
+                        }
+                    }}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center disabled:opacity-50"
+                    disabled={product.status !== "ACTIVE"}
+                >
+                    {copied ? <GoCheck size={16} /> : <GoCopy size={16} />}
+                </button>
+            </div>
+
+            {/* Warning Modal */}
+            {showWarning && <Warning title="Product is inactive" message="Please activate the product to share it" onCancel={() => setShowWarning(false)} />}
+            
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-3xl max-w-md w-full mx-4">
+                        <h2 className="text-xl font-semibold mb-4 px-8 py-8 text-zinc-800 border-b border-gray-200 pb-4">Delete Product</h2>
+                        <p className="text-gray-600 mb-6 px-8 py-2">
+                            Are you sure you want to delete this product? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-4 px-8 pb-8">
+                            <button
+                                onClick={() => setShowDeleteConfirm(null)}
+                                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => deleteProduct(showDeleteConfirm)}
+                                className="px-8 py-2 bg-[#7F37D8] text-white rounded-3xl hover:bg-[#6C2EB9]"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const ProductRow = ({ product, index }: { product: DigitalProduct, index: number }) => {
     const [copied, setCopied] = useState(false);
