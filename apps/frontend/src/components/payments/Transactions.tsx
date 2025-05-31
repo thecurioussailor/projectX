@@ -100,16 +100,24 @@ const Transactions = () => {
                         </div>
 
                         {/* Sort Options */}
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as "name" | "amount" | "date" | "status")}
-                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                            <option value="date">Sort by Date</option>
-                            <option value="name">Sort by Name</option>
-                            <option value="amount">Sort by Amount</option>
-                            <option value="status">Sort by Status</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as "name" | "amount" | "date" | "status")}
+                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                            >
+                                <option value="date">Sort by Date</option>
+                                <option value="name">Sort by Name</option>
+                                <option value="amount">Sort by Amount</option>
+                                <option value="status">Sort by Status</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+
 
                         {/* Sort Order Toggle */}
                         <button

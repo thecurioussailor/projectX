@@ -155,38 +155,60 @@ const PurchasedItemsTable = () => {
                         </div>
 
                         {/* Type Filter */}
-                        <select
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value as "ALL" | "TELEGRAM_PLAN" | "DIGITAL_PRODUCT")}
-                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                            <option value="ALL" className="text-sm">All Types</option>
-                            <option value="TELEGRAM_PLAN" className="text-sm">Telegram Plans</option>
-                            <option value="DIGITAL_PRODUCT" className="text-sm">Digital Products</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={typeFilter}
+                                onChange={(e) => setTypeFilter(e.target.value as "ALL" | "TELEGRAM_PLAN" | "DIGITAL_PRODUCT")}
+                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                            >
+                                <option value="ALL" className="text-sm">All Types</option>
+                                <option value="TELEGRAM_PLAN" className="text-sm">Telegram Plans</option>
+                                <option value="DIGITAL_PRODUCT" className="text-sm">Digital Products</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+
 
                         {/* Status Filter */}
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE" | "EXPIRED")}
-                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        <div className="relative">
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE" | "EXPIRED")}
+                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
                         >
                             <option value="ALL" className="text-sm">All Status</option>
                             <option value="ACTIVE" className="text-sm">Active</option>
                             <option value="INACTIVE" className="text-sm">Inactive</option>
-                            <option value="EXPIRED" className="text-sm">Expired</option>
-                        </select>
+                                <option value="EXPIRED" className="text-sm">Expired</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
 
                         {/* Sort Options */}
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as "name" | "date" | "amount")}
-                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        <div className="relative">
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as "name" | "date" | "amount")}
+                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
                         >
                             <option value="date" className="text-sm">Sort by Date</option>
                             <option value="name" className="text-sm">Sort by Name</option>
                             <option value="amount" className="text-sm">Sort by Amount</option>
                         </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
 
                         {/* Sort Order Toggle */}
                         <button

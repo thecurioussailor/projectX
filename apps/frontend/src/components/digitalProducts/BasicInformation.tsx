@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { IoIosArrowDown } from "react-icons/io";
 import Testimonials from "./Testimonials";
 import Gallery from "./Gallery";
 import Faq from "./Faq";
@@ -42,11 +41,12 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                         </div>
                         <div className="relative flex flex-col gap-1 w-full md:w-1/2">
                             <label htmlFor="category">Category</label>
-                            <select 
-                                id="category" 
-                                name="category"
-                                value={formData?.category}
-                                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                            <div className="relative">
+                                <select 
+                                    id="category" 
+                                    name="category"
+                                    value={formData?.category}
+                                    onChange={(e) => setFormData({...formData, category: e.target.value})}
                                 className="w-full border border-gray-300 rounded-md p-2 appearance-none outline-none focus-within:ring-purple-500 focus-within:ring-2"
                             >
                                 <option value="Education">Education</option>
@@ -55,9 +55,14 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                                 <option value="Lifestyle">Lifestyle</option>
                                 <option value="Health">Health</option>
                                 <option value="Business">Business</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <IoIosArrowDown size={20} className="absolute z-50 top-12 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
+                                        <option value="Other">Other</option>
+                                </select>
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>  
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -74,17 +79,23 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
                 <div className="flex flex-col md:flex-row items-center gap-4">
                     <div className="relative w-full md:w-1/2 flex flex-col">
                         <label htmlFor="priceType">Price Type</label>
-                        <select 
-                            id="priceType" 
-                            name="priceType" 
-                            value={formData?.priceType}
-                            className="w-full border border-gray-300 rounded-md p-2 outline-none focus-within:ring-[#7F37D8] focus-within:ring-2 appearance-none"
-                            onChange={(e) => setFormData({...formData, priceType: e.target.value as "FIXED" | "FLEXIBLE"})}
-                        >
+                        <div className="relative">
+                            <select 
+                                id="priceType" 
+                                name="priceType" 
+                                value={formData?.priceType}
+                                className="appearance-none w-full px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                                onChange={(e) => setFormData({...formData, priceType: e.target.value as "FIXED" | "FLEXIBLE"})}
+                            >
                             <option value="FIXED">Fixed</option>
-                            <option value="FLEXIBLE">Flexible</option>
-                        </select>
-                        <IoIosArrowDown size={20} className="absolute z-50 top-12 right-2 -translate-y-1/2 text-gray-500 focus-within:outline-none" />
+                                <option value="FLEXIBLE">Flexible</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                     <div className="w-full md:w-1/2">
                         <label htmlFor="price">{formData.priceType === "FIXED" ? "Price" : "Minimum Price"}</label>    

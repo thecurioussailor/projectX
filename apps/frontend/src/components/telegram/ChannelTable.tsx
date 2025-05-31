@@ -94,26 +94,42 @@ const ChannelTable = () => {
                         </div>
 
                         {/* Status Filter */}
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
-                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                            <option value="ALL" className="text-sm">All Status</option>
-                            <option value="ACTIVE" className="text-sm">Active</option>
-                            <option value="INACTIVE" className="text-sm">Inactive</option>
-                        </select>
+                        
+                        <div className="relative">
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
+                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                            >
+                                <option value="ALL" className="text-sm">All Status</option>
+                                <option value="ACTIVE" className="text-sm">Active</option>
+                                <option value="INACTIVE" className="text-sm">Inactive</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
 
                         {/* Sort Options */}
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as "name" | "revenue" | "sales")}
-                            className="px-4 py-2 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                            <option value="name" className="text-sm">Sort by Name</option>
-                            <option value="revenue" className="text-sm">Sort by Revenue</option>
-                            <option value="sales" className="text-sm">Sort by Sales</option>
-                        </select>
+
+                        <div className="relative">
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as "name" | "revenue" | "sales")}
+                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                            >   
+                                <option value="name" className="text-sm">Sort by Name</option>
+                                <option value="revenue" className="text-sm">Sort by Revenue</option>
+                                <option value="sales" className="text-sm">Sort by Sales</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
 
                         {/* Sort Order Toggle */}
                         <button
