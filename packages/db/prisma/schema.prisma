@@ -248,6 +248,8 @@ model TelegramChannel {
   telegramChannelId     String?
   channelName           String
   channelDescription    String?
+  richDescription       String?
+  bannerImage           String?
   botAdded              Boolean           @default(false)
   status                TelegramChannelStatus @default(INACTIVE)
   createdAt             DateTime          @default(now())

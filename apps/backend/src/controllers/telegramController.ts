@@ -6,6 +6,21 @@ import dotenv from "dotenv";
 import { addBotToChannel, addUserToChannel } from "../utils/helper.js";
 import { Cashfree, CFEnvironment } from "cashfree-pg";
 import { initiatePayment } from "./orderController.js";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import crypto from "crypto";
+
+// Add S3 configuration (if not already present)
+const s3Client = new S3Client({
+    region: process.env.AWS_REGION || 'us-east-1',
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+    }
+});
+
+const BUCKET_NAME = process.env.AWS_S3_BUCKET;
+
 // import { v4 as uuidv4 } from "uuid";
 dotenv.config();
 const apiId: number = Number(process.env.TELEGRAM_API_ID);
@@ -870,6 +885,242 @@ export const deleteChannel = async (req: Request, res: Response) => {
     }
 };
 
+//Channel Banner Manangement
+export const getBannerUploadUrl = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const { fileName, fileType } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        // Verify channel ownership
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+
+        if (!channel || channel.telegramAccount.userId !== userId) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found or you don't have permission"
+            });
+            return;
+        }
+
+        // Generate a unique file key
+        const fileExtension = fileName.split('.').pop();
+        const timestamp = Date.now();
+        const uniqueId = crypto.randomUUID();
+
+        const s3Key = `${userId}/telegram/channels/${channelId}/banner/${timestamp}-${uniqueId}.${fileExtension}`;
+
+        // Create the command to put the object
+        const command = new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: s3Key,
+            ContentType: fileType
+        });
+
+        // Generate the presigned URL
+        const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+        res.json({
+            status: "success",
+            data: {
+                uploadUrl: presignedUrl,
+                s3Key: s3Key
+            }
+        });
+    } catch (error) {
+        console.error('Error generating banner upload URL:', error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to generate upload URL"
+        });
+    }
+}
+
+export const uploadChannelBanner = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const { s3Key } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        // Verify channel ownership
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+
+        if (!channel || channel.telegramAccount.userId !== userId) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found or you don't have permission"
+            });
+            return;
+        }
+
+        // Verify the object exists in S3
+        const command = new HeadObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: s3Key,
+        });
+
+        await s3Client.send(command);
+
+        // Delete old banner if exists
+        if (channel.bannerImage) {
+            try {
+                const deleteCommand = new DeleteObjectCommand({
+                    Bucket: BUCKET_NAME,
+                    Key: channel.bannerImage
+                });
+                await s3Client.send(deleteCommand);
+            } catch (deleteError) {
+                console.error('Error deleting old banner:', deleteError);
+            }
+        }
+
+        // Update channel with new banner
+        const updatedChannel = await prismaClient.telegramChannel.update({
+            where: { id: channelId },
+            data: { bannerImage: s3Key }
+        });
+
+        res.json({
+            status: "success",
+            message: "Banner uploaded successfully",
+            data: updatedChannel
+        });
+    } catch (error) {
+        console.error('Error uploading banner:', error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to upload banner"
+        });
+    }
+};
+
+export const getChannelBanner = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            select: { bannerImage: true }
+        });
+
+        if (!channel || !channel.bannerImage) {
+            res.status(404).json({
+                status: "error",
+                message: "Banner not found"
+            });
+            return;
+        }
+
+        const command = new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: channel.bannerImage
+        });
+
+        const signedUrl = await getSignedUrl(s3Client, command, {
+            expiresIn: 3600 // 1 hour
+        });
+
+        res.status(200).json({
+            status: "success",
+            data: {
+                url: signedUrl
+            }
+        });
+    } catch (error) {
+        console.error('Error getting banner:', error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to get banner"
+        });
+    }
+};
+
+export const deleteChannelBanner = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        // Verify channel ownership
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+
+        if (!channel || channel.telegramAccount.userId !== userId) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found or you don't have permission"
+            });
+            return;
+        }
+
+        if (!channel.bannerImage) {
+            res.status(404).json({
+                status: "error",
+                message: "No banner to delete"
+            });
+            return;
+        }
+
+        // Delete from S3
+        const deleteCommand = new DeleteObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: channel.bannerImage
+        });
+
+        await s3Client.send(deleteCommand);
+
+        // Update channel to remove banner reference
+        const updatedChannel = await prismaClient.telegramChannel.update({
+            where: { id: channelId },
+            data: { bannerImage: null }
+        });
+
+        res.json({
+            status: "success",
+            message: "Banner deleted successfully",
+            data: updatedChannel
+        });
+    } catch (error) {
+        console.error('Error deleting banner:', error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to delete banner"
+        });
+    }
+};
+
+//Plan Management
 export const createPlan = async (req: Request, res: Response) => {
     try {
         const { channelId } = req.params;

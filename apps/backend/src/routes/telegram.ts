@@ -19,6 +19,12 @@ telegramRouter.put("/channels/:channelId/publish", authenticate, telegramControl
 telegramRouter.put("/channels/:channelId/unpublish", authenticate, telegramController.unpublishChannel);
 telegramRouter.delete("/channels/:channelId", authenticate, telegramController.deleteChannel);
 
+//channel Banner management
+telegramRouter.post("/channels/:channelId/banner/upload-url", authenticate, telegramController.getBannerUploadUrl);
+telegramRouter.post("/channels/:channelId/banner", authenticate, telegramController.uploadChannelBanner);
+telegramRouter.get("/channels/:channelId/banner", authenticate, telegramController.getChannelBanner);
+telegramRouter.delete("/channels/:channelId/banner", authenticate, telegramController.deleteChannelBanner);
+
 //plan management
 telegramRouter.post("/channels/:channelId/plans", authenticate, telegramController.createPlan);
 telegramRouter.get("/channels/:channelId/plans", authenticate, telegramController.getPlans);
