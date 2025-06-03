@@ -65,7 +65,14 @@ export function useTelegram() {
     initiateSubscription: storeInitiateSubscription,
     getOrderStatus: storeGetOrderStatus,
     handlePaymentCallback: storeHandlePaymentCallback,
-    fetchChannelSubscribers: storeFetchChannelSubscribers
+    fetchChannelSubscribers: storeFetchChannelSubscribers,
+    
+    // Banner methods
+    getBannerUploadUrl: storeGetBannerUploadUrl,
+    uploadBannerToS3: storeUploadBannerToS3,
+    uploadChannelBanner: storeUploadChannelBanner,
+    getChannelBanner: storeGetChannelBanner,
+    deleteChannelBanner: storeDeleteChannelBanner
   } = useTelegramStore();
   
   // Cast subscribers to our local type to avoid naming conflicts
@@ -129,7 +136,7 @@ export function useTelegram() {
     return storeFetchPublicChannelBySlug(slug);
   }, [token, storeFetchPublicChannelBySlug]);
   
-  const updateChannel = useCallback(async (channelId: string, data: { botAdded: boolean }) => {
+  const updateChannel = useCallback(async (channelId: string, data: { richDescription: string}) => {
     if (!token) {
       throw new Error('You must be logged in to update a channel');
     }
@@ -230,6 +237,73 @@ export function useTelegram() {
     return storeHandlePaymentCallback(orderId, productType);
   }, [token, storeHandlePaymentCallback]);
   
+  // Banner methods with authentication check
+  const getBannerUploadUrl = useCallback(async (channelId: string, fileName: string, fileType: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to get banner upload URL');
+    }
+    return storeGetBannerUploadUrl(channelId, fileName, fileType);
+  }, [token, storeGetBannerUploadUrl]);
+
+  const uploadBannerToS3 = useCallback(async (url: string, file: File) => {
+    if (!token) {
+      throw new Error('You must be logged in to upload banner');
+    }
+    return storeUploadBannerToS3(url, file);
+  }, [token, storeUploadBannerToS3]);
+
+  const uploadChannelBanner = useCallback(async (channelId: string, s3Key: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to upload channel banner');
+    }
+    return storeUploadChannelBanner(channelId, s3Key);
+  }, [token, storeUploadChannelBanner]);
+
+  const getChannelBanner = useCallback(async (channelId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to get channel banner');
+    }
+    return storeGetChannelBanner(channelId);
+  }, [token, storeGetChannelBanner]);
+
+  const deleteChannelBanner = useCallback(async (channelId: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to delete channel banner');
+    }
+    return storeDeleteChannelBanner(channelId);
+  }, [token, storeDeleteChannelBanner]);
+
+  // Helper for complete banner upload process
+  const uploadBanner = async (channelId: string, file: File) => {
+    try {
+      console.log("uploadBanner", channelId, file);
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('File must be an image');
+      }
+      
+      // Step 1: Get upload URL
+      const { uploadUrl, s3Key } = await getBannerUploadUrl(
+        channelId, 
+        file.name, 
+        file.type
+      );
+      
+      // Step 2: Upload file to S3
+      await uploadBannerToS3(uploadUrl, file);
+
+      // Step 3: Save banner reference in database
+      const updatedChannel = await uploadChannelBanner(channelId, s3Key);
+      
+      // Return the updated channel
+      return updatedChannel;
+    } catch (error) {
+      console.error("Error uploading banner:", error);
+      throw error;
+    }
+  };
+  
   return {
     // State
     accounts,
@@ -256,6 +330,14 @@ export function useTelegram() {
     unpublishChannel,
     deleteChannel,
     setCurrentChannel,
+    
+    // Banner methods
+    getBannerUploadUrl,
+    uploadBannerToS3,
+    uploadChannelBanner,
+    getChannelBanner,
+    deleteChannelBanner,
+    uploadBanner,
     
     // Plan methods
     createPlan,

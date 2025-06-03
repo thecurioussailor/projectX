@@ -17,6 +17,8 @@ interface PublicChannel {
   id: string;
   channelName: string;
   channelDescription: string;
+  richDescription: string;
+  bannerUrl: string;
   createdAt: string;
   plans: PublicPlan[];
 }
@@ -128,6 +130,13 @@ const PublicChannelPage = () => {
               </div>
               <p className="mt-2 text-gray-600">{channel.channelDescription}</p>
             </header>
+            <div className="flex flex-col gap-6">
+              <img src={channel.bannerUrl} alt="Banner" className="w-full h-48 object-contain" />
+              <div 
+                className="text-gray-600 prose max-w-none"
+                dangerouslySetInnerHTML={{ __html: channel.richDescription }}
+              />
+            </div>
 
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
               <h2 className="text-xl font-semibold mb-4">Subscription Plans</h2>

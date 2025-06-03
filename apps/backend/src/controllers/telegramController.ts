@@ -631,10 +631,34 @@ export const getChannelById = async (req: Request, res: Response) => {
             });
             return;
         }
+
+         // Generate presigned URL for banner if it exists
+         let bannerUrl = null;
+         if (channel.bannerImage) {
+             try {
+                 const command = new GetObjectCommand({
+                     Bucket: BUCKET_NAME,
+                     Key: channel.bannerImage
+                 });
+ 
+                 bannerUrl = await getSignedUrl(s3Client, command, {
+                     expiresIn: 3600 // 1 hour
+                 });
+             } catch (error) {
+                 console.error('Error generating banner presigned URL:', error);
+                 // Continue without banner URL if there's an error
+             }
+         }
+
+          // Return channel data with banner URL
+        const channelWithBanner = {
+            ...channel,
+            bannerUrl: bannerUrl
+        };
         
         res.status(200).json({
             status: "success",
-            data: channel
+            data: channelWithBanner
         });
     } catch (error) {
         console.error("Get channel by ID error:", error);
@@ -648,7 +672,8 @@ export const getChannelById = async (req: Request, res: Response) => {
 export const updateChannel = async (req: Request, res: Response) => {
     try {
         const { channelId } = req.params;
-        const { botAdded } = req.body;
+        const { richDescription } = req.body;
+        console.log("richDescription", richDescription);
         const userId = req.user?.id;
         
         if(!userId) {
@@ -685,7 +710,7 @@ export const updateChannel = async (req: Request, res: Response) => {
         // Update channel
         const updatedChannel = await prismaClient.telegramChannel.update({
             where: { id: channelId },
-            data: { botAdded }
+            data: { richDescription }
         });
         
         res.status(200).json({
@@ -1457,12 +1482,32 @@ export const getPublicChannelBySlug = async (req: Request, res: Response) => {
             });
             return;
         }
+
+        // Generate presigned URL for banner if it exists
+        let bannerUrl = null;
+        if (channel.bannerImage) {
+            try {
+                const command = new GetObjectCommand({
+                    Bucket: BUCKET_NAME,
+                    Key: channel.bannerImage
+                });
+
+                bannerUrl = await getSignedUrl(s3Client, command, {
+                    expiresIn: 3600 // 1 hour
+                });
+            } catch (error) {
+                console.error('Error generating banner presigned URL:', error);
+                // Continue without banner URL if there's an error
+            }
+        }
         
         // Remove sensitive information
         const publicChannel = {
             id: channel.id,
             channelName: channel.channelName,
             channelDescription: channel.channelDescription,
+            richDescription: channel.richDescription,
+            bannerUrl: bannerUrl,
             createdAt: channel.createdAt,
             plans: channel.telegramPlans.map(plan => ({
                 id: plan.id,

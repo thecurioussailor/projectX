@@ -30,6 +30,8 @@ export interface TelegramChannel {
   channelId: string;
   channelName: string;
   channelDescription: string;
+  bannerUrl?: string;
+  richDescription?: string;
   telegramNumber: string;
   botAdded: boolean;
   status: 'ACTIVE' | 'INACTIVE';
@@ -70,6 +72,8 @@ export interface PublicChannel {
   id: string;
   channelName: string;
   channelDescription: string;
+  richDescription: string;
+  bannerUrl: string;
   createdAt: string;
   plans: {
     id: string;
@@ -120,11 +124,21 @@ interface TelegramState {
   fetchChannels: () => Promise<void>;
   fetchChannelById: (channelId: string) => Promise<void>;
   fetchPublicChannelBySlug: (slug: string) => Promise<PublicChannel>;
-  updateChannel: (channelId: string, data: { botAdded: boolean }) => Promise<void>;
+  updateChannel: (channelId: string, data: { richDescription: string }) => Promise<void>;
   publishChannel: (channelId: string) => Promise<void>;
   unpublishChannel: (channelId: string) => Promise<void>;
   deleteChannel: (channelId: string) => Promise<void>;
   setCurrentChannel: (channel: TelegramChannel | null) => void;
+  
+  // Channel Banner Management
+  getBannerUploadUrl: (channelId: string, fileName: string, fileType: string) => Promise<{
+    uploadUrl: string;
+    s3Key: string;
+  }>;
+  uploadBannerToS3: (url: string, file: File) => Promise<void>;
+  uploadChannelBanner: (channelId: string, s3Key: string) => Promise<TelegramChannel>;
+  getChannelBanner: (channelId: string) => Promise<{ url: string }>;
+  deleteChannelBanner: (channelId: string) => Promise<TelegramChannel>;
   
   // Plan methods
   createPlan: (channelId: string, data: { name: string, price: number, duration: number }) => Promise<void>;
@@ -311,7 +325,7 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
     }
   },
   
-  updateChannel: async (channelId: string, data: { botAdded: boolean }) => {
+  updateChannel: async (channelId: string, data: { richDescription: string }) => {
     set({ isLoading: true, error: null });
     try {
       const response = await api.put(`/api/v1/telegram/channels/${channelId}`, data);
@@ -578,6 +592,112 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
       set({
         error: error instanceof Error ? error.message : 'Failed to fetch channel subscribers',
         isLoading: false
+      });
+      throw error;
+    }
+  },
+
+  // Channel Banner Management
+  getBannerUploadUrl: async (channelId: string, fileName: string, fileType: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/api/v1/telegram/channels/${channelId}/banner/upload-url`, {
+        fileName,
+        fileType
+      });
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get banner upload URL', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  uploadBannerToS3: async (url: string, file: File) => {
+    set({ isLoading: true, error: null });
+    try {
+      await fetch(url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type
+        }
+      });
+      set({ isLoading: false });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to upload banner to S3', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  uploadChannelBanner: async (channelId: string, s3Key: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post(`/api/v1/telegram/channels/${channelId}/banner`, { s3Key });
+      const updatedChannel = response.data.data;
+      
+      set(state => ({
+        channels: state.channels.map(ch => 
+          ch.id === channelId ? updatedChannel : ch
+        ),
+        currentChannel: state.currentChannel?.id === channelId 
+          ? updatedChannel 
+          : state.currentChannel,
+        isLoading: false
+      }));
+      return updatedChannel;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to upload channel banner', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  getChannelBanner: async (channelId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get(`/api/v1/telegram/channels/${channelId}/banner`);
+      const banner = response.data.data;
+      set({ isLoading: false });
+      return banner;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to get channel banner', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  deleteChannelBanner: async (channelId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.delete(`/api/v1/telegram/channels/${channelId}/banner`);
+      const updatedChannel = response.data.data;
+      
+      set(state => ({
+        channels: state.channels.map(ch => 
+          ch.id === channelId ? updatedChannel : ch
+        ),
+        currentChannel: state.currentChannel?.id === channelId 
+          ? updatedChannel 
+          : state.currentChannel,
+        isLoading: false
+      }));
+      
+      return updatedChannel;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to delete channel banner', 
+        isLoading: false 
       });
       throw error;
     }
