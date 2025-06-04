@@ -38,6 +38,7 @@ model User {
   telegramSubscriptions       TelegramSubscription[]
   digitalProductPurchases     DigitalProductPurchase[]
   userPlatformSubscriptions   UserPlatformSubscription[]
+  notifications               Notification[]
 }
 
 enum Role {
@@ -570,4 +571,23 @@ model ClickAnalytics {
 
   @@index([linkId])
   
+}
+
+model Notification {
+  id          String              @id @default(cuid())
+  user        User                @relation(fields: [userId], references: [id])
+  userId      Int
+  title       String
+  message     String
+  type        NotificationType
+  isRead      Boolean             @default(false)
+  data        Json?               // Optional metadata (orderId, channelId, etc.)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+enum NotificationType {
+  SUCCESS
+  ERROR
+  INFO
 }

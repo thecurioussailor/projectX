@@ -593,6 +593,8 @@ export const getChannels = async (req: Request, res: Response) => {
     }
 };
 
+export const getTelegramChannels
+
 export const getChannelById = async (req: Request, res: Response) => {
     try {
         const { channelId } = req.params;

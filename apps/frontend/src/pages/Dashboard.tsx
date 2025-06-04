@@ -4,7 +4,7 @@ import TotalSaleCard from "../components/dashboard/TotalSaleCard"
 import PiChartSales from "../components/dashboard/PiChartSales"
 import { useDashboard } from "../hooks/useDashboard"
 import LoadingSpinner from "../components/ui/LoadingSpinner"
-
+import TotalRevenueChart from "../components/dashboard/TotalRevenueChart"
 const Dashboard = () => {
   const { stats, isLoading, error } = useDashboard();
   
@@ -83,6 +83,9 @@ const Dashboard = () => {
             gradient="bg-gradient-to-r from-orange-400 to-amber-500" 
             title={"Click Count"}
           />
+        </div>
+        <div className="w-full">
+          <TotalRevenueChart />
         </div>
         <div className="w-full">
           <RevenueChart />

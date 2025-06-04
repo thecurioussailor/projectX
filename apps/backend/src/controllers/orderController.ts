@@ -7,6 +7,7 @@ import { TelegramClient, Api } from "telegram";
 import { updateWalletBalance } from "./walletController.js";
 import dotenv from "dotenv";
 import TelegramBot from 'node-telegram-bot-api';
+import { createNotification } from "./notificationController.js";
 
 dotenv.config();
 const apiId: number = Number(process.env.TELEGRAM_API_ID);
@@ -192,6 +193,7 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                 try {
                     const inviteLink = await generateTelegramInviteLink(order, subscription);
                     console.log("Payment success with invite link ****************************************");
+                    const notification = await createNotification(order.userId.toString(), "Telegram Subscription", `You have successfully subscribed to ${order.telegramPlan.name} for ${order.telegramPlan.duration} days.`, "SUCCESS");
                     res.status(200).json({
                         status: "success",
                         message: "Payment successful",
@@ -227,12 +229,14 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                 }
             }
             console.log("Payment success ****************************************");
+            const notification = await createNotification(order.userId.toString(), "Payment", `You have successfully paid ${order.amount} for ${productType} #${order.id}.`, "SUCCESS");
             res.status(200).json({
                 status: "success",
                 message: "Payment successful"
             });
         } else {
             console.log("Payment failed ****************************************");
+            const notification = await createNotification(order.userId.toString(), "Payment", `You have failed to pay ${order.amount} for ${productType} #${order.id}.`, "ERROR");
             res.status(200).json({
                 status: "error",
                 message: "Payment failed"
