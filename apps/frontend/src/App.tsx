@@ -37,6 +37,10 @@ import UserDetails from './admin/pages/UserDetails'
 import AdminEditPlatformPlan from './admin/pages/AdminEditPlatformPlan'
 import AdminKyc from './admin/pages/AdminKyc'
 import { ToastProvider } from './components/ui/Toast'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsAndConditions from './pages/TermsAndConditions'
+import RefundPolicy from './pages/RefundPolicy'
+import ContactUs from './pages/ContactUs'
 export default function App() {
   return (
     <AuthProvider>
@@ -45,6 +49,10 @@ export default function App() {
           <Routes>
             {/* Public Routes with PublicLayout */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/contact-us" element={<ContactUs />} />
             <Route path="/signin" element={<Signin />} />
             <Route path="/admin/signin" element={<AdminSignin />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />

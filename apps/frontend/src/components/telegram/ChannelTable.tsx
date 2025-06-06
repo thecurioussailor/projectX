@@ -17,12 +17,30 @@ const ChannelTable = () => {
     const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
     const [sortBy, setSortBy] = useState<"name" | "revenue" | "sales">("name");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-    const [isGridView, setIsGridView] = useState(false);
+    const [isGridView, setIsGridView] = useState(() => {
+        return window.innerWidth < 1024;
+    });
+    
     useEffect(() => {
         if (channels.length === 0) {
             fetchChannels();
         }
     }, [fetchChannels, channels.length]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const isMobileOrTablet = window.innerWidth < 1024;
+            
+            if (isMobileOrTablet && !isGridView) {
+                setIsGridView(true);
+            } else if (!isMobileOrTablet && isGridView) {
+                setIsGridView(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isGridView]);
 
     // Filter and sort channels
     const filteredAndSortedChannels = channels
@@ -75,83 +93,85 @@ const ChannelTable = () => {
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
 
-                <div className="flex justify-between items-start px-12">
+                <div className="flex flex-col lg:flex-row justify-between items-start px-12">
                     <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Channels</h1>
                     
                     {/* Search and Filter Section */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col lg:flex-row items-center gap-4">
                         {/* Search Bar */}
-                        
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Search channels..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
-                            />
-                            <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
-                        </div>
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search channels..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                />
+                                <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
+                            </div>
 
-                        {/* Status Filter */}
-                        
-                        <div className="relative">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
-                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
-                            >
-                                <option value="ALL" className="text-sm">All Status</option>
-                                <option value="ACTIVE" className="text-sm">Active</option>
-                                <option value="INACTIVE" className="text-sm">Inactive</option>
-                            </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                            {/* Status Filter */}
+                            
+                            <div className="relative">
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
+                                    className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                                >
+                                    <option value="ALL" className="text-sm">All Status</option>
+                                    <option value="ACTIVE" className="text-sm">Active</option>
+                                    <option value="INACTIVE" className="text-sm">Inactive</option>
+                                </select>
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
-
                         {/* Sort Options */}
-
-                        <div className="relative">
-                            <select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value as "name" | "revenue" | "sales")}
-                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
-                            >   
-                                <option value="name" className="text-sm">Sort by Name</option>
-                                <option value="revenue" className="text-sm">Sort by Revenue</option>
-                                <option value="sales" className="text-sm">Sort by Sales</option>
-                            </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <div className="relative">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as "name" | "revenue" | "sales")}
+                                    className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                                >   
+                                    <option value="name" className="text-sm">Sort by Name</option>
+                                    <option value="revenue" className="text-sm">Sort by Revenue</option>
+                                    <option value="sales" className="text-sm">Sort by Sales</option>
+                                </select>
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            
                             </div>
-                        </div>
 
-                        {/* Sort Order Toggle */}
-                        <button
-                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
-                        >
-                            {sortOrder === "asc" ? "↑" : "↓"}
-                        </button>
+                            {/* Sort Order Toggle */}
+                            <button
+                                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                                className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                            >
+                                {sortOrder === "asc" ? "↑" : "↓"}
+                            </button>
 
-                        <div className="cursor-pointer flex items-center gap-2">
-                            <button 
-                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
-                            onClick={() => setIsGridView(true)}
-                            >
-                                <CiCircleList size={20} />
-                            </button>
-                            <button 
-                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
-                            onClick={() => setIsGridView(false)}
-                            >
-                                <CiGrid41 size={20} />
-                            </button>
+                            <div className="cursor-pointer flex items-center gap-2">
+                                <button 
+                                className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                                onClick={() => setIsGridView(true)}
+                                >
+                                    <CiCircleList size={20} />
+                                </button>
+                                <button 
+                                className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                                onClick={() => setIsGridView(false)}
+                                >
+                                    <CiGrid41 size={20} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

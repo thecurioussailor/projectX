@@ -16,11 +16,24 @@ const LinkTable = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<"url" | "clicks" | "date">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    const [isGridView, setIsGridView] = useState(false);
+    const [isGridView, setIsGridView] = useState(() => {
+        return window.innerWidth < 1024;
+    });
 
     useEffect(() => {
         fetchLinks();
     }, [fetchLinks]);
+
+    useEffect(() => {
+        const handleResize = () => {
+      if (window.innerWidth < 768 && !isGridView) {
+        setIsGridView(true);
+      }
+    };
+  
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isGridView]);
 
      // Filter and sort links
      const filteredAndSortedLinks = links
@@ -94,11 +107,11 @@ const LinkTable = () => {
                     <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
-                <div className="flex justify-between items-start px-12">
-                <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Your Links</h1>
+                <div className="flex flex-col lg:flex-row justify-between items-start px-12">
+                    <h1 className="text-2xl pb-10 font-bold px-12 text-[#1B3155]">Your Links</h1>
                     
                     {/* Search and Filter Section */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col md:flex-row items-center gap-4">
                         {/* Search Bar */}
                         <div className="relative">
                             <input
@@ -130,26 +143,29 @@ const LinkTable = () => {
                         </div>
 
                         {/* Sort Order Toggle */}
-                        <button
-                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
-                        >
-                            {sortOrder === "asc" ? "↑" : "↓"}
-                        </button>
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <button
+                                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                                className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                            >
+                                {sortOrder === "asc" ? "↑" : "↓"}
+                            </button>
 
-                        <div className="cursor-pointer flex items-center gap-2">
-                            <button 
-                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
-                            onClick={() => setIsGridView(true)}
-                            >
-                                <CiCircleList size={20} />
-                            </button>
-                            <button 
-                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
-                            onClick={() => setIsGridView(false)}
-                            >
-                                <CiGrid41 size={20} />
-                            </button>
+                            <div className="cursor-pointer flex items-center gap-2">
+                                <button 
+                                className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                                onClick={() => setIsGridView(true)}
+                                >
+                                    <CiGrid41 size={20} />
+                                </button>
+                                <button 
+                                className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                                onClick={() => setIsGridView(false)}
+                                >
+                                    <CiCircleList size={20} />
+                                    
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

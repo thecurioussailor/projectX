@@ -20,11 +20,28 @@ const DigitalProductTable = () => {
     const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
     const [sortBy, setSortBy] = useState<"title" | "price" | "sales">("title");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-    const [isGridView, setIsGridView] = useState(false);
+    const [isGridView, setIsGridView] = useState(() => {
+        return window.innerWidth < 1024;
+    });
 
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const isMobileOrTablet = window.innerWidth < 1024;
+            
+            if (isMobileOrTablet && !isGridView) {
+                setIsGridView(true);
+            } else if (!isMobileOrTablet && isGridView) {
+                setIsGridView(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isGridView]);
 
     const categories = ["ALL", ...new Set(products.map(product => product.category))];
     // Filter and sort products
@@ -87,55 +104,56 @@ const DigitalProductTable = () => {
                     {/* Search and Filter Section */}
                     <div className="flex flex-col lg:flex-row items-center gap-4">
                         {/* Search Bar */}
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Search products..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
-                            />
-                            <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
-                        </div>
-
-                        {/* Category Filter */}
-                        <div className="relative">
-                            <select
-                                value={categoryFilter}
-                                onChange={(e) => setCategoryFilter(e.target.value)}
-                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
-                        >
-                            {categories.map(category => (
-                                <option key={category} value={category} className="text-sm">
-                                    {category}
-                                </option>
-                            ))}
-                        </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search products..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                />
+                                <CiSearch size={20} className="absolute left-3 top-3 text-gray-400"/>
                             </div>
-                        </div>
 
-                        {/* Status Filter */}
-                        <div className="relative">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
-                                className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                            {/* Category Filter */}
+                            <div className="relative">
+                                <select
+                                    value={categoryFilter}
+                                    onChange={(e) => setCategoryFilter(e.target.value)}
+                                    className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
                             >
-                                <option value="ALL" className="text-sm">All Status</option>
-                                <option value="ACTIVE" className="text-sm">Active</option>
-                                <option value="INACTIVE" className="text-sm">Inactive</option>
+                                {categories.map(category => (
+                                    <option key={category} value={category} className="text-sm">
+                                        {category}
+                                    </option>
+                                ))}
                             </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </div>
-                        </div>
 
+                            {/* Status Filter */}
+                            <div className="relative">
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
+                                    className="appearance-none px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                                >
+                                    <option value="ALL" className="text-sm">All Status</option>
+                                    <option value="ACTIVE" className="text-sm">Active</option>
+                                    <option value="INACTIVE" className="text-sm">Inactive</option>
+                                </select>
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                       
                         {/* Sort Options */}
                         <div className="relative">
                             <select
@@ -153,28 +171,30 @@ const DigitalProductTable = () => {
                                 </svg>
                             </div>
                         </div>
-
+                        </div>
                         {/* Sort Order Toggle */}
-                        <button
-                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                            className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
-                        >
-                            {sortOrder === "asc" ? "↑" : "↓"}
-                        </button>
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <button
+                                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                                className="px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                            >
+                                {sortOrder === "asc" ? "↑" : "↓"}
+                            </button>
 
-                        <div className="cursor-pointer flex items-center gap-2">
-                            <button 
-                            className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
-                            onClick={() => setIsGridView(true)}
-                            >
-                                <CiCircleList size={20} />
-                            </button>
-                            <button 
-                            className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
-                            onClick={() => setIsGridView(false)}
-                            >
-                                <CiGrid41 size={20} />
-                            </button>
+                            <div className="cursor-pointer flex items-center gap-2">
+                                <button 
+                                className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
+                                onClick={() => setIsGridView(true)}
+                                >
+                                    <CiCircleList size={20} />
+                                </button>
+                                <button 
+                                className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
+                                onClick={() => setIsGridView(false)}
+                                >
+                                    <CiGrid41 size={20} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

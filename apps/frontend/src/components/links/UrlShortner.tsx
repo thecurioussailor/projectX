@@ -1,17 +1,37 @@
 import { IoCloseOutline } from "react-icons/io5"
 import { useLink } from "../../hooks/useLink";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "../ui/Toast";
 
 const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
     
     const { createLink, isLoading, error } = useLink();
+    const { showToast } = useToast();
     const [url, setUrl] = useState("");
+
+    useEffect(() => {
+        if (error) {
+            showToast(error, 'error');
+        }
+    }, [error, showToast]);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!url) return;
-        await createLink(url);
-        setUrl("");
-        setOpen(false);
+        if (!url) {
+            showToast('Please enter a URL to shorten', 'error');
+            return;
+        }
+        
+        try {
+            const result = await createLink(url);
+            if (result) {
+                showToast('URL shortened successfully!', 'success');
+                setUrl("");
+                setOpen(false);
+            }
+        } catch {
+            showToast('Failed to shorten URL. Please try again.', 'error');
+        }
     }
     return (
     <div className="fixed flex justify-center z-50 items-center inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 w-full h-full px-4">
@@ -46,12 +66,6 @@ const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
                 {isLoading ? 'Shortening...' : 'Shorten URL'}
             </button>
             </form>
-            
-            {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-                {error}
-            </div>
-            )}
         </div>
     </div>
   )

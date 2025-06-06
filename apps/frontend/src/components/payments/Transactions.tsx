@@ -2,7 +2,7 @@ import { Transaction } from "../../store/useTransactionStore";
 import { useTransaction } from "../../hooks/useTransaction";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TransactionSidePop from "./TransactionSidePop";
 import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
 
@@ -12,7 +12,24 @@ const Transactions = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<"name" | "amount" | "date" | "status">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");   
-    const [isGridView, setIsGridView] = useState(false);
+    const [isGridView, setIsGridView] = useState(() => {
+        return window.innerWidth < 1024;
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            const isMobileOrTablet = window.innerWidth < 1024;
+            
+            if (isMobileOrTablet && !isGridView) {
+                setIsGridView(true);
+            } else if (!isMobileOrTablet && isGridView) {
+                setIsGridView(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isGridView]);
 
 
     // Filter and sort transactions
@@ -83,10 +100,10 @@ const Transactions = () => {
                     <div className="absolute rounded-full bg-[#FFC717] h-8 w-8 -top-12 -left-4"></div>
                     <div className="absolute rounded-full bg-[#06B5DD] h-4 w-4 top-3 -left-2"></div>
                 </div>
-                <div className="flex justify-between items-start px-12">
+                <div className="flex flex-col lg:flex-row justify-between items-start px-12">
                     <h1 className="text-2xl pb-10 px-12 font-bold text-[#1B3155]">Transactions</h1>
                     {/* Search and Filter Section */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col md:flex-row items-center gap-4">
                         {/* Search Bar */}
                         <div className="relative">
                             <input
