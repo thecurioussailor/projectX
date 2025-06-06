@@ -593,7 +593,326 @@ export const getChannels = async (req: Request, res: Response) => {
     }
 };
 
-export const getTelegramChannels
+export const getTelegramChannels = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        const { telegramNumber } = req.body; // User provides the telegram number
+
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        if(!telegramNumber) {
+            res.status(400).json({
+                status: "error",
+                message: "Telegram number is required"
+            });
+            return;
+        }
+
+        // Get the specific telegram account for this user and phone number
+        const telegramAccount = await prismaClient.telegramAccount.findFirst({
+            where: { 
+                userId: userId,
+                telegramNumber: telegramNumber,
+                deletedAt: null 
+            }
+        });
+
+        console.log("telegramAccount", telegramAccount);
+
+        if(!telegramAccount) {
+            res.status(404).json({
+                status: "error",
+                message: "Telegram account not found or not authenticated. Please verify your Telegram account first."
+            });
+            return;
+        }
+
+        if (!telegramAccount.session) {
+            res.status(401).json({
+                status: "error",
+                message: "Session not found. Please re-authenticate your Telegram account."
+            });
+            return;
+        }
+
+        try {
+            // Create client with saved session
+            const stringSession = new StringSession(telegramAccount.session);
+            const client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 3 });
+            
+            await client.connect();
+            
+            if(!await client.isUserAuthorized()) {
+                res.status(401).json({
+                    status: "error",
+                    message: "Session expired. Please re-authenticate your Telegram account."
+                });
+                return;
+            }
+
+            // Get all dialogs (chats) for this account
+            const dialogs = await client.getDialogs({ limit: 100 });
+            
+            // Filter for channels and groups that the user can manage
+            const channels = dialogs.filter((dialog: any) => {
+                const entity = dialog.entity;
+                // Check if it's a channel or supergroup and user has admin rights
+                return (entity.className === 'Channel' || entity.className === 'Chat') && 
+                       dialog.isChannel && 
+                       (entity.adminRights || entity.creatorId === entity.id);
+            });
+
+            // Format channel data
+            const formattedChannels = channels.map((dialog: any) => {
+                const entity = dialog.entity as any;
+                return {
+                    telegramChannelId: entity.id.toString(),
+                    channelName: entity.title || 'Unnamed Channel',
+                    channelDescription: entity.about || '',
+                    username: entity.username || null,
+                    isCreator: entity.creator || false,
+                    participantsCount: entity.participantsCount || 0,
+                    telegramAccountId: telegramAccount.id,
+                    telegramNumber: telegramAccount.telegramNumber,
+                    canEdit: !!(entity.adminRights?.changeInfo || entity.creator),
+                    canPostMessages: !!(entity.adminRights?.postMessages || entity.creator),
+                    canAddUsers: !!(entity.adminRights?.inviteUsers || entity.creator),
+                    channelType: entity.broadcast ? 'broadcast' : 'group',
+                    isPublic: !!entity.username
+                };
+            });
+
+            await client.disconnect();
+
+            res.status(200).json({
+                status: "success",
+                message: "Telegram channels fetched successfully",
+                data: {
+                    telegramAccount: {
+                        id: telegramAccount.id,
+                        telegramNumber: telegramAccount.telegramNumber,
+                        telegramUsername: telegramAccount.telegramUsername
+                    },
+                    channels: formattedChannels,
+                    totalChannels: formattedChannels.length
+                }
+            });
+
+        } catch (error) {
+            console.error(`Error fetching channels for account ${telegramAccount.telegramNumber}:`, error);
+            
+            if (error instanceof Error && error.message.includes("AUTH_KEY_DUPLICATED")) {
+                // Clear the session and ask user to re-authenticate
+                await prismaClient.telegramAccount.update({
+                    where: { id: telegramAccount.id },
+                    data: { 
+                        session: null,
+                        authenticated: false
+                    }
+                });
+
+                res.status(401).json({ 
+                    status: "error", 
+                    message: "Session conflict detected. Please re-authenticate your Telegram account." 
+                });
+            } else {
+                res.status(500).json({
+                    status: "error",
+                    message: "Failed to fetch channels from Telegram"
+                });
+            }
+        }
+
+    } catch (error) {
+        console.error("Get telegram channels error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to fetch telegram channels"
+        });
+    }
+}
+
+export const createExistingTelegramChannel = async (req: Request, res: Response) => {
+    try {
+        const { telegramChannelId, telegramNumber, channelName, channelDescription } = req.body;
+        const userId = req.user?.id;
+
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        if(!telegramChannelId || !telegramNumber) {
+            res.status(400).json({
+                status: "error",
+                message: "Telegram channel ID and telegram number are required"
+            });
+            return;
+        }
+
+        // Check if user has the telegram account with that number
+        const telegramAccount = await prismaClient.telegramAccount.findFirst({
+            where: {
+                userId: userId,
+                telegramNumber: telegramNumber,
+                deletedAt: null
+            }
+        });
+        console.log("telegramAccount", telegramAccount);
+        if(!telegramAccount) {
+            res.status(404).json({
+                status: "error",
+                message: "Telegram account not found or not authenticated. Please verify your Telegram account first."
+            });
+            return;
+        }
+
+        if (!telegramAccount.session) {
+            res.status(401).json({
+                status: "error",
+                message: "Session not found. Please re-authenticate your Telegram account."
+            });
+            return;
+        }
+
+        // Check if channel with this telegramChannelId already exists for this user
+        const existingChannel = await prismaClient.telegramChannel.findFirst({
+            where: {
+                telegramChannelId: telegramChannelId,
+                telegramAccount: {
+                    userId: userId
+                },
+                deletedAt: null
+            },
+            include: {
+                telegramAccount: true
+            }
+        });
+
+        if(existingChannel) {
+            res.status(200).json({
+                status: "success",
+                message: "Channel already exists in your account",
+                data: {
+                    channel: existingChannel,
+                    isExisting: true
+                }
+            });
+            return;
+        }
+
+        // Create client with saved session
+        const stringSession = new StringSession(telegramAccount.session);
+        const client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
+        
+        try {
+            await client.connect();
+            
+            if(!await client.isUserAuthorized()) {
+                res.status(401).json({
+                    status: "error",
+                    message: "Session expired. Please re-authenticate your Telegram account."
+                });
+                return;
+            }
+
+            // Create new channel record in database
+            const newChannel = await prismaClient.telegramChannel.create({
+                data: {
+                    telegramChannelId: telegramChannelId,
+                    channelName: channelName || 'Imported Channel',
+                    channelDescription: channelDescription || '',
+                    telegramAccountId: telegramAccount.id,
+                    status: 'INACTIVE' // Default to inactive, user can publish later
+                },
+                include: {
+                    telegramAccount: true
+                }
+            });
+
+            console.log("Channel imported to database:", newChannel);
+            console.log("Adding bot to imported channel");
+
+            // Add bot to the existing Telegram channel
+            if(!botUsername) {
+                res.status(500).json({
+                    status: "error",
+                    message: "Bot username not found"
+                });
+                return;
+            }
+
+            const { success, message, channel } = await addBotToChannel(telegramChannelId, botUsername, client);
+            console.log("Bot added to channel:", success, message, channel);
+
+            if(!success) {
+                // If bot addition fails, we still keep the channel record but mark botAdded as false
+                console.warn(`Failed to add bot to imported channel: ${message}`);
+                
+                res.status(201).json({
+                    status: "success",
+                    message: "Channel imported successfully, but failed to add bot. You may need to add the bot manually.",
+                    data: {
+                        channel: newChannel,
+                        isExisting: false,
+                        botAddedSuccessfully: false,
+                        botError: message
+                    }
+                });
+            } else {
+                // Update channel with bot added status and correct channel ID if returned
+                const updatedChannel = await prismaClient.telegramChannel.update({
+                    where: { id: newChannel.id },
+                    data: { 
+                        botAdded: true,
+                        telegramChannelId: channel?.id || telegramChannelId
+                    },
+                    include: {
+                        telegramAccount: true
+                    }
+                });
+
+                res.status(201).json({
+                    status: "success",
+                    message: "Existing Telegram channel imported successfully and bot added",
+                    data: {
+                        channel: updatedChannel,
+                        isExisting: false,
+                        botAddedSuccessfully: true
+                    }
+                });
+            }
+
+        } finally {
+            await client.disconnect();
+        }
+
+    } catch (error) {
+        console.error("Create existing telegram channel error:", error);
+
+        // Handle session conflicts similar to createChannel
+        if (error instanceof Error && error.message.includes("AUTH_KEY_DUPLICATED")) {
+            res.status(401).json({ 
+                status: "error", 
+                message: "Session conflict detected. Please re-authenticate your Telegram account." 
+            });
+        } else {
+            res.status(500).json({
+                status: "error",
+                message: "Failed to import telegram channel"
+            });
+        }
+    }
+}
 
 export const getChannelById = async (req: Request, res: Response) => {
     try {
@@ -728,6 +1047,63 @@ export const updateChannel = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const updateChannelContact = async (req: Request, res: Response) => {
+    try {
+        const { channelId } = req.params;
+        const { contactEmail, contactPhone } = req.body;
+        const userId = req.user?.id;
+
+        if(!userId) {
+            res.status(401).json({
+                status: "error",
+                message: "Authentication required"
+            });
+            return;
+        }
+
+        // Get channel with telegram account
+        const channel = await prismaClient.telegramChannel.findUnique({
+            where: { id: channelId },
+            include: { telegramAccount: true }
+        });
+        
+        if(!channel) {
+            res.status(404).json({
+                status: "error",
+                message: "Channel not found"
+            });
+            return;
+        }
+        
+        // Check if user owns this channel
+        if(channel.telegramAccount.userId !== userId) {
+            res.status(403).json({
+                status: "error",
+                message: "You do not have permission to update this channel"
+            });
+            return;
+        }
+
+        // Update channel contact
+        const updatedChannel = await prismaClient.telegramChannel.update({
+            where: { id: channelId },
+            data: { contactEmail, contactPhone }
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Channel contact updated successfully",
+            data: updatedChannel
+        });
+    } catch (error) {
+        console.error("Update channel contact error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Failed to update channel contact"
+        });
+    }
+}
 
 export const publishChannel = async (req: Request, res: Response) => {
     try {
@@ -1510,6 +1886,8 @@ export const getPublicChannelBySlug = async (req: Request, res: Response) => {
             channelDescription: channel.channelDescription,
             richDescription: channel.richDescription,
             bannerUrl: bannerUrl,
+            contactEmail: channel.contactEmail,
+            contactPhone: channel.contactPhone,
             createdAt: channel.createdAt,
             plans: channel.telegramPlans.map(plan => ({
                 id: plan.id,

@@ -13,9 +13,11 @@ telegramRouter.delete("/accounts/:accountId", authenticate, telegramController.d
 // channel management
 telegramRouter.post("/channels", authenticate, telegramController.createChannel);
 telegramRouter.get("/channels", authenticate, telegramController.getChannels);
-telegramRouter.get("/channels/telegram", authenticate, telegramController.getTelegramChannels);
+telegramRouter.post("/telechannels", authenticate, telegramController.getTelegramChannels);
+telegramRouter.post("/telechannels/create", authenticate, telegramController.createExistingTelegramChannel);
 telegramRouter.get("/channels/:channelId", authenticate, telegramController.getChannelById);
 telegramRouter.put("/channels/:channelId", authenticate, telegramController.updateChannel);
+telegramRouter.put("/channels/:channelId/contact", authenticate, telegramController.updateChannelContact);
 telegramRouter.put("/channels/:channelId/publish", authenticate, telegramController.publishChannel);
 telegramRouter.put("/channels/:channelId/unpublish", authenticate, telegramController.unpublishChannel);
 telegramRouter.delete("/channels/:channelId", authenticate, telegramController.deleteChannel);

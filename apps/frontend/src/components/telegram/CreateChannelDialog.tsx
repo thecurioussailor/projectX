@@ -7,6 +7,7 @@ import CreatePlanForm from "./CreatePlanForm";
 import { useEffect, useState } from "react";
 import { TelegramChannel } from "../../store/useTelegramStore";
 import { IoMdClose } from "react-icons/io";
+import AddExistingChannel from "./AddExistingChannel";
 
 // Define Plan interface
 interface Plan {
@@ -24,6 +25,7 @@ const CreateChannelDialog = ({ setOpen, onChannelCreated }: CreateChannelDialogP
     const { accounts, getAccounts, fetchChannels, publishChannel, deleteAccount } = useTelegram();
     const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
     const [step, setStep] = useState<"select" | "phone" | "code" | "create" | "plan">("select");
+    const [channelMode, setChannelMode] = useState<"create" | "existing">("create");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [newlyCreatedChannel, setNewlyCreatedChannel] = useState<TelegramChannel | null>(null);
     const [deleteAccountAlert, setDeleteAccountAlert] = useState<boolean>(false);
@@ -130,12 +132,48 @@ const CreateChannelDialog = ({ setOpen, onChannelCreated }: CreateChannelDialogP
                         )}
 
                         {step === "create" && (
-                            <CreateChannelForm 
-                                onSuccess={handleChannelCreated}
-                                onError={() => setStep("phone")}
-                                phoneNumber={phoneNumber}
-                                selectedAccount={selectedAccount}
-                            />
+                            <div className="flex flex-col gap-4">
+                                {/* Mode Toggle */}
+                                <div className="flex bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setChannelMode("create")}
+                                        className={`flex-1 py-2 px-4 rounded-md transition-colors ${
+                                            channelMode === "create" 
+                                                ? "bg-white text-[#7F37D8] shadow-sm" 
+                                                : "text-gray-600"
+                                        }`}
+                                    >
+                                        Create New Channel
+                                    </button>
+                                    <button
+                                        onClick={() => setChannelMode("existing")}
+                                        className={`flex-1 py-2 px-4 rounded-md transition-colors ${
+                                            channelMode === "existing" 
+                                                ? "bg-white text-[#7F37D8] shadow-sm" 
+                                                : "text-gray-600"
+                                        }`}
+                                    >
+                                        Add Existing Channel
+                                    </button>
+                                </div>
+
+                                {/* Conditional Rendering */}
+                                {channelMode === "create" ? (
+                                    <CreateChannelForm 
+                                        onSuccess={handleChannelCreated}
+                                        onError={() => setStep("phone")}
+                                        phoneNumber={phoneNumber}
+                                        selectedAccount={selectedAccount}
+                                    />
+                                ) : (
+                                    <AddExistingChannel 
+                                        onSuccess={handleChannelCreated}
+                                        onError={() => setStep("phone")}
+                                        phoneNumber={phoneNumber}
+                                        selectedAccount={selectedAccount}
+                                    />
+                                )}
+                            </div>
                         )}
 
                         {step === "plan" && newlyCreatedChannel && (

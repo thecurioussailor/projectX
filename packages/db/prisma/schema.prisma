@@ -39,12 +39,69 @@ model User {
   digitalProductPurchases     DigitalProductPurchase[]
   userPlatformSubscriptions   UserPlatformSubscription[]
   notifications               Notification[]
+  paymentMethods    UserPaymentMethod[]
 }
 
 enum Role {
   USER
   ADMIN
 }
+model UserPaymentMethod {
+  id              String                    @id @default(cuid())
+  userId          Int
+  user            User                      @relation(fields: [userId], references: [id])
+  
+  // Payment method details
+  type            PaymentMethodType
+  priority        PaymentPriority           @default(SECONDARY)
+  
+  // Bank details (for BANK type)
+  bankName        String?
+  accountNumber   String?
+  ifscCode        String?
+  accountHolderName String?
+  
+  // UPI details (for UPI type)
+  upiId           String?
+  upiName         String?                   // Name registered with UPI
+  
+  // Verification
+  status          PaymentMethodStatus       @default(PENDING)
+  verificationDocumentUrl String?           // For bank: cancelled cheque, passbook
+  
+  // Admin fields
+  adminNotes      String?
+  verifiedAt      DateTime?
+  verifiedBy      String?                   // Admin who verified
+  
+  // Metadata
+  isActive        Boolean                   @default(true)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  deletedAt       DateTime?
+  
+  // Relations
+  withdrawalRequests WithdrawalRequest[]
+}
+
+enum PaymentMethodType {
+  BANK
+  UPI
+}
+
+enum PaymentPriority {
+  PRIMARY
+  SECONDARY
+}
+
+enum PaymentMethodStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RESUBMIT_REQUESTED
+}
+
+
 
 model KycDocument {
   id              String                @id @default(cuid())
@@ -77,6 +134,8 @@ enum KycDocumentStatus {
   REJECTED
   RESUBMIT_REQUESTED
 }
+
+
 
 model Wallet {
   id                  String    @id @default(cuid())
@@ -116,6 +175,8 @@ model WithdrawalRequest {
   updatedAt       DateTime          @updatedAt
 
   transactions    WithdrawalTransaction[]
+  userPaymentMethodId String?
+  userPaymentMethod   UserPaymentMethod? @relation(fields: [userPaymentMethodId], references: [id])
 }
 
 enum WithdrawalStatus {
@@ -251,6 +312,8 @@ model TelegramChannel {
   channelDescription    String?
   richDescription       String?
   bannerImage           String?
+  contactEmail          String?
+  contactPhone          String?
   botAdded              Boolean           @default(false)
   status                TelegramChannelStatus @default(INACTIVE)
   createdAt             DateTime          @default(now())

@@ -30,6 +30,8 @@ export interface TelegramChannel {
   channelId: string;
   channelName: string;
   channelDescription: string;
+  contactEmail?: string;
+  contactPhone?: string;
   bannerUrl?: string;
   richDescription?: string;
   telegramNumber: string;
@@ -73,6 +75,8 @@ export interface PublicChannel {
   channelName: string;
   channelDescription: string;
   richDescription: string;
+  contactEmail: string;
+  contactPhone: string;
   bannerUrl: string;
   createdAt: string;
   plans: {
@@ -81,6 +85,33 @@ export interface PublicChannel {
     price: number;
     duration: number;
   }[];
+}
+
+// Define interface for telegram channels response
+export interface TelegramChannelData {
+  telegramChannelId: string;
+  channelName: string;
+  channelDescription: string;
+  username?: string;
+  isCreator: boolean;
+  participantsCount: number;
+  telegramAccountId: string;
+  telegramNumber: string;
+  canEdit: boolean;
+  canPostMessages: boolean;
+  canAddUsers: boolean;
+  channelType: string;
+  isPublic: boolean;
+}
+
+export interface TelegramChannelsResponse {
+  telegramAccount: {
+    id: string;
+    telegramNumber: string;
+    telegramUsername?: string;
+  };
+  channels: TelegramChannelData[];
+  totalChannels: number;
 }
 
 interface Subscriber {
@@ -125,10 +156,21 @@ interface TelegramState {
   fetchChannelById: (channelId: string) => Promise<void>;
   fetchPublicChannelBySlug: (slug: string) => Promise<PublicChannel>;
   updateChannel: (channelId: string, data: { richDescription: string }) => Promise<void>;
+  updateChannelContact: (channelId: string, data: { contactEmail: string, contactPhone: string }) => Promise<void>;
   publishChannel: (channelId: string) => Promise<void>;
   unpublishChannel: (channelId: string) => Promise<void>;
   deleteChannel: (channelId: string) => Promise<void>;
   setCurrentChannel: (channel: TelegramChannel | null) => void;
+  
+  // Telegram Channels methods
+  getTelegramChannels: (telegramNumber: string) => Promise<TelegramChannelsResponse>;
+  createExistingTelegramChannel: (channelData: {
+    telegramChannelId: string;
+    telegramNumber: string;
+    channelName: string;
+    channelDescription: string;
+    username?: string;
+  }) => Promise<TelegramChannel>;
   
   // Channel Banner Management
   getBannerUploadUrl: (channelId: string, fileName: string, fileType: string) => Promise<{
@@ -349,10 +391,33 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
     }
   },
   
+  updateChannelContact: async (channelId: string, data: { contactEmail: string, contactPhone: string }) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.put(`/api/v1/telegram/channels/${channelId}/contact`, data);
+      const updatedChannel = response.data.data;
+      set({ 
+        channels: get().channels.map(ch => 
+          ch.id === channelId ? updatedChannel : ch
+        ),
+        currentChannel: get().currentChannel?.id === channelId 
+          ? updatedChannel 
+          : get().currentChannel,
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to update channel contact', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
   publishChannel: async (channelId: string) => {
     set({ isLoading: true, error: null });
     try {
-      await api.put(`/api/v1/telegram/channels/${channelId}/publish`);
+      await api.put(`/api/v1/telegram/channels/${channelId}/publish`);  
       await get().fetchChannels();
     } catch (error) {
       set({ 
@@ -697,6 +762,55 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to delete channel banner', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  // Telegram Channels methods
+  getTelegramChannels: async (telegramNumber: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post('/api/v1/telegram/telechannels', { telegramNumber });
+      set({ isLoading: false });
+      return response.data.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch telegram channels', 
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  createExistingTelegramChannel: async (channelData: {
+    telegramChannelId: string;
+    telegramNumber: string;
+    channelName: string;
+    channelDescription: string;
+    username?: string;
+  }) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.post('/api/v1/telegram/telechannels/create', channelData);
+      const newChannel = response.data.data.channel;
+      
+      // Add to channels list if it's a new channel
+      if (!response.data.data.isExisting) {
+        set(state => ({ 
+          channels: [...state.channels, newChannel],
+          currentChannel: newChannel,
+          isLoading: false 
+        }));
+      } else {
+        set({ isLoading: false });
+      }
+      
+      return newChannel;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to create existing telegram channel', 
         isLoading: false 
       });
       throw error;

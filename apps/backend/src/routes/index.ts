@@ -15,6 +15,7 @@ import { adminRouter } from "./admin.js";
 import { platformSubsriptionRouter } from "./platformSubscription.js";
 import { kycRouter } from "./kyc.js";
 import { notificationRouter } from "./notification.js";
+import { paymentMethodRouter } from "./paymentMethod.js";
 export const router = Router();
 
 router.use("/auth", authRouter);
@@ -33,6 +34,8 @@ router.use("/kyc", kycRouter);
 router.use("/admin", adminRouter);
 router.use("/platform-subscriptions", platformSubsriptionRouter);
 router.use("/notifications", notificationRouter);
+router.use("/payment-methods", paymentMethodRouter);
+
 
 
 

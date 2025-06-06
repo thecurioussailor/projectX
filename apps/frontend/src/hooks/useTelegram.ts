@@ -51,10 +51,16 @@ export function useTelegram() {
     fetchChannelById: storeFetchChannelById,
     fetchPublicChannelBySlug: storeFetchPublicChannelBySlug,    
     updateChannel: storeUpdateChannel,
+    updateChannelContact: storeUpdateChannelContact,
     publishChannel: storePublishChannel,
     unpublishChannel: storeUnpublishChannel,
     deleteChannel: storeDeleteChannel,
     setCurrentChannel,
+    
+    // Telegram Channels methods
+    getTelegramChannels: storeGetTelegramChannels,
+    createExistingTelegramChannel: storeCreateExistingTelegramChannel,
+    
     createPlan: storeCreatePlan,
     fetchPlans: storeFetchPlans,
     fetchPlanById: storeFetchPlanById,
@@ -143,6 +149,13 @@ export function useTelegram() {
     return storeUpdateChannel(channelId, data);
   }, [token, storeUpdateChannel]);
 
+  const updateChannelContact = useCallback(async (channelId: string, data: { contactEmail: string, contactPhone: string }) => {
+    if (!token) {
+      throw new Error('You must be logged in to update a channel contact');
+    }
+    return storeUpdateChannelContact(channelId, data);
+  }, [token, storeUpdateChannelContact]);
+
   const publishChannel = useCallback(async (channelId: string) => {
     if (!token) {
       throw new Error('You must be logged in to publish a channel');
@@ -163,6 +176,27 @@ export function useTelegram() {
     }
     return storeDeleteChannel(channelId);
   }, [token, storeDeleteChannel]);
+  
+  // Telegram Channels methods with authentication check
+  const getTelegramChannels = useCallback(async (telegramNumber: string) => {
+    if (!token) {
+      throw new Error('You must be logged in to fetch telegram channels');
+    }
+    return storeGetTelegramChannels(telegramNumber);
+  }, [token, storeGetTelegramChannels]);
+
+  const createExistingTelegramChannel = useCallback(async (channelData: {
+    telegramChannelId: string;
+    telegramNumber: string;
+    channelName: string;
+    channelDescription: string;
+    username?: string;
+  }) => {
+    if (!token) {
+      throw new Error('You must be logged in to create existing telegram channel');
+    }
+    return storeCreateExistingTelegramChannel(channelData);
+  }, [token, storeCreateExistingTelegramChannel]);
   
   // Plan methods with authentication check
   const createPlan = useCallback(async (channelId: string, data: { name: string, price: number, duration: number }) => {
@@ -326,6 +360,7 @@ export function useTelegram() {
     fetchChannelById,
     fetchPublicChannelBySlug,
     updateChannel,
+    updateChannelContact,
     publishChannel,
     unpublishChannel,
     deleteChannel,
@@ -354,6 +389,10 @@ export function useTelegram() {
     handlePaymentCallback,
     
     // Subscriber methods
-    fetchChannelSubscribers
+    fetchChannelSubscribers,
+    
+    // Telegram Channels methods
+    getTelegramChannels,
+    createExistingTelegramChannel
   };
 } 

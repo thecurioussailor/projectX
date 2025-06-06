@@ -5,10 +5,14 @@ import CreatePlanForm from "../telegram/CreatePlanForm";
 import RichTextEditor from "./RichTextEditor";
 import { IoClose } from "react-icons/io5";
 import { RiImageAddLine } from "react-icons/ri";
+
 const ChannelOverview = ({ channelId }: { channelId: string }) => {
-    const { fetchChannelById, currentChannel, updateChannel } = useTelegram();
+    const { fetchChannelById, currentChannel, updateChannel, updateChannelContact } = useTelegram();
     const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [richDescription, setRichDescription] = useState('');
+    const [contactEmail, setContactEmail] = useState(currentChannel?.contactEmail || '');
+    const [contactPhone, setContactPhone] = useState(currentChannel?.contactPhone || '');
+    const [isSavingContact, setIsSavingContact] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     useEffect(() => {
@@ -38,6 +42,19 @@ const ChannelOverview = ({ channelId }: { channelId: string }) => {
             setIsUpdating(false);
         }
     };
+
+    const handleSaveContact = async () => {
+        if (!currentChannel) return;
+        setIsSavingContact(true);
+        try {
+            await updateChannelContact(currentChannel.id, { contactEmail: contactEmail, contactPhone: contactPhone });
+        } catch (error) {
+            console.error('Error updating contact:', error);
+        } finally {
+            setIsSavingContact(false);
+        }
+    }
+
   return (
     <div className="flex justify-between gap-4 w-full bg-white rounded-[3rem] overflow-clip shadow-lg shadow-purple-100">
             <div className="flex flex-col gap-4 w-full">
@@ -126,12 +143,37 @@ const ChannelOverview = ({ channelId }: { channelId: string }) => {
                         </div>
                     )}
                 </div>
-
-
-                    {/* Plan Section */}
-                    <div className="flex flex-col gap-2 p-10" >
-                        {currentChannel && <CreatePlanForm channel={currentChannel!} onPlanCreated={() => {}} />}
+                <div className="flex flex-col gap-2 p-10">
+                    <h3 className="text-lg font-semibold text-[#1B3155]">Channel Contact</h3>
+                    <div className="flex flex-col gap-2">
+                        <input
+                            type="text"
+                            id="contact-email"
+                            value={contactEmail}
+                            onChange={(e) => setContactEmail(e.target.value)}
+                            placeholder="Email"
+                            className="w-full lg:w-1/2 p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                            required
+                        />
+                        <input
+                            type="text"
+                            id="contact-phone"
+                            value={contactPhone}
+                            onChange={(e) => setContactPhone(e.target.value)}
+                            placeholder="Phone"
+                            className="w-full lg:w-1/2 p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                        />
                     </div>
+                    <button 
+                        className="bg-[#7E37D8] text-white px-4 py-2 w-32 mt-4 rounded-lg hover:bg-[#6B2FB5] transition-colors disabled:opacity-50" 
+                        onClick={handleSaveContact}
+                        disabled={isSavingContact}
+                    >{isSavingContact ? 'Saving...' : 'Save Contact'}</button>
+                </div>
+                {/* Plan Section */}
+                <div className="flex flex-col gap-2 p-10" >
+                    {currentChannel && <CreatePlanForm channel={currentChannel!} onPlanCreated={() => {}} />}
+                </div>
             </div>
         </div>
   )

@@ -1,6 +1,7 @@
 import PlatformSubscription from "../components/settings/PlatformSubscription"
 import Kyc from "../components/settings/Kyc"
 import UpdatePassword from "../components/settings/UpdatePassword"
+import PaymentMethod from "../components/settings/PaymentMethod"
 const Settings = () => {
   return (
     <section className="flex flex-col gap-4">
@@ -11,6 +12,7 @@ const Settings = () => {
           <PlatformSubscription/>
           <Kyc/>
           <UpdatePassword/>
+          <PaymentMethod/>
         </div>
     </section>
   )
