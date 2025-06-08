@@ -4,7 +4,7 @@ import CreateDigitalProductDraft from "../components/digitalProducts/CreateDigit
 const DigitalProduct = () => {
   const [open, setOpen] = useState(false);
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-6 pb-20">
         <div className="flex justify-between gap-4">
             <h1 className="text-3xl font-bold text-[#7F37D8]">Digital Product</h1>
             <button 

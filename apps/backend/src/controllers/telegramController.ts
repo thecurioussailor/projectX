@@ -559,6 +559,7 @@ export const getChannels = async (req: Request, res: Response) => {
                         channels: {
                             include: {
                                 telegramPlans: {
+                                    where: { deletedAt: null },
                                     include: {
                                         subscriptions: true
                                     }
@@ -1640,7 +1641,7 @@ export const getPlans = async (req: Request, res: Response) => {
         
         res.status(200).json({
             status: "success",
-            data: channel.telegramPlans
+            data: channel.telegramPlans.filter(plan => plan.deletedAt === null)
         });
     } catch (error) {
         console.error("Get plans error:", error);

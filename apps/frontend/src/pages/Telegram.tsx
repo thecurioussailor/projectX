@@ -14,7 +14,7 @@ const Telegram = () => {
   };
 
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-6 pb-16">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-[#7F37D8]">Telegram</h1>
         <button 

@@ -8,6 +8,7 @@ import { IoAlertCircleOutline } from "react-icons/io5";
 import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+// const LINK_URL = import.meta.env.VITE_LINK_URL;
 
 const LinkTable = () => {
     const { links, fetchLinks, isLoading, deleteLink, error } = useLink();

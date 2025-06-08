@@ -128,7 +128,7 @@ const PublicChannelPage = () => {
             <header className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">{channel.channelName}</h1>
-                <Link to="/" className="text-[#7F37D8] hover:underline">projectX</Link>
+                <Link to="/" className="text-[#7F37D8] hover:underline">Tinywallet</Link>
               </div>
               <p className="mt-2 text-gray-600">{channel.channelDescription}</p>
             </header>
@@ -191,11 +191,11 @@ const PublicChannelPage = () => {
                 </div>
               )}
             </div>
-            
             <div className="bg-white p-6">
               <h2 className="text-xl font-semibold mb-4">Disclaimer</h2>
               <p className="text-gray-600">
-                This disclaimer outlines that POLMI SOFTWARE SERVICES TECHNOLOGIES PRIVATE LIMITED, as an organization, shall not be held accountable for any content or materials disseminated by a content creator on or via any app or website affiliated with us. By utilizing our services, you acknowledge and agree to the terms set forth in this disclaimer. Learn more.
+                This disclaimer outlines that Tinywallet, as an organization, shall not be held accountable for any content or materials disseminated by a content creator on or via any app or website affiliated with us. By utilizing our services, you acknowledge and agree to the terms set forth in this disclaimer. 
+                <Link to="/contact-us" className="text-[#7F37D8] hover:underline">Learn more</Link>
               </p>
             </div>
             <div className="p-6 rounded-3xl bg-purple-50">

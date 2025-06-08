@@ -1,4 +1,4 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { useDigitalProduct } from "../hooks/useDigitalProduct";
 import { useEffect, useState } from "react";
 import { GalleryImage, PublicDigitalProduct, Testimonial } from "../store/useDigitalProductStore";
@@ -186,14 +186,18 @@ const PublicDigitalProductPage = () => {
             </div>
             <div className="text-gray-500 rounded-3xl p-4 bg-[#7F37D8] flex flex-col gap-2">
               <p className="font-bold text-white text-xl">Terms and Conditions</p>
-              <p className="text-white">You agree to share information entered on this page with {product?.creator?.name} (owner of this page) and Cosmofeed, adhering to applicable laws.</p>
+              <p className="text-white">You agree to share information entered on this page with {product?.creator?.name} (owner of this page) and Tinywallet, adhering to applicable laws.
+                <Link to="/terms-and-conditions" className="text-white hover:underline pl-2">Learn more</Link>
+              </p>
             </div>
             <div className="text-gray-500 rounded-3xl p-4 bg-[#7F37D8] mb-6 flex flex-col gap-2">
               <p className="font-bold text-white text-xl">Disclaimer</p>
-              <p className="text-white">Polmi Software Services Technologies Pvt. Ltd. shall not be held liable for any content or materials published, sold, or distributed by content creators on our associated apps or websites. <a href="#" className="underline">Learn more</a></p>
+              <p className="text-white">Tinywallet shall not be held liable for any content or materials published, sold, or distributed by content creators on our associated apps or websites. 
+                <Link to="/contact-us" className="text-white hover:underline pl-2">Learn more</Link>
+              </p>
             </div>
             <div className="flex flex-col gap-2 border-t border-gray-200 pt-4">
-              <h1 className="text-2xl font-semibold">projectX</h1>
+              <h1 className="text-2xl font-semibold">Tinywallet</h1>
               <p className="text-gray-500">Want to create your own payment page? Experience hassle-free payouts and premium support. <a href="#" className="text-[#7F37D8]">Get started now!</a></p>
             </div>
           </div>

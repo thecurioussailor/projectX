@@ -38,7 +38,7 @@ const Dashboard = () => {
   }
 
   return (
-    <section className="flex flex-col gap-8 pb-8">
+    <section className="flex flex-col gap-8 pb-16">
         <div className="flex justify-between gap-4">
             <h1 className="text-3xl font-bold text-[#7F37D8]">Dashboard</h1>
         </div>

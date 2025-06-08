@@ -5,7 +5,7 @@ import Wallet from "../components/payments/Wallet"
 const Payments = () => {
   const [activeTab, setActiveTab] = useState("transactions");
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-4 pb-16">
     <div className="flex justify-between gap-4">
         <h1 className="text-3xl font-bold text-[#7F37D8]"> Payments </h1>
         <div className="flex gap-4">
