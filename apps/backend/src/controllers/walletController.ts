@@ -1,5 +1,6 @@
 import { prismaClient } from "@repo/db";
 import { Request, Response } from "express"
+import { createNotification } from "./notificationController.js";
 
 export const getUserWallet = async (req: Request, res: Response) => {
     try {
@@ -59,7 +60,7 @@ export const createWithdrawalRequest = async (req: Request, res: Response) => {
             return;
         }
 
-        const { amount } = req.body;    
+        const { amount, userPaymentMethodId } = req.body;    
 
         if(!amount) {
             res.status(400).json({
@@ -122,7 +123,8 @@ export const createWithdrawalRequest = async (req: Request, res: Response) => {
             const withdrawalRequest = await tx.withdrawalRequest.create({
                 data: {
                     walletId: wallet.id,
-                    amount: amount
+                    amount: amount,
+                    userPaymentMethodId: userPaymentMethodId
                 }
             });
 
@@ -264,6 +266,9 @@ export const getWithdrawalRequests = async (req: Request, res: Response) => {
                 wallet: {
                     userId: user.id
                 }
+            },
+            include: {
+                userPaymentMethod: true
             }
         });
 
@@ -398,8 +403,6 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                                  
             const platformFee = (amount * Number(feePercentage)) / 100;
             const userAmount = amount - platformFee;
-            
-            const withdrawableAmount = userAmount;
 
             await prismaClient.wallet.update({
                 where: {
@@ -410,10 +413,10 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                         increment: userAmount
                     },
                     withdrawableBalance: {
-                        increment: withdrawableAmount
+                        increment: userAmount
                     },
                     totalEarnings: {
-                        increment: amount
+                        increment: userAmount
                     },
                     totalCharges: {
                         increment: platformFee
@@ -421,7 +424,7 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                     lastUpdated: new Date()
                 }
             });
-            
+            await createNotification(userId, "Wallet Balance Updated", `Your wallet balance has been credited with ${userAmount}`, "SUCCESS");
             return true;
         }
 
@@ -431,9 +434,6 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                              
         const platformFee = (amount * Number(feePercentage)) / 100;
         const userAmount = amount - platformFee;
-        
-        // Split user amount into withdrawable (80%) and pending (20%)
-        const withdrawableAmount = userAmount;
 
         await prismaClient.wallet.update({
             where: {
@@ -444,10 +444,10 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                     increment: userAmount
                 },
                 withdrawableBalance: {
-                    increment: withdrawableAmount
+                    increment: userAmount
                 },
                 totalEarnings: {
-                    increment: amount
+                    increment: userAmount
                 },
                 totalCharges: {
                     increment: platformFee
@@ -455,6 +455,7 @@ export const updateWalletBalance = async (userId: string, amount: number) => {
                 lastUpdated: new Date()
             }
         });
+        await createNotification(userId, "Wallet Balance Updated", `Your wallet balance has been credited with ${userAmount}`, "SUCCESS");
         return true;
     } catch (error) {
         console.log("Error updating wallet balance", error);

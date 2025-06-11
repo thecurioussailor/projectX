@@ -39,7 +39,7 @@ interface WithdrawalState {
     error: string | null;
     fetchWithdrawals: () => Promise<void>;
     fetchWithdrawalById: (id: string) => Promise<void>;
-    approveWithdrawal: (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string }) => Promise<void>;
+    approveWithdrawal: (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string, adminNotes: string }) => Promise<void>;
     rejectWithdrawal: (id: string, data: { adminNotes: string }) => Promise<void>;
 }
 
@@ -81,7 +81,7 @@ export const useWithdrawalStore = create<WithdrawalState>((set) => ({
             set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
         }
     },
-    approveWithdrawal: async (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string }) => {
+    approveWithdrawal: async (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string, adminNotes: string }) => {
         set({ isLoading: true });
         try {
             await api.post(`/api/v1/admin/withdrawals/${id}/approve`, data);

@@ -2,8 +2,12 @@ import { useState } from 'react';
 import { useDigitalProduct } from '../../hooks/useDigitalProduct';
 import { DigitalProduct } from '../../store/useDigitalProductStore';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../ui/Toast';
+import { FaSpinner } from 'react-icons/fa';
 const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void}) => {
   const {createProduct} = useDigitalProduct();
+  const [loading, setLoading] = useState(false);
+  const {showToast} = useToast();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
@@ -23,7 +27,10 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
     if(formData.priceType === "FLEXIBLE" && !formData.discountedPrice) {
       formData.discountedPrice = formData.price;
     }
+    setLoading(true);
     const product = await createProduct(formData as Partial<DigitalProduct>);
+    setLoading(false);
+    showToast('Product created successfully', 'success');
     setShowForm(false);
     navigate(`/digital-products/${product.id}/edit`);
   };
@@ -125,7 +132,13 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     </div>
                 )}
             </div>
-            <button type="submit" className="bg-[#7F37D8] text-white rounded-3xl w-40 p-2">Create Product</button>
+            <button 
+                type="submit" 
+                className="bg-[#7F37D8] text-white rounded-3xl w-40 p-2"
+                disabled={loading}
+            >
+                {loading ? <span className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Creating...</span> : "Create Product"}
+            </button>
         </form>
     </div>
   )

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTelegram } from "../../hooks/useTelegram";
 import { TelegramChannel } from "../../store/useTelegramStore";
+import { useToast } from "../ui/Toast";
 
 interface CreateChannelFormProps {
   onSuccess: (channel: TelegramChannel) => void;
@@ -12,18 +13,20 @@ interface CreateChannelFormProps {
 const CreateChannelForm = ({ onSuccess, onError, selectedAccount, phoneNumber }: CreateChannelFormProps) => {
   const [channelName, setChannelName] = useState("");
   const [channelDescription, setChannelDescription] = useState("");
-  const { createChannel, isLoading, error } = useTelegram();
+  const { createChannel, isLoading } = useTelegram();
+  const {showToast} = useToast();
 
   const handleCreateChannel = async () => {
     try {
       const newChannel = await createChannel(channelName, channelDescription, selectedAccount ? selectedAccount : phoneNumber);
       if (newChannel) {
         onSuccess(newChannel);
+        showToast('Channel created successfully', 'success');
       } else {
         throw new Error("Channel was not created properly");
       }
     } catch (error) {
-      console.error("Error creating channel:", error);
+      showToast(error instanceof Error ? error.message : "Failed to create channel", 'error');
       onError();
     }
   }
@@ -44,7 +47,7 @@ const CreateChannelForm = ({ onSuccess, onError, selectedAccount, phoneNumber }:
           <input
             type="text"
             id="channel-name"
-            value={channelName}
+            value={channelName} 
             onChange={(e) => setChannelName(e.target.value)}
             placeholder="Enter channel name"
             className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
@@ -66,8 +69,6 @@ const CreateChannelForm = ({ onSuccess, onError, selectedAccount, phoneNumber }:
             required
           />
         </div>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
 
       <div className="flex justify-between gap-2">

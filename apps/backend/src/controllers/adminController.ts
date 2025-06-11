@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { prismaClient } from "@repo/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { updateWalletBalance } from "./walletController.js";
+import { createNotification } from "./notificationController.js";
 
 export const adminSignin = async (req: Request, res: Response) => {
     try {
@@ -244,7 +246,7 @@ export const approveWithdrawalRequest = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
         const { withdrawalId } = req.params;
-        const { status, transactionId, paymentMethod, bankName, accountNumber } = req.body;
+        const { status, transactionId, paymentMethod, bankName, accountNumber, adminNotes } = req.body;
         if(!userId || req.user?.role !== "ADMIN") {
             res.status(401).json({
                 success: false,
@@ -253,7 +255,10 @@ export const approveWithdrawalRequest = async (req: Request, res: Response) => {
             return;
         }
         const withdrawal = await prismaClient.withdrawalRequest.findUnique({
-            where: { id: withdrawalId }
+            where: { id: withdrawalId },
+            include: {
+                wallet: true
+            }
         });
         if(!withdrawal) {
             res.status(404).json({
@@ -262,20 +267,75 @@ export const approveWithdrawalRequest = async (req: Request, res: Response) => {
             });
             return;
         }
-        const updatedWithdrawal = await prismaClient.withdrawalRequest.update({
-            where: { id: withdrawalId },
-            data: { 
-                status,
-                paymentMethod,
-                paymentDetails: {
-                    bankName,
-                    accountNumber
-                },
-                transactionId, 
-                processedAt: new Date(), 
-                processedBy: req.user?.role
-            }
-        });
+
+        if(withdrawal.status === "PAID") {
+            res.status(400).json({
+                success: false,
+                message: 'Withdrawal request already paid'
+            });
+            return;
+        }
+
+        if(withdrawal.status === "CANCELLED") {
+            res.status(400).json({
+                success: false,
+                message: 'Withdrawal request already cancelled'
+            });
+            return;
+        }
+        if(withdrawal.status === "REJECTED") {
+            res.status(400).json({
+                success: false,
+                message: 'Withdrawal request already rejected'
+            });
+            return;
+        }
+
+        let updatedWithdrawal;
+        if(status === "PAID") {
+
+            await prismaClient.$transaction(async (tx) => {
+            updatedWithdrawal = await tx.withdrawalRequest.update({
+                where: { id: withdrawalId },
+                data: { 
+                    status,
+                    paymentMethod,
+                    paymentDetails: {
+                        bankName,
+                        accountNumber
+                    },
+                    transactionId, 
+                    processedAt: new Date(), 
+                    processedBy: req.user?.role
+                }
+            });
+            await tx.wallet.update({
+                where: { id: withdrawal.wallet.id },
+                data: {
+                    pendingBalance: { decrement: withdrawal.amount },
+                    totalWithdrawn: { increment: withdrawal.amount }
+                }
+            });
+            });
+            await createNotification(withdrawal.wallet.userId.toString(), "Withdrawal Request Approved", `Your withdrawal request of ${withdrawal.amount} has been approved`, "SUCCESS");
+        }
+
+        if(status === "REJECTED") {
+            await prismaClient.$transaction(async (tx) => {
+                updatedWithdrawal = await tx.withdrawalRequest.update({
+                    where: { id: withdrawalId },
+                    data: { status, processedAt: new Date(), processedBy: req.user?.role, adminNotes }
+                });
+                await tx.wallet.update({
+                    where: { id: withdrawal.wallet.id },
+                    data: {
+                        pendingBalance: { decrement: withdrawal.amount },
+                        withdrawableBalance: { increment: withdrawal.amount }
+                    }
+                });
+            });
+            await createNotification(withdrawal.wallet.userId.toString(), "Withdrawal Request Rejected", `Your withdrawal request of ${withdrawal.amount} has been rejected`, "ERROR");
+        }
         res.status(200).json({
             success: true,
             message: 'Withdrawal request approved successfully',

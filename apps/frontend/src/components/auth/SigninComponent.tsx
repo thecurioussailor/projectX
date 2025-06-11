@@ -1,17 +1,38 @@
 import { useState, FormEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../ui/Toast";
+import { useNavigate } from "react-router-dom";
+import { FaSpinner } from "react-icons/fa";
 
 const SigninComponent = ({ setIsSignin }: { setIsSignin: () => void }) => {
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const { signin, isLoading, error } = useAuth();
-
+  const { signin, error } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const {showToast} = useToast();
+  const navigate = useNavigate();
+  
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!emailOrPhone || !password) return;
-    await signin(emailOrPhone, password, loginMethod);
+    setLoading(true);
+    
+    try {
+      const success = await signin(emailOrPhone, password, loginMethod);
+      if (success) {
+        showToast('Login successful', 'success');
+        navigate('/dashboard');
+      } else {
+        // Error message will be available in the error state from useAuth
+        showToast(error || 'Login failed', 'error');
+      }
+    } catch {
+      showToast('An unexpected error occurred', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,13 +48,6 @@ const SigninComponent = ({ setIsSignin }: { setIsSignin: () => void }) => {
               Enter your {loginMethod === "email" ? "Email" : "Phone"} and Password
             </p>
           </div>
-
-          {error && (
-            <div className="text-red-500">
-              {error + ". " + "Try again"}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Login Method Buttons */}
             <div className="flex gap-4">
@@ -103,10 +117,10 @@ const SigninComponent = ({ setIsSignin }: { setIsSignin: () => void }) => {
             <div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={loading}
                 className="w-full py-2 bg-purple-600 text-white rounded-md font-semibold hover:bg-purple-700 transition duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Signing In..." : "Login"}
+                {loading ? <span className="flex items-center gap-2 text-white w-full justify-center"><FaSpinner className="animate-spin" /> Signing In...</span> : "Login"}
               </button>
             </div>
           </form>

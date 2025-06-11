@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useWallet } from "../../hooks/useWallet";
 import { WithdrawalRequest } from "../../store/useWalletStore";
-import Error from "../ui/Error";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import WithdrawalRequestSidePop from "./WithdrawalRequestSidePop";
 import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
 
 const WidrawalRequestsTable = () => {
-    const { withdrawalRequests, isLoading, error } = useWallet();
+    const { withdrawalRequests, isLoading } = useWallet();
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<"amount" | "date" | "status">("date");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");   
@@ -62,12 +61,6 @@ const WidrawalRequestsTable = () => {
             <div className="w-full h-[calc(100vh-350px)] flex justify-center items-center">
                 <LoadingSpinner />
             </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <Error error={"error"} />
         );
     }
 
@@ -193,7 +186,7 @@ const WithdrawalRequestRow = ({ withdrawalRequest, index }: { withdrawalRequest:
         <tr className="border-t border-gray-200 h-20">
             <td className="px-8">{index + 1}</td>
             <td className="px-4">{withdrawalRequest.amount}</td>
-            <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${withdrawalRequest.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{withdrawalRequest.status === "ACTIVE" ? "Paid" : "Pending"}</span></div></td>
+            <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${withdrawalRequest.status === "PAID" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{withdrawalRequest.status}</span></div></td>
             <td className="px-4">{new Date(withdrawalRequest.createdAt).toLocaleDateString("en-US", {
                 day: "2-digit",
                 month: "long",
@@ -245,8 +238,8 @@ const WithdrawalRequestCard = ({withdrawalRequest, index}: {withdrawalRequest: W
                 <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Status</span>
                     <div className="flex items-center gap-2">
-                        <div className={`${withdrawalRequest.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div>
-                        <span className="text-sm font-medium">{withdrawalRequest.status === "ACTIVE" ? "Paid" : "Pending"}</span>
+                        <div className={`${withdrawalRequest.status === "PAID" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div>
+                        <span className="text-sm font-medium">{withdrawalRequest.status}</span>
                     </div>
                 </div>
 

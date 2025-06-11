@@ -4,6 +4,7 @@ import { DigitalProduct } from "../../store/useDigitalProductStore";
 import { IoIosAdd } from "react-icons/io";
 import TesminonialCard from "../ui/TesminonialCard";
 import { IoCloseOutline } from "react-icons/io5";
+import { useToast } from "../ui/Toast";
 
 interface TestimonialsProps {
     currentProduct: DigitalProduct;
@@ -13,6 +14,7 @@ const Testimonials = ({ currentProduct }: TestimonialsProps) => {
     const { deleteTestimonial } = useDigitalProduct();
     const [showForm, setShowForm] = useState(false);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
+    const {showToast} = useToast();
 
     // Use testimonials directly from the currentProduct
     const testimonials = currentProduct.testimonials;
@@ -21,8 +23,9 @@ const Testimonials = ({ currentProduct }: TestimonialsProps) => {
         try {
             setIsDeleting(id);
             await deleteTestimonial(id);
+            showToast('Testimonial deleted successfully', 'success');
         } catch (err) {
-            console.error("Failed to delete testimonial:", err);
+            showToast(err instanceof Error ? err.message : 'Failed to delete testimonial', 'error');
         } finally {
             setIsDeleting(null);
         }
@@ -79,18 +82,18 @@ const CreateTestimonialForm = ({ currentProduct, onClose, onSuccess }: CreateTes
         image: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const {showToast} = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setError(null);
         
         try {
             await createTestimonial(currentProduct.id, formData);
             onSuccess();
+            showToast('Testimonial created successfully', 'success');
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to create testimonial');
+            showToast(err instanceof Error ? err.message : 'Failed to create testimonial', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -154,9 +157,6 @@ const CreateTestimonialForm = ({ currentProduct, onClose, onSuccess }: CreateTes
                             className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
                         />
                     </div>
-
-                    {error && <div className="text-red-500 text-sm">{error}</div>}
-
                     <div className="flex justify-end gap-4 mt-6">
                         <button
                             type="button"

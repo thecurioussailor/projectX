@@ -3,16 +3,17 @@ import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { IoCloudUpload, IoDocumentText, IoImage, IoMusicalNote, IoFilm, IoDocument, IoCloseCircle } from "react-icons/io5";
 import { DigitalProduct } from "../../store/useDigitalProductStore";
+import { useToast } from "../ui/Toast";
 
 const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) => {
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const { uploadFile, deleteFile, fetchProductById } = useDigitalProduct();
     const dropRef = useRef<HTMLDivElement>(null);
+    const {showToast} = useToast();
     // const [currentFiles, setCurrentFiles] = useState<DigitalProduct[]>([]);
 
     useEffect(() => {
@@ -23,7 +24,6 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
             setFile(selectedFile);
-            setError(null);
             setSuccess(false);
         }
     };
@@ -56,20 +56,19 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
         const droppedFile = e.dataTransfer.files[0];
         if (droppedFile) {
             setFile(droppedFile);
-            setError(null);
+            showToast('File dropped successfully', 'success');      
             setSuccess(false);
         }
     }, []);
 
     const handleUpload = async () => {
         if (!file) {
-            setError("Please select a file first");
+            showToast("Please select a file first", 'error');
             return;
         }
 
         try {
             setIsUploading(true);
-            setError(null);
             setSuccess(false);
             
             // Simulate progress
@@ -85,7 +84,7 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
             
             // Use the uploadFile helper from the hook which handles both steps
             await uploadFile(currentProduct.id, file);
-            
+            showToast('File uploaded successfully', 'success');
             clearInterval(interval);
             setUploadProgress(100);
             setSuccess(true);
@@ -98,7 +97,7 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
                 setUploadProgress(0);
             }, 1000);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to upload file");
+            showToast(err instanceof Error ? err.message : "Failed to upload file", 'error');
         } finally {
             setIsUploading(false);
         }
@@ -107,8 +106,9 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
     const handleDeleteFile = async (fileId: string) => {
         try {
             await deleteFile(currentProduct.id, fileId);
+            showToast('File deleted successfully', 'success');
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to delete file");
+            showToast(err instanceof Error ? err.message : "Failed to delete file", 'error');
         }
     };
 
@@ -193,12 +193,6 @@ const UploadProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) =
                     <p className="text-xs text-gray-500 mt-1">
                         {uploadProgress < 100 ? `Uploading: ${uploadProgress}%` : 'Upload complete!'}
                     </p>
-                </div>
-            )}
-
-            {error && (
-                <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
-                    {error}
                 </div>
             )}
 

@@ -35,8 +35,20 @@ export interface WithdrawalRequest {
     processedAt: string | null;
     processedBy: string | null;
     transactionId: string | null;
+    
+    userPaymentMethod: UserPaymentMethod;
     createdAt: string;
     updatedAt: string;
+}
+
+interface UserPaymentMethod {
+    id: string;
+    type: string;
+    upiId: string;
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    accountHolderName: string;  
 }
 
 interface WalletState {
@@ -45,7 +57,7 @@ interface WalletState {
     isLoading: boolean;
     error: string | null;
     fetchWallet: () => Promise<void>;
-    createWithdrawalRequest: (amount: number) => Promise<void>;
+    createWithdrawalRequest: (amount: number, userPaymentMethodId: string) => Promise<{ success: boolean, message: string }>;
     getWithdrawalRequests: () => Promise<void>;
 }
 
@@ -78,13 +90,15 @@ export const useWalletStore = create<WalletState>((set) => ({
             set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
         }
     },
-    createWithdrawalRequest: async (amount: number) => {
+    createWithdrawalRequest: async (amount: number, userPaymentMethodId: string) => {
         set({ isLoading: true, error: null });
         try {
-            await api.post('/api/v1/wallet/withdraw', { amount });
+            const response = await api.post('/api/v1/wallet/withdraw', { amount, userPaymentMethodId });
             set({ isLoading: false });
+            return { success: true, message: response.data.message };
         } catch (error) {
             set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
+            return { success: false, message: error instanceof Error ? error.message : 'An unknown error occurred' };
         }
     },      
     getWithdrawalRequests: async () => {

@@ -6,8 +6,10 @@ import { DigitalProduct } from "../../store/useDigitalProductStore";
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import { FaSpinner } from "react-icons/fa";
 import CoverImage from "./CoverImage";
+import { useToast } from "../ui/Toast";
 const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }) => {
     const { isLoading, updateProduct } = useDigitalProduct();
+    const {showToast} = useToast();
     const [formData, setFormData] = useState({
         title: currentProduct?.title || "",
         description: currentProduct?.description || "",
@@ -18,10 +20,16 @@ const BasicInformation = ({ currentProduct }: { currentProduct: DigitalProduct }
         discountedPrice: currentProduct?.discountedPrice || currentProduct?.price || "",
     }); 
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        updateProduct(currentProduct.id, formData);
+        try {
+            await updateProduct(currentProduct.id, formData);
+            showToast('Product updated successfully', 'success');
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : 'Failed to update product', 'error');
+        }
     }
+
   return (
     <div className="md:p-4 w-full">
         <div className="flex flex-col gap-4 pb-8">

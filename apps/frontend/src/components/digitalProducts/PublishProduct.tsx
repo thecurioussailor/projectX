@@ -3,12 +3,15 @@ import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../ui/Toast";
+
 const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) => {
   const { updateProduct, publishProduct, unpublishProduct } = useDigitalProduct();
   const [isLoading, setIsLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isUnpublishing, setIsUnpublishing] = useState(false);
   const navigate = useNavigate();
+  const {showToast} = useToast();
   const [formData, setFormData] = useState<{
     ctaButtonText: string;
     isLimitedQuantityEnabled: boolean;
@@ -22,6 +25,7 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
     e.preventDefault();
     setIsLoading(true);
     await updateProduct(currentProduct.id, formData);
+    showToast('Product updated successfully', 'success');
     setIsLoading(false);
   }
   return (
@@ -76,6 +80,7 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
                 setIsUnpublishing(true);
                 await unpublishProduct(currentProduct.id)
                 setIsUnpublishing(false);
+                showToast('Product unpublished successfully', 'success');
               }}
               className=" font-semibold text-white flex justify-center lg:w-fit items-center gap-2 bg-[#7F37D8] border-white py-2 px-4 hover:bg-[#6C2EB9] transition-colors rounded-3xl"
           >
@@ -89,6 +94,7 @@ const PublishProduct = ({ currentProduct }: { currentProduct: DigitalProduct }) 
                   setIsPublishing(true);
                   await publishProduct(currentProduct.id);
                   setIsPublishing(false);
+                  showToast('Product published successfully', 'success');
                   navigate(`/digital-products`);
               }}
             >

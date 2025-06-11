@@ -1,14 +1,37 @@
 import { IoCloseOutline } from "react-icons/io5"
 import { useState } from "react";
 import { useWallet } from "../../hooks/useWallet";
+import { usePaymentMethod } from "../../hooks/usePaymentMethod";
+import { useToast } from "../ui/Toast";
+import { AxiosError } from "axios";
+import { FaSpinner } from "react-icons/fa";
+
 const CreateWithdrawalRequest = ({ onClose }: { onClose: () => void }) => {
     const [amount, setAmount] = useState<string>("");
-    const { createWithdrawalRequest } = useWallet();
-
+    const { createWithdrawalRequest, isLoading } = useWallet();
+    const { paymentMethods } = usePaymentMethod();
+    const [userPaymentMethodId, setUserPaymentMethodId] = useState<string>(paymentMethods[0]?.id || "");
+    const { showToast } = useToast();
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!amount) return;
-        await createWithdrawalRequest(Number(amount));
+        if (!amount || !userPaymentMethodId){
+            showToast("Please fill all the fields", "error");
+            return;
+        }
+        try {
+            const response = await createWithdrawalRequest(Number(amount), userPaymentMethodId);
+            console.log(response);
+            if(response.success){
+                showToast("Withdrawal request created successfully", "success");
+                onClose();
+            } else {
+
+                showToast(response.data.message, "error");
+                onClose();
+            }
+        } catch (error: AxiosError | Error | unknown) {
+            showToast(error instanceof AxiosError ? error.response?.data.message : error instanceof Error ? error.message : "An unknown error occurred", "error");
+        }
         onClose();
     }
   return (
@@ -32,10 +55,17 @@ const CreateWithdrawalRequest = ({ onClose }: { onClose: () => void }) => {
                     onChange={(e) => setAmount(e.target.value)} 
                     className="border border-gray-300 rounded-md p-2"
                 />
+                
+                <select className="border border-gray-300 rounded-md p-2" value={userPaymentMethodId} onChange={(e) => setUserPaymentMethodId(e.target.value)}>
+                    {paymentMethods.map((paymentMethod) => (
+                        <option key={paymentMethod.id} value={paymentMethod.id}>{paymentMethod.type}</option>
+                    ))}
+                </select>
                 <button 
                 type="submit"
-                className="bg-[#7E37D8] text-white px-6 py-2 rounded-3xl">
-                    Create
+                disabled={isLoading}
+                className="bg-[#7E37D8] text-white px-6 py-2 rounded-3xl flex items-center justify-center">
+                    {isLoading ? <span className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Creating...</span> : "Create"}
             </button>
             </form>
         </div>

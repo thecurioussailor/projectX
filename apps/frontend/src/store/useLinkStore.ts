@@ -44,7 +44,7 @@ interface LinkState {
   error: string | null;
   
   // Actions
-  createLink: (url: string) => Promise<Link | null>;
+  createLink: (url: string, customShortId?: string) => Promise<Link | null>;
   fetchLinks: () => Promise<void>;
   fetchLinkStats: (shortId: string) => Promise<void>;
   deleteLink: (id: string) => Promise<void>;
@@ -58,10 +58,10 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   error: null,
 
   // Create a new shortened link
-  createLink: async (url: string) => {
+  createLink: async (url: string, customShortId?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/api/v1/links', { originalUrl: url });
+      const response = await api.post('/api/v1/links', { originalUrl: url, customShortId });
       const link = response.data.data;
       set((state) => ({ 
         links: [link, ...state.links],

@@ -29,7 +29,7 @@ export const useWithdrawal = () => {
         return fetchWithdrawalByIdStore(id);
     }, [token, fetchWithdrawalByIdStore]);
 
-    const approveWithdrawal = useCallback(async (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string }) => {
+    const approveWithdrawal = useCallback(async (id: string, data: { status: string, transactionId: string, paymentMethod: string, bankName: string, accountNumber: string, adminNotes: string }) => {
         if (!token) {
             throw new Error("You must be logged in to create a product");
         };

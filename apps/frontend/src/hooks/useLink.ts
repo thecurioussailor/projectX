@@ -16,11 +16,11 @@ export const useLink = () => {
     clearCurrentLink 
   } = useLinkStore();
 
-  const createLink = useCallback(async (url: string): Promise<Link | null> => {
+  const createLink = useCallback(async (url: string, customShortId?: string): Promise<Link | null> => {
     if (!token) {
       throw new Error('You must be logged in to create links');
     }
-    return storeCreateLink(url);
+    return storeCreateLink(url, customShortId);
   }, [token, storeCreateLink]);
 
   const fetchLinks = useCallback(async () => {

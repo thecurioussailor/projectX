@@ -56,7 +56,7 @@ const generateShortId = (length = 8) => {
 
 export const createLink = async (req: Request, res: Response) => {
   try {
-    const { originalUrl } = req.body;
+    const { originalUrl, customShortId } = req.body;
 
     if (!originalUrl) {
       res.status(400).json({
@@ -66,8 +66,28 @@ export const createLink = async (req: Request, res: Response) => {
       return;
     }
 
-    // Generate a short ID
-    const shortId = generateShortId();
+    let shortId;
+
+    // Handle custom short ID
+    if (customShortId) {
+      // Check if custom short ID already exists
+      const existingLink = await prismaClient.link.findUnique({
+        where: { shortId: customShortId },
+      });
+      
+      if (existingLink) {
+        res.status(400).json({
+          status: "error",
+          message: "Custom short ID already exists. Please try a different one.",
+        });
+        return;
+      }
+      
+      shortId = customShortId;
+    } else {
+      // Generate a short ID if no custom ID provided
+      shortId = generateShortId();
+    }
     
     // Create full short URL
     const baseUrl = `${req.protocol}://${req.get("host")}/api/v1/links`;

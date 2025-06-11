@@ -1,13 +1,20 @@
 import { IoCloseOutline } from "react-icons/io5"
 import { useState } from "react"
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
+import { useToast } from "../ui/Toast";
 const CreateFaqDialog = ({ productId, onClose }: { productId: string, onClose: () => void }) => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const { createFaq } = useDigitalProduct();
+  const {showToast} = useToast();
   const handleCreate = async () => {
-    await createFaq(productId, { question, answer });
-    onClose();
+    try {
+      await createFaq(productId, { question, answer });
+      onClose();
+      showToast('FAQ created successfully', 'success');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to create FAQ', 'error');
+    }
   }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2">

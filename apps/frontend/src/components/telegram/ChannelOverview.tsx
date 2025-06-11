@@ -5,6 +5,7 @@ import CreatePlanForm from "../telegram/CreatePlanForm";
 import RichTextEditor from "./RichTextEditor";
 import { IoClose } from "react-icons/io5";
 import { RiImageAddLine } from "react-icons/ri";
+import { useToast } from "../ui/Toast";
 
 const ChannelOverview = ({ channelId }: { channelId: string }) => {
     const { fetchChannelById, currentChannel, updateChannel, updateChannelContact } = useTelegram();
@@ -15,6 +16,7 @@ const ChannelOverview = ({ channelId }: { channelId: string }) => {
     const [isSavingContact, setIsSavingContact] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const {showToast} = useToast();
     useEffect(() => {
         if(channelId) {
             fetchChannelById(channelId);
@@ -35,9 +37,10 @@ const ChannelOverview = ({ channelId }: { channelId: string }) => {
             await updateChannel(currentChannel.id, {
                 richDescription: richDescription
             });
+            showToast('Description updated successfully', 'success');
             setIsEditingDescription(false);
         } catch (error) {
-            console.error('Error updating description:', error);
+            showToast(error instanceof Error ? error.message : 'Failed to update description', 'error');
         } finally {
             setIsUpdating(false);
         }
@@ -48,8 +51,9 @@ const ChannelOverview = ({ channelId }: { channelId: string }) => {
         setIsSavingContact(true);
         try {
             await updateChannelContact(currentChannel.id, { contactEmail: contactEmail, contactPhone: contactPhone });
+            showToast('Contact updated successfully', 'success');
         } catch (error) {
-            console.error('Error updating contact:', error);
+            showToast(error instanceof Error ? error.message : 'Failed to update contact', 'error');
         } finally {
             setIsSavingContact(false);
         }
@@ -185,7 +189,7 @@ const UploadBanner = ({ channelId, onClose }: { channelId: string, onClose: () =
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const { uploadBanner } = useTelegram();
-
+    const {showToast} = useToast();
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
@@ -199,8 +203,10 @@ const UploadBanner = ({ channelId, onClose }: { channelId: string, onClose: () =
         
         try {
             await uploadBanner(channelId, file);
+            showToast('Banner uploaded successfully', 'success');
+            onClose();
         } catch (error) {
-            console.error('Error uploading banner:', error);
+            showToast(error instanceof Error ? error.message : 'Failed to upload banner', 'error');
         } finally {
             setIsUploading(false);
         }

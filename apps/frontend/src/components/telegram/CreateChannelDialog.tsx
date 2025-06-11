@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { TelegramChannel } from "../../store/useTelegramStore";
 import { IoMdClose } from "react-icons/io";
 import AddExistingChannel from "./AddExistingChannel";
+import { useToast } from "../ui/Toast";
 
 // Define Plan interface
 interface Plan {
@@ -29,6 +30,7 @@ const CreateChannelDialog = ({ setOpen, onChannelCreated }: CreateChannelDialogP
     const [phoneNumber, setPhoneNumber] = useState("");
     const [newlyCreatedChannel, setNewlyCreatedChannel] = useState<TelegramChannel | null>(null);
     const [deleteAccountAlert, setDeleteAccountAlert] = useState<boolean>(false);
+    const {showToast} = useToast();
     useEffect(() => {
         getAccounts();
     }, [getAccounts]);
@@ -48,6 +50,9 @@ const CreateChannelDialog = ({ setOpen, onChannelCreated }: CreateChannelDialogP
         if (newlyCreatedChannel) {
             publishChannel(newlyCreatedChannel.id);
             fetchChannels();
+            showToast('Channel published successfully', 'success');
+        } else {
+            showToast('Failed to publish channel', 'error');
         }
         // Notify parent if callback exists
         if (onChannelCreated) {

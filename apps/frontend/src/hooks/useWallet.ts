@@ -22,7 +22,7 @@ type WalletHookReturn = {
   isLoading: boolean;
   error: string | null;
   fetchWallet: () => Promise<void>;
-  createWithdrawalRequest: (amount: number) => Promise<void>;
+  createWithdrawalRequest: (amount: number, userPaymentMethodId: string) => Promise<{ success: boolean, message: string }>;
   getWithdrawalRequests: () => Promise<void>;
 };
 
@@ -49,11 +49,11 @@ export function useWallet(options: { autoFetch?: boolean } = {}): WalletHookRetu
         return fetchWalletStore();
     }, [fetchWalletStore, token]);
 
-    const createWithdrawalRequest = useCallback((amount: number) => {
+    const createWithdrawalRequest = useCallback((amount: number, userPaymentMethodId: string) => {
         if(!token) {
             throw new Error('You must be logged in to create a withdrawal request');
         }
-        return createWithdrawalRequestStore(amount);
+        return createWithdrawalRequestStore(amount, userPaymentMethodId);
     }, [createWithdrawalRequestStore, token]);
 
     const getWithdrawalRequests = useCallback(() => {

@@ -193,14 +193,7 @@ export const signin = async (req: Request, res: Response) => {
         : { phone: emailOrPhone }, // Search by phone
     });
 
-    if (!user) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid credentials',
-      });
-      return ;
-    }
-
+    console.log('user++++++++++', user);
     if (!user) {
         res.status(401).json({ 
         success: false, 
@@ -211,7 +204,7 @@ export const signin = async (req: Request, res: Response) => {
 
     // Validate password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
+    console.log('isPasswordValid++++++++++', isPasswordValid);
     if (!isPasswordValid) {
       res.status(401).json({ 
         success: false, 
@@ -219,6 +212,7 @@ export const signin = async (req: Request, res: Response) => {
       });
       return;
     }
+    console.log('token++++++++++', process.env.JWT_SECRET);
 
     const token = jwt.sign({
       id: user.id,

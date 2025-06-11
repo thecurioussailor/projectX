@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTelegram } from "../../hooks/useTelegram";
 import { TelegramChannel } from "../../store/useTelegramStore";
 import { FaTrash } from "react-icons/fa";
+import { useToast } from "../ui/Toast";
 
 interface Plan {
   name: string;
@@ -19,7 +20,8 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
   const [planPrice, setPlanPrice] = useState("");
   const [planDurationType, setPlanDurationType] = useState("Day");
   const [planDurationValue, setPlanDurationValue] = useState("");
-  const { createPlan, fetchPlans, deletePlan, isLoading, error, plans } = useTelegram();
+  const { createPlan, fetchPlans, deletePlan, isLoading, plans } = useTelegram();
+  const {showToast} = useToast();
   
   useEffect(() => {
     // Fetch plans when component mounts
@@ -45,7 +47,8 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       }
       
       if (isNaN(price) || isNaN(duration)) {
-        throw new Error("Invalid price or duration");
+        showToast('Invalid price or duration', 'error');
+        return; 
       }
       
       const planData = {
@@ -55,7 +58,7 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       };
       
       await createPlan(channel.id, planData);
-      
+      showToast('Plan created successfully', 'success');
       // Call onPlanCreated with the plan data
       onPlanCreated(planData);
       
@@ -65,7 +68,7 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       setPlanDurationType("Day");
       setPlanDurationValue("");
     } catch (error) {
-      console.error("Error creating plan:", error);
+      showToast(error instanceof Error ? error.message : "Failed to create plan", 'error');
     }
   };
 
@@ -74,8 +77,9 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
       await deletePlan(planId);
       // Refresh plans after deletion
       fetchPlans(channel.id);
+      showToast('Plan deleted successfully', 'success');
     } catch (error) {
-      console.error("Error deleting plan:", error);
+      showToast(error instanceof Error ? error.message : "Failed to delete plan", 'error');
     }
   };
   
@@ -175,8 +179,6 @@ const CreatePlanForm = ({ onPlanCreated, channel }: CreatePlanFormProps) => {
           className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
         />
       </div>
-      
-      {error && <p className="text-red-500 text-sm">{error}</p>}
       
       <button
         onClick={handleCreatePlan}

@@ -2,6 +2,10 @@ import { IoIosAdd } from "react-icons/io"
 import { useDigitalProduct } from "../../hooks/useDigitalProduct";
 import { useState, useEffect, useRef } from "react";
 import { FaSpinner } from "react-icons/fa";
+import { useToast } from "../ui/Toast";
+import { AxiosError } from "axios";
+
+
 interface GalleryImage {
   id: string;
   productId: string;
@@ -16,7 +20,7 @@ const Gallery = ({ productId }: { productId: string }) => {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);  
-  const [error, setError] = useState<string | null>(null);
+  const {showToast} = useToast();
 
 
   const triggerFileInput = () => {
@@ -28,28 +32,27 @@ const Gallery = ({ productId }: { productId: string }) => {
     if (!file) return;
 
     if (!productId) {
-      setError('Product ID is required for uploading.');
+      showToast('Product ID is required for uploading.', 'error');
       return;
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Only image files are allowed.');
+      showToast('Only image files are allowed.', 'error');
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      setError('File size should not exceed 5MB.');
+      showToast('File size should not exceed 5MB.', 'error');
       return;
     }
 
     setIsUploading(true);
-    setError(null);
 
     try {
       await uploadGallery(productId, file);
-
+      showToast('Image uploaded successfully', 'success');
       const updatedImages = await getGalleryImage(productId);
         if (updatedImages) {
           setGalleryImages(updatedImages.map((image) => ({
@@ -61,9 +64,12 @@ const Gallery = ({ productId }: { productId: string }) => {
             createdAt: image.createdAt || ''
           })));
         }
-    } catch (err) {
-      console.error("Upload failed:", err);
-      setError(err instanceof Error ? err.message : 'Failed to upload gallery image');
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        showToast(err.response?.data?.message || 'Failed to upload gallery image', 'error');
+      } else {
+        showToast('Failed to upload gallery image', 'error');
+      }
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -93,7 +99,6 @@ const Gallery = ({ productId }: { productId: string }) => {
         <div className="flex items-center gap-4 border-b py-8 px-8">
             <h1 className="text-2xl font-semibold text-[#7F37D8]">Gallery</h1>
         </div>
-        {error && <div className="text-red-500 text-center">{error}</div>}
         <div className="flex items-center gap-4 px-6 pb-4">
             <input 
               ref={fileInputRef} 

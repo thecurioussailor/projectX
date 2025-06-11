@@ -71,7 +71,7 @@ const WithdrawalRequestSidePop = ({ withdrawalRequest, onClose }: { withdrawalRe
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Payment Details:</p>
-                    <p className="font-medium text-sm">{withdrawalRequest.paymentDetails.bankName} - {withdrawalRequest.paymentDetails.accountNumber}</p>
+                    <p className="font-medium text-sm">{withdrawalRequest.paymentDetails?.bankName} - {withdrawalRequest.paymentDetails?.accountNumber}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <p className="text-xs text-[#718096]">Admin Notes:</p>
@@ -89,6 +89,39 @@ const WithdrawalRequestSidePop = ({ withdrawalRequest, onClose }: { withdrawalRe
                     <p className="text-xs text-[#718096]">Updated At:</p>
                     <p className="font-medium text-sm">{withdrawalRequest.updatedAt ? new Date(withdrawalRequest.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "N/A"}</p>
                 </div>
+            </div>
+            <div className="border-b pb-3 flex flex-col gap-2">
+                <h1 className="text-sm text-[#718096]">Payment Method Selected: </h1>
+                <div className="flex items-center gap-2">
+                    <p className="text-xs text-[#718096]">Type:</p>
+                    <p className="font-medium text-sm">{withdrawalRequest.userPaymentMethod?.type}</p>
+                </div>
+                {withdrawalRequest.userPaymentMethod?.type === "UPI" && (
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-[#718096]">UPI ID:</p>
+                        <p className="font-medium text-sm">{withdrawalRequest.userPaymentMethod?.upiId}</p>
+                    </div>
+                )}
+                {withdrawalRequest.userPaymentMethod?.type === "BANK" && (
+                    <>
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-[#718096]">Bank Name:</p>
+                        <p className="font-medium text-sm">{withdrawalRequest.userPaymentMethod?.bankName}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-[#718096]">Account Number:</p>
+                        <p className="font-medium text-sm">{withdrawalRequest.userPaymentMethod?.accountNumber}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-[#718096]">IFSC Code:</p>
+                        <p className="font-medium text-sm">{withdrawalRequest.userPaymentMethod?.ifscCode}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-[#718096]">Account Holder Name:</p>
+                        <p className="font-medium text-sm">{withdrawalRequest.userPaymentMethod?.accountHolderName}</p>
+                    </div>
+                    </>
+                )}
             </div>
           </div>
         </div>

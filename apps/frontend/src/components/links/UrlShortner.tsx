@@ -8,11 +8,14 @@ const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
     const { createLink, isLoading, error } = useLink();
     const { showToast } = useToast();
     const [url, setUrl] = useState("");
+    const [customShortId, setCustomShortId] = useState("");
+
+
 
     useEffect(() => {
         if (error) {
             showToast(error, 'error');
-        }
+        }   
     }, [error, showToast]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -23,10 +26,11 @@ const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
         }
         
         try {
-            const result = await createLink(url);
+            const result = await createLink(url, customShortId);
             if (result) {
                 showToast('URL shortened successfully!', 'success');
                 setUrl("");
+                setCustomShortId("");
                 setOpen(false);
             }
         } catch {
@@ -55,7 +59,22 @@ const UrlShortner = ({setOpen}: {setOpen: (open: boolean) => void}) => {
                 required
                 />
             </div>
-            
+            <div>
+                <label htmlFor="customShortId" className="block text-sm font-medium text-gray-700 mb-4">
+                    Custom Short ID
+                </label>
+                <div className="flex items-center gap-2">
+                    <p className="text-gray-500 p-3 border border-gray-300 outline-none rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent">https://wvv.one/</p>
+                    <input
+                        type="text"
+                        id="customShortId"
+                        value={customShortId}
+                        onChange={(e) => setCustomShortId(e.target.value)}
+                        placeholder="Enter a custom short ID"
+                        className="w-full p-3 border border-gray-300 outline-none rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                    />
+                </div>
+            </div>
             <button
                 type="submit"
                 disabled={isLoading}
