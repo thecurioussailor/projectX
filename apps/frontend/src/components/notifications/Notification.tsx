@@ -5,7 +5,6 @@ import type { Notification } from "../../store/useNotificationStore";
 const Notification = () => {
 
   const { notifications, isLoading } = useNotification();
-
   
   return (
     <div className="absolute -left-52 top-8 mt-2 w-96 bg-white shadow-lg z-10 rounded-xl overflow-clip">
@@ -14,11 +13,19 @@ const Notification = () => {
                 <p className="font-medium text-white text-xl">Notifications</p>
               </div>
               <div className="flex flex-col gap-2">
-                {isLoading ? <div className="flex justify-center items-center h-full">
-                  <FaSpinner className="animate-spin" />
-                </div> : notifications.map((notification: Notification) => (
-                  <NotificationItem key={notification.id} notification={notification} />
-                ))}
+              {isLoading ? (
+                  <div className="flex justify-center items-center p-8">
+                    <FaSpinner className="animate-spin" />
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="flex justify-center items-center p-8">
+                    <p className="text-gray-500 text-sm">No notifications found</p>
+                  </div>
+                ) : (
+                  notifications.map((notification: Notification) => (
+                    <NotificationItem key={notification.id} notification={notification} />
+                  ))
+                )}
               </div>
             </div>
           </div>

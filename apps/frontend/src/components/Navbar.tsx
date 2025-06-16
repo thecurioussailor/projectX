@@ -47,7 +47,7 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const favoritesRef = useRef<HTMLDivElement>(null);
-
+  const notificationRef = useRef<HTMLDivElement>(null);
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -80,6 +80,19 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleNotificationClick = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleNotificationClick);
+    return () => {
+      document.removeEventListener('mousedown', handleNotificationClick);
+    };
+  }, []);
+
   return (
     <div className="flex justify-end md:justify-end md:items-center items-end gap-2">
       <div className={`items-center text-[#7F37D8] gap-10 px-10 ${isMobile ? 'hidden' : 'flex'}`}>
@@ -107,7 +120,7 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
           </button>
           {isFavoritesOpen && <FavoritesButton onClose={() => setIsFavoritesOpen(false)}/>}
         </div>
-        <div ref={favoritesRef} className="relative">
+        <div ref={notificationRef} className="relative">
           <button 
             className="flex items-center gap-2"
             onClick={() => {
