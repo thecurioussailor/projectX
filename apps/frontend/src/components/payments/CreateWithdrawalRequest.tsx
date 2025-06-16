@@ -8,31 +8,47 @@ import { FaSpinner } from "react-icons/fa";
 
 const CreateWithdrawalRequest = ({ onClose }: { onClose: () => void }) => {
     const [amount, setAmount] = useState<string>("");
-    const { createWithdrawalRequest, isLoading } = useWallet();
+    const { createWithdrawalRequest, error } = useWallet();
     const { paymentMethods } = usePaymentMethod();
     const [userPaymentMethodId, setUserPaymentMethodId] = useState<string>(paymentMethods[0]?.id || "");
     const { showToast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!amount || !userPaymentMethodId){
             showToast("Please fill all the fields", "error");
             return;
         }
+
+        const numericAmount = Number(amount);
+        if (numericAmount <= 0) {
+            showToast("Amount must be greater than 0", "error");
+            return;
+        }
+
+        setIsSubmitting(true);
+
         try {
             const response = await createWithdrawalRequest(Number(amount), userPaymentMethodId);
             console.log(response);
-            if(response.success){
+            if (response.success) {
                 showToast("Withdrawal request created successfully", "success");
+                
+                // Optional: Reset form
+                setAmount("");
+                setUserPaymentMethodId( paymentMethods[0]?.id || "" );
+                
+                // Close modal/component
                 onClose();
             } else {
-
-                showToast(response.data.message, "error");
-                onClose();
+                // Handle API error response
+                showToast(error || "Failed to create withdrawal request", "error");
             }
         } catch (error: AxiosError | Error | unknown) {
             showToast(error instanceof AxiosError ? error.response?.data.message : error instanceof Error ? error.message : "An unknown error occurred", "error");
+        } finally {
+            setIsSubmitting(false);
         }
-        onClose();
     }
   return (
     <div className="absolute inset-0 flex justify-center items-center bg-black/50 px-2">
@@ -57,15 +73,16 @@ const CreateWithdrawalRequest = ({ onClose }: { onClose: () => void }) => {
                 />
                 
                 <select className="border border-gray-300 rounded-md p-2" value={userPaymentMethodId} onChange={(e) => setUserPaymentMethodId(e.target.value)}>
+                    <option value="">Select Payment Method</option>
                     {paymentMethods.map((paymentMethod) => (
                         <option key={paymentMethod.id} value={paymentMethod.id}>{paymentMethod.type}</option>
                     ))}
                 </select>
                 <button 
                 type="submit"
-                disabled={isLoading}
+                disabled={isSubmitting}
                 className="bg-[#7E37D8] text-white px-6 py-2 rounded-3xl flex items-center justify-center">
-                    {isLoading ? <span className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Creating...</span> : "Create"}
+                    {isSubmitting ? <span className="flex items-center gap-2"><FaSpinner className="animate-spin" /> Creating...</span> : "Create"}
             </button>
             </form>
         </div>

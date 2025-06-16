@@ -216,7 +216,7 @@ const SalesTableRow = ({sale, index}: {sale: Sale, index: number}) => {
     return (
         <tr className="border-t border-gray-200 h-20 text-[#1B3155] hover:bg-gray-50">
             <td className="px-8">{index + 1}</td>
-            <td className="font-semibold px-4">{sale.productType === 'DIGITAL_PRODUCT' ? sale?.digitalProduct?.title : sale?.telegramPlan?.name}</td>
+            <td className="px-4">{sale.productType === 'DIGITAL_PRODUCT' ? (sale?.digitalProduct?.title?.length && sale?.digitalProduct?.title?.length > 30 ? sale?.digitalProduct?.title?.slice(0, 30) + "..." : sale?.digitalProduct?.title) : (sale?.telegramPlan?.name?.length && sale?.telegramPlan?.name?.length > 30 ? sale?.telegramPlan?.name?.slice(0, 30) + "..." : sale?.telegramPlan?.name) }</td>
             <td className="px-4"><span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-2 py-1">{sale.productType}</span></td>
             <td className="px-4">{sale.amount}</td>
             <td className="px-4">{new Date(sale.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}</td>

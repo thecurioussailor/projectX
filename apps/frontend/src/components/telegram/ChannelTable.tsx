@@ -388,7 +388,7 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
     return (
         <tr className="border-t border-gray-200 h-20">
             <td className="px-8">{index + 1}</td>
-            <td className="px-4">{channel.channelName}</td>
+            <td className="px-4">{channel.channelName.length && channel.channelName.length > 60 ? channel.channelName.slice(0, 60) + "..." : channel.channelName}</td>
             <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${channel.status === "ACTIVE" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{channel.status === "ACTIVE" ? "Active" : "Inactive"}</span></div></td>
             <td className="px-4">{channel.telegramPlans?.length}</td>
             <td className="px-4">{channel.telegramPlans?.reduce((acc, plan) => acc + plan.subscriptions?.length, 0)}</td>

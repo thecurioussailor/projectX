@@ -67,6 +67,14 @@ export interface TelegramSubscription {
   inviteLink: string;
   status: 'ACTIVE' | 'EXPIRED';
   createdAt: string;
+  plan: {
+    id: string;
+    name: string;
+    channel: {
+      id: string;
+      channelName: string;
+    } | null;
+  };
 }
 
 // Define PublicChannel interface for shareable page

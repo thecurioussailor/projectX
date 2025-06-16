@@ -34,6 +34,14 @@ export interface TelegramSubscription {
     inviteLink: string;
     status: 'ACTIVE' | 'EXPIRED';
     createdAt: string;
+    plan: {
+        id: string;
+        name: string;
+        channel: {
+            id: string;
+            channelName: string;
+        } | null;
+    };
   }
 type PurchasedItem = TelegramSubscription | DigitalPurchase;
 
@@ -302,7 +310,7 @@ const PurchasedItemRow = ({ item, index }: { item: PurchasedItem, index: number 
             className="border-t border-gray-200 h-20 hover:bg-gray-50"
         >
             <td className="px-8">{index + 1}</td>
-            <td className="px-4">{isSub ? item.planName : item.product.title /* or a name prop */}</td>
+            <td className="px-4">{isSub ? (item?.plan?.channel?.channelName + " - " + `(${item.planName})`) : item.product.title /* or a name prop */}</td>
             <td className="px-4">
                 <span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-2 py-1">{isSub ? "TELEGRAM_PLAN" : "DIGITAL_PRODUCT"}</span>
             </td>

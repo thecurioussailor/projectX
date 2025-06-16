@@ -16,6 +16,18 @@ export const getPurchasedItems = async (req: Request, res: Response) => {
         const telegramSubscriptions = await prismaClient.telegramSubscription.findMany({
             where: {
                 userId: userId
+            },
+            include: {
+                plan: {
+                    include: {
+                        channel: {
+                            select: {
+                                id: true,
+                                channelName: true,
+                            }
+                        }
+                    }
+                }
             }
         });
 

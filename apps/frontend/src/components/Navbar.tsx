@@ -1,5 +1,5 @@
 import { FiAlignCenter } from "react-icons/fi";
-import { FaHeart, FaUser, FaProductHunt, FaTelegram } from "react-icons/fa";
+import { FaHeart, FaUser, FaProductHunt, FaTelegram, FaBell } from "react-icons/fa";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useSidebar } from "../context/SidebarContext";
 import userImage from "../assets/images/profileprojectx.png";
 import logo from "../assets/images/tinywalletLogo.png";
 import { GoScreenFull, GoSignOut } from "react-icons/go";
+import Notification from "./notifications/Notification";
 const Navbar = ({isMobile}: {isMobile: boolean}) => {
   
   const { toggleSidebar, isSidebarOpen } = useSidebar();
@@ -43,6 +44,7 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const favoritesRef = useRef<HTMLDivElement>(null);
 
@@ -97,12 +99,25 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
           <button 
             className="flex items-center gap-2"
             onClick={() => {
+              setIsNotificationOpen(false);
               setIsFavoritesOpen(!isFavoritesOpen);
             }}
           >
             <FaHeart size={20} className="text-red-500"/>
           </button>
           {isFavoritesOpen && <FavoritesButton onClose={() => setIsFavoritesOpen(false)}/>}
+        </div>
+        <div ref={favoritesRef} className="relative">
+          <button 
+            className="flex items-center gap-2"
+            onClick={() => {
+              setIsFavoritesOpen(false);
+              setIsNotificationOpen(!isNotificationOpen);
+            }}
+          >
+            <FaBell size={20} className="text-yellow-600"/>
+          </button>
+        {isNotificationOpen && <Notification/>}
         </div>
       </div>
       <div className="relative flex gap-8" ref={dropdownRef}>

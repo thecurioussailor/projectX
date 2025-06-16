@@ -204,7 +204,7 @@ const TransactionRow = ({transaction, index}: {transaction: Transaction, index: 
             <td className="px-4"><span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-2 py-1">{transaction.order?.productType}</span></td>
             <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${transaction.status === "SUCCESS" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{transaction.status === "SUCCESS" ? "Success" : "Failed"}</span></div></td>
             <td className="px-4">{transaction.amount}</td>
-            <td className="px-4 text-xs font-semibold text-gray-700">{new Date(transaction.paymentTime).toLocaleDateString("en-US", { month: "long", day: "numeric"})}</td>
+            <td className="px-4">{new Date(transaction.paymentTime).toLocaleDateString("en-US", { month: "long", day: "numeric"})}</td>
             <td className="text-[#158DF7] font-semibold px-4">{transaction.order?.user?.username}</td>
             <td className="px-4">
                 <button 

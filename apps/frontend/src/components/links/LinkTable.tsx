@@ -194,7 +194,7 @@ const LinkTable = () => {
                         {filteredAndSortedLinks.map((link, index) => (
                             <tr key={link.id} className="border-t border-gray-200 h-20">
                                 <td className="px-8">{index + 1}</td>
-                                <td className="px-4">{link.originalUrl}</td>
+                                <td className="px-4">{link.originalUrl.length > 50 ? link.originalUrl.slice(0, 50) + "..." : link.originalUrl}</td>
                                 <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className="bg-green-500 w-2 h-2 rounded-full"></div><span className="text-xs">Active</span></div></td>
                                 <td className="px-4">{link.clicks}</td>
                                 <td className="px-4">{new Date(link.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short'})}</td>
