@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTelegram } from "../../hooks/useTelegram";
+import { useToast } from "../ui/Toast";
 
 interface VerifyTelegramCodeProps {
   phoneNumber: string;
@@ -9,14 +10,14 @@ interface VerifyTelegramCodeProps {
 const VerifyTelegramCode = ({ phoneNumber, onSuccess }: VerifyTelegramCodeProps) => {
   const [code, setCode] = useState("");
   const { verifyOtp, isLoading, error } = useTelegram();
-
+  const { showToast } = useToast();
   const handleVerify = async () => {
     try {
-      console.log(phoneNumber, code);
       await verifyOtp(code, phoneNumber);
       onSuccess();
+      showToast("Code verified successfully", "success");
     } catch {
-      console.log("Error verifying code");
+      showToast(error || "Error verifying code", "error");
     }
   };
 

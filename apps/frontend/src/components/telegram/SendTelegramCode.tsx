@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { useTelegram } from "../../hooks/useTelegram";
+import { useToast } from "../ui/Toast";
 
 const SendTelegramCode = ({ onPhoneNumberChange, onSuccess } : { onPhoneNumberChange: (phoneNumber: string) => void, onSuccess: () => void }) => {
     const [phoneNumber, setPhoneNumber] = useState("");
-    const { sendOtp, isLoading } = useTelegram();
-
+    const { sendOtp, isLoading, error } = useTelegram();
+    const { showToast } = useToast();
     const handleGetCode = async () => {
         try {
             await sendOtp(phoneNumber);
             onPhoneNumberChange(phoneNumber);
+            showToast("OTP sent successfully", "success");
             onSuccess();
         } catch {
-            console.log("Error sending OTP");
+            showToast(error || "Error sending OTP", "error");
         }
     };
   return (

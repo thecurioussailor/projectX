@@ -68,7 +68,7 @@ export default Wallet
 const Alert = ({ onCancel }: { onCancel: () => void }) => {
     const navigate = useNavigate();
     return (
-      <div className="absolute inset-0 flex justify-center items-center bg-black/50">
+      <div className="absolute inset-0 flex justify-center items-center bg-black/50 z-50">
           <div className="flex flex-col gap-2 bg-white p-8 items-center rounded-3xl border border-gray-200">
               <div className="flex justify-center items-center text-[#7F37D8]">
                   <IoAlertCircleOutline size={100} />

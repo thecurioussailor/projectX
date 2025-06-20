@@ -61,21 +61,28 @@ const Kyc = () => {
             <h1 className="text-xl font-semibold text-[#1B3155]">Upload KYC Document</h1>
             <div className="flex flex-col gap-2">
               <label>Document Type</label>
-              <select 
-                value={documentType} 
-                onChange={(e) => setDocumentType(e.target.value)} 
-                className="w-full p-2 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
-              >
-                <option value="PAN">PAN</option>
-                <option value="PASSPORT">PASSPORT</option>
-                <option value="DRIVERS_LICENSE">DRIVERS_LICENSE</option>
-                <option value="NATIONAL_ID">NATIONAL_ID</option>
-                <option value="VOTER_ID">VOTER_ID</option>
-                <option value="TAX_ID">TAX_ID</option>
-                <option value="UTILITY_BILL">UTILITY_BILL</option>
-                <option value="BANK_STATEMENT">BANK_STATEMENT</option>
-                <option value="OTHER">OTHER</option>  
-              </select>
+              <div className="relative">
+                <select 
+                  value={documentType} 
+                  onChange={(e) => setDocumentType(e.target.value)} 
+                  className="appearance-none w-full p-2 pr-10 outline-none border border-gray-300 rounded-md focus:ring-2 focus:ring-[#7F37D8] focus:border-transparent"
+                >
+                  <option value="PAN">PAN</option>
+                  <option value="PASSPORT">PASSPORT</option>
+                  <option value="DRIVERS_LICENSE">DRIVERS_LICENSE</option>
+                  <option value="NATIONAL_ID">NATIONAL_ID</option>
+                  <option value="VOTER_ID">VOTER_ID</option>
+                  <option value="TAX_ID">TAX_ID</option>
+                  <option value="UTILITY_BILL">UTILITY_BILL</option>
+                  <option value="BANK_STATEMENT">BANK_STATEMENT</option>
+                  <option value="OTHER">OTHER</option>  
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <div className="flex flex-col gap-2">
               <label>Document Number</label>

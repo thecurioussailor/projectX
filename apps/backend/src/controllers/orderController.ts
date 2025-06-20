@@ -229,14 +229,14 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                 }
             }
             console.log("Payment success ****************************************");
-            const notification = await createNotification(order.userId.toString(), "Payment", `You have successfully paid ${order.amount} for ${productType} #${order.id}.`, "SUCCESS");
+            const notification = await createNotification(order.userId.toString(), "Payment", `You have successfully paid ${order.amount} for ${productType} #${order.digitalProduct?.title}.`, "SUCCESS");
             res.status(200).json({
                 status: "success",
                 message: "Payment successful"
             });
         } else {
             console.log("Payment failed ****************************************");
-            const notification = await createNotification(order.userId.toString(), "Payment", `You have failed to pay ${order.amount} for ${productType} #${order.id}.`, "ERROR");
+            const notification = await createNotification(order.userId.toString(), "Payment", `You have failed to pay ${order.amount} for ${productType} #${order.digitalProduct?.title}.`, "ERROR");
             res.status(200).json({
                 status: "error",
                 message: "Payment failed"

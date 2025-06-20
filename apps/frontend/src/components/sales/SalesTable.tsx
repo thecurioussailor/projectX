@@ -5,6 +5,8 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import { useState, useEffect } from "react";
 import SaleSidePop from "./SaleSidePop";
 import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
+import { FaDownload } from "react-icons/fa";
+import { useToast } from "../ui/Toast";
 const SalesTable = () => {
     const { sales, isLoading, error } = useSales();
     const [searchQuery, setSearchQuery] = useState("");
@@ -14,6 +16,7 @@ const SalesTable = () => {
     const [isGridView, setIsGridView] = useState(() => {
         return window.innerWidth < 1024;
     });
+    const { showToast } = useToast();
 
     useEffect(() => {
         const handleResize = () => {
@@ -86,6 +89,57 @@ const SalesTable = () => {
             </div>
         );
     }
+
+    const exportToCSV = () => {
+        if (!filteredAndSortedSales || filteredAndSortedSales.length === 0) {
+            showToast("No data to export", "error");
+            return;
+        }
+
+        // Define CSV headers
+        const headers = [
+            "S.No",
+            "Item Name", 
+            "Item Type",
+            "Price (INR)",
+            "Date",
+            "Username",
+            "Status",
+            "Transaction ID"
+        ];
+
+        // Convert sales data to CSV rows
+        const csvRows = [
+            headers.join(','), // Header row
+            ...filteredAndSortedSales.map((sale, index) => [
+                index + 1,
+                `"${sale.productType === 'DIGITAL_PRODUCT' ? sale.digitalProduct?.title || '' : sale.telegramPlan?.name || ''}"`,
+                sale.productType,
+                sale.amount,
+                new Date(sale.createdAt).toLocaleDateString("en-US", { 
+                    year: "numeric", 
+                    month: "2-digit", 
+                    day: "2-digit" 
+                }),
+                sale.user.username,
+                sale.status,
+                sale.id
+            ].join(','))
+        ];
+
+        const csvContent = csvRows.join('\n');
+        
+        // Create and download the file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `sales_data_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-10">
             <div className="flex flex-col gap-4 w-full">
@@ -160,18 +214,26 @@ const SalesTable = () => {
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
 
+                        <button
+                                onClick={exportToCSV}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors duration-200"
+                                title="Export to CSV"
+                            >
+                                <FaDownload size={16} />
+                                <span className="hidden sm:inline">Export</span>
+                            </button>
                         <div className="cursor-pointer flex items-center gap-2">
                             <button 
                             className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
                             onClick={() => setIsGridView(true)}
                             >
-                                <CiCircleList size={20} />
+                                <CiGrid41 size={20} />
                             </button>
                             <button 
                             className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
                             onClick={() => setIsGridView(false)}
                             >
-                                <CiGrid41 size={20} />
+                                <CiCircleList size={20} />
                             </button>
                         </div>
                         </div>

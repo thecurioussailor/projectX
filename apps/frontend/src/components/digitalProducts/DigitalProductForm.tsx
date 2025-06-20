@@ -46,6 +46,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     name="title" 
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    required
                 />
             </div>
             <div>
@@ -56,6 +57,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                     name="description" 
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    required
                 />
             </div>
             <div className="relative w-full flex flex-col items-left gap-2">
@@ -67,6 +69,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                         value={formData.category}
                         onChange={(e) => setFormData({...formData, category: e.target.value})}
                         className="appearance-none w-full px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
+                        required
                     >
                         <option value="Education">Education</option>
                         <option value="Entertainment">Entertainment</option>
@@ -93,6 +96,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                             value={formData.priceType}
                             className="appearance-none w-full px-4 py-2 pr-10 border border-gray-300 text-base text-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white cursor-pointer"
                             onChange={(e) => setFormData({...formData, priceType: e.target.value})}
+                            required
                         >
                             <option value="FIXED">Fixed</option>
                             <option value="FLEXIBLE">Flexible</option>
@@ -114,6 +118,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                         value={formData.price}
                         onChange={(e) => setFormData({...formData, price: e.target.value})}
                         min={1}
+                        required
                     />
                 </div>
                 {formData.priceType === "FIXED" && (
@@ -128,6 +133,7 @@ const DigitalProductForm = ({setShowForm}: {setShowForm: (show: boolean) => void
                             onChange={(e) => setFormData({...formData, hasDiscount: true, discountedPrice: e.target.value})}
                             min={1}
                             max={formData.price}
+                            required
                         />
                     </div>
                 )}

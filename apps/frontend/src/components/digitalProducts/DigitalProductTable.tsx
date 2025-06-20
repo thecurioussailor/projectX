@@ -10,6 +10,7 @@ import Error from "../ui/Error";
 import { BsThreeDots } from "react-icons/bs";
 import Warning from "../ui/Warning";
 import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
+import { useToast } from "../ui/Toast";
 
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 
@@ -186,13 +187,13 @@ const DigitalProductTable = () => {
                                 className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
                                 onClick={() => setIsGridView(true)}
                                 >
-                                    <CiCircleList size={20} />
+                                    <CiGrid41 size={20} />
                                 </button>
                                 <button 
                                 className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
                                 onClick={() => setIsGridView(false)}
                                 >
-                                    <CiGrid41 size={20} />
+                                    <CiCircleList size={20} />
                                 </button>
                             </div>
                         </div>
@@ -234,13 +235,13 @@ export default DigitalProductTable
 
 const ProductCard = ({ product, index }: { product: DigitalProduct, index: number }) => {
     const [copied, setCopied] = useState(false);
-    const { deleteProduct } = useDigitalProduct();
+    const { deleteProduct, unpublishProduct, publishProduct } = useDigitalProduct();
     const [showMenu, setShowMenu] = useState(false); 
     const [showWarning, setShowWarning] = useState(false); 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
     const navigate = useNavigate();
     const ref = useRef<HTMLButtonElement>(null);
-
+    const { showToast } = useToast();
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -293,11 +294,23 @@ const ProductCard = ({ product, index }: { product: DigitalProduct, index: numbe
                                     <FaEdit size={15}/> Edit
                                 </button>
                                 {product.status === "ACTIVE" ? (
-                                    <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left">
+                                    <button 
+                                        onClick={() => {
+                                            unpublishProduct(product.id);
+                                            showToast("Product unpublished successfully", "success");
+                                        }}
+                                        className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left"
+                                    >
                                         <FaEyeSlash size={15}/> Unpublish
                                     </button>
                                 ): (
-                                    <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left">
+                                    <button 
+                                        onClick={() => {
+                                            publishProduct(product.id);
+                                            showToast("Product published successfully", "success");
+                                        }}
+                                        className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left"
+                                    >
                                         <FaEye size={15}/> Publish
                                     </button>
                                 )}
@@ -399,12 +412,13 @@ const ProductCard = ({ product, index }: { product: DigitalProduct, index: numbe
 
 const ProductRow = ({ product, index }: { product: DigitalProduct, index: number }) => {
     const [copied, setCopied] = useState(false);
-    const { deleteProduct } = useDigitalProduct();
+    const { deleteProduct, unpublishProduct, publishProduct } = useDigitalProduct();
     const [showMenu, setShowMenu] = useState(false); 
     const [showWarning, setShowWarning] = useState(false); 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
     const navigate = useNavigate();
     const ref = useRef<HTMLButtonElement>(null);
+    const { showToast } = useToast();
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -481,9 +495,22 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
                                 <FaEdit size={15}/> Edit
                             </button>
                             {product.status === "ACTIVE" ? (
-                                <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"><FaEyeSlash size={15}/> Unpublish</button>
+                                <button 
+                                    onClick={() => {
+                                        unpublishProduct(product.id);
+                                        showToast("Product unpublished successfully", "success");
+                                    }}
+                                    className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"
+                                >
+                                    <FaEyeSlash size={15}/> Unpublish
+                                </button>
                             ): (
-                                <button className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"><FaEye size={15}/> Publish</button>
+                                <button 
+                                    onClick={() => {
+                                        publishProduct(product.id);
+                                        showToast("Product published successfully", "success");
+                                    }}
+                                    className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"><FaEye size={15}/> Publish</button>
                             )}
                             
                             <button 

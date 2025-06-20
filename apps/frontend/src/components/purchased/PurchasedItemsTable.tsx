@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import PurchasedItemSidePop from "./PurchasedItemSidePop";
 import { DigitalFile } from "../../store/usePurchasedItemsStore";
 import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
+import { FaDownload } from "react-icons/fa";
+import { useToast } from "../ui/Toast";
 
 export interface DigitalPurchase {
     id: string;
@@ -61,7 +63,7 @@ const PurchasedItemsTable = () => {
     const [isGridView, setIsGridView] = useState(() => {
         return window.innerWidth < 1024;
     });
-    
+    const { showToast } = useToast();
     useEffect(() => {
         getPurchasedItems();
     }, [getPurchasedItems]);
@@ -153,6 +155,52 @@ const PurchasedItemsTable = () => {
         );
     }
 
+    const exportToCSV = () => {
+        if (!filteredAndSortedItems || filteredAndSortedItems.length === 0) {
+            showToast("No data to export", "error");
+            return;
+        }
+    
+        const headers = [
+            "S.No",
+            "Item Name",
+            "Type",
+            "Status",
+            "Amount (INR)",
+            "Purchase Date",
+            "Expiry Date",
+            "ID"
+        ];
+    
+        const csvRows = [
+            headers.join(','),
+            ...filteredAndSortedItems.map((item, index) => {
+                const isSub = isTelegramSubscription(item);
+                return [
+                    index + 1,
+                    `"${isSub ? (item.plan?.channel?.channelName + " - " + item.planName) : item.product.title}"`,
+                    isSub ? "TELEGRAM_PLAN" : "DIGITAL_PRODUCT",
+                    item.status,
+                    isSub ? item.planPrice : item.price,
+                    new Date(isSub ? item.createdAt : item.purchaseDate).toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" }),
+                    isSub ? new Date(item.expiryDate).toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" }) : "–",
+                    item.id
+                ].join(',');
+            })
+        ];
+    
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `purchased_items_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-16 md:mb-0">
             <div className="flex flex-col gap-4 w-full">
@@ -243,19 +291,26 @@ const PurchasedItemsTable = () => {
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
-
+                        <button
+                            onClick={exportToCSV}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors duration-200"
+                            title="Export to CSV"
+                            >
+                            <FaDownload size={16} />
+                            <span className="hidden sm:inline">Export</span>
+                        </button>
                         <div className="cursor-pointer flex items-center gap-2">
                             <button 
                             className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
                             onClick={() => setIsGridView(true)}
                             >
-                                <CiCircleList size={20} />
+                                <CiGrid41 size={20} />
                             </button>
                             <button 
                             className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
                             onClick={() => setIsGridView(false)}
                             >
-                                <CiGrid41 size={20} />
+                                <CiCircleList size={20} />
                             </button>
                         </div>
                     </div>

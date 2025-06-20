@@ -142,10 +142,9 @@ export const uploadKycDocument = async (req: Request, res: Response) => {
         await s3Client.send(command);
 
         // Check if user already has a KYC document
-        const existingDocument = await prismaClient.kycDocument.findFirst({
+        const existingDocument = await prismaClient.kycDocument.findUnique({
             where: {
-                userId,
-                documentType
+                userId
             }
         });
 

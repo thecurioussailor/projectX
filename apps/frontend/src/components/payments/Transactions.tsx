@@ -149,13 +149,13 @@ const Transactions = () => {
                             className={`${isGridView ? "bg-gray-200" : "bg-white"} p-2 rounded-full`}
                             onClick={() => setIsGridView(true)}
                             >
-                                <CiCircleList size={20} />
+                                <CiGrid41 size={20} />
                             </button>
                             <button 
                             className={`${isGridView ? "bg-white" : "bg-gray-200"} p-2 rounded-full`}
                             onClick={() => setIsGridView(false)}
                             >
-                                <CiGrid41 size={20} />
+                                <CiCircleList size={20} />
                             </button>
                         </div>
                     </div>

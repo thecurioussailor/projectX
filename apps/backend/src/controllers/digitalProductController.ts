@@ -66,7 +66,11 @@ export const createDigitalProduct = async (req: Request, res: Response) => {
                 supportDetails: true,
                 _count: {
                     select: {
-                        orders: true
+                        orders: {
+                            where: {
+                                status: "SUCCESS"
+                            }
+                        }
                     }
                 }
             }
@@ -106,7 +110,11 @@ export const getDigitalProducts = async (req: Request, res: Response) => {
                 supportDetails: true,                
                 _count: {
                     select: {
-                        orders: true
+                        orders: {
+                            where: {
+                                status: "SUCCESS"
+                            }
+                        }
                     }
                 }
             },

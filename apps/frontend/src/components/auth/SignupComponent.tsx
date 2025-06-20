@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../ui/Toast';
 
 const SignupComponent = ({setIsSignin}: {setIsSignin: () => void}) => {
   const [email, setEmail] = useState("");
@@ -8,11 +9,17 @@ const SignupComponent = ({setIsSignin}: {setIsSignin: () => void}) => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const { signup, isLoading, error } = useAuth();
+  const { showToast } = useToast();
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email || !fullName || !phone || !password) return;
-    await signup(email, fullName, phone, password);
+    const success = await signup(email, fullName, phone, password);
+    if (success) {
+      showToast('Signup successful', 'success');
+    } else {
+      showToast(error || 'Signup failed', 'error');
+    }
   };
   
   return (
@@ -37,15 +44,10 @@ const SignupComponent = ({setIsSignin}: {setIsSignin: () => void}) => {
         <div className="w-full max-w-md space-y-1 h-96 overflow-y-scroll [&::-webkit-scrollbar]:hidden">
 
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-800">Sign Up</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Sign Up</h1>
             <p className="mt-2 text-gray-600 text-sm">Enter your Email, Phone, and Password</p>
           </div>
-          {error && (
-            <div className="text-red-500">
-              {error + ". " + "Try again"}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 px-1">
 
             {/* Email Input */}
             <div>

@@ -4,7 +4,8 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Error404 from '../components/ui/Error404';
 import { load } from '@cashfreepayments/cashfree-js';
 import { useTelegram } from '../hooks/useTelegram';
-
+import tinyLogo from '../assets/images/telegramTinyLogo.png';
+import telegramDefaultBanner from '../assets/images/telegramDefault.jpg';
 
 interface PublicPlan {
   id: string;
@@ -128,12 +129,14 @@ const PublicChannelPage = () => {
             <header className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">{channel.channelName}</h1>
-                <Link to="/" className="text-[#7F37D8] hover:underline">Tinywallet</Link>
+                <Link to="/" className="text-[#7F37D8] hover:underline">
+                  <img src={tinyLogo} alt="Tinywallet" className="w-16 h-16" />
+                </Link>
               </div>
               <p className="mt-2 text-gray-600">{channel.channelDescription}</p>
             </header>
             <div className="flex flex-col gap-6">
-              {channel.bannerUrl && <img src={channel.bannerUrl} alt="Banner" className="w-full h-48 object-contain" />}
+              {channel.bannerUrl ? <img src={channel.bannerUrl} alt="Banner" className="w-full h-48 object-contain" /> : <img src={telegramDefaultBanner} alt="Banner" className="w-full h-48 object-contain" />}
               <div 
                 className="text-gray-600 prose max-w-none"
                 dangerouslySetInnerHTML={{ __html: channel.richDescription }}
@@ -204,9 +207,6 @@ const PublicChannelPage = () => {
               <Accordion title="I have made the payment but it's not reflecting?" content="Please contact the customer support team with payment & contact details on support@projectx.vercel.in"/>
               <Accordion title="How I will get confirmation I have been added to the telegram subscription?" content="You will receive a confirmation message on your telegram account after the payment is made." />
               <Accordion title="Which mobile number will be added to telegram?" content="You will Join Now button arfter the payment, make sure you have logged in to proper telegram account before join. selected account will be telgram account." />
-            </div>
-            <div className="mt-4 text-sm px-6 py-4 border-t border-gray-200 text-gray-500">
-              <p>Channel created on: {new Date(channel.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
         </div>

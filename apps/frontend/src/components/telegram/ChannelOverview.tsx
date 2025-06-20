@@ -6,6 +6,7 @@ import RichTextEditor from "./RichTextEditor";
 import { IoClose } from "react-icons/io5";
 import { RiImageAddLine } from "react-icons/ri";
 import { useToast } from "../ui/Toast";
+import telegramDefaultBanner from "../../assets/images/telegramDefault.jpg";
 
 const ChannelOverview = ({ channelId }: { channelId: string }) => {
     const { fetchChannelById, currentChannel, updateChannel, updateChannelContact } = useTelegram();
@@ -87,7 +88,7 @@ const ChannelOverview = ({ channelId }: { channelId: string }) => {
                             <RiImageAddLine />
                         </button>
                         {isDialogOpen && currentChannel?.id && <UploadBanner channelId={currentChannel.id} onClose={() => setIsDialogOpen(false)} />}
-                        <img src={currentChannel?.bannerUrl} alt="Banner" className="w-full h-48 object-contain" />
+                        {currentChannel?.bannerUrl ? <img src={currentChannel?.bannerUrl} alt="Banner" className="w-full h-48 object-contain" /> : <img src={telegramDefaultBanner} alt="Banner" className="w-full h-48 object-contain" />}
                     </div>
                     <div className="flex flex-col gap-4 px-12">
                     <div className="flex items-center justify-between">

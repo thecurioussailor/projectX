@@ -10,6 +10,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useEffect } from 'react';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 
 ChartJS.register(
@@ -49,10 +50,6 @@ const RevenueChart = () => {
   useEffect(() => {
     fetchDailySalesStats();
   }, [fetchDailySalesStats]);
-  
-  if (isLoadingSales) {
-    return <div>Loading...</div>;
-  }
 
   
   const labels = dailySalesStats?.map((item) => new Date(item.date).toLocaleDateString('en-us', {day: 'numeric', month: 'short'}));
@@ -89,7 +86,7 @@ const RevenueChart = () => {
         <div className="p-4 px-6">
             <h1 className="font-bold text-xl">Revenue Statistics</h1>
             <div className="w-full h-64 lg:h-96">
-              <Bar options={options} data={data} />
+              {isLoadingSales ? <LoadingSpinner /> : <Bar options={options} data={data} />}
             </div>
         </div>
     </div>

@@ -8,6 +8,9 @@ import { FaStar } from "react-icons/fa";
 import { load } from '@cashfreepayments/cashfree-js';
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Error404 from "../components/ui/Error404";
+import { useToast } from "../components/ui/Toast";
+import { AxiosError as AxiosErrorType } from "axios";
+
 const PublicDigitalProductPage = () => {
   const { isAuthenticated, user } = useAuth();
   const { 
@@ -17,6 +20,7 @@ const PublicDigitalProductPage = () => {
     handlePaymentCallback,
     getGalleryImage,
     isLoading,
+    error
   } = useDigitalProduct();
   const { slug } = useParams();
   const [product, setProduct] = useState<PublicDigitalProduct | null>(null);
@@ -25,7 +29,7 @@ const PublicDigitalProductPage = () => {
   const [amount, setAmount] = useState<number>(0);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
-
+  const { showToast } = useToast();
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -53,6 +57,7 @@ const PublicDigitalProductPage = () => {
         }
       } catch (err) {
         console.error("Failed to load product:", err);
+        showToast(error || "Error loading product", "error");
       }
     };
 
@@ -104,8 +109,9 @@ const PublicDigitalProductPage = () => {
         console.error("Payment failed:", error);
         window.location.href = `${window.location.origin}/payment-failed?orderId=${paymentSession.orderId}`;
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to initiate purchase:", err);
+      showToast((err as AxiosErrorType<{message: string}>).response?.data.message || "Failed to initiate purchase", "error");
     }
   };
 
@@ -179,9 +185,9 @@ const PublicDigitalProductPage = () => {
             <div className="flex flex-col gap-2">
               <p className="text-zinc-900 font-semibold text-2xl mb-4">Contact</p>
               <div className="flex flex-col gap-2">
-                <p className="text-gray-500">Email: {product?.creator?.email || 'Not provided'}</p>
-                <p className="text-gray-500">Phone: {product?.creator?.phone || 'Not provided'}</p>
-                <p className="text-gray-500">Address: {product?.creator?.address || 'Not provided'}</p>
+                {product?.creator?.email && <p className="text-gray-500">Email: {product?.creator?.email}</p>}
+                {product?.creator?.phone && <p className="text-gray-500">Phone: {product?.creator?.phone}</p>}
+                {product?.creator?.address && <p className="text-gray-500">Address: {product?.creator?.address}</p>}
               </div>
             </div>
             <div className="text-gray-500 rounded-3xl p-4 bg-[#7F37D8] flex flex-col gap-2">
@@ -245,7 +251,7 @@ const PublicDigitalProductPage = () => {
                   <label htmlFor="amount">Original Amount</label>
                   <p className="text-2xl font-semibold">₹ {product?.price}</p>
                 </div>
-                {product?.hasDiscount && (
+                {product?.hasDiscount && product?.discountedPrice !== product?.price && (
                   <div className="flex justify-between items-center gap-2 px-4">
                     <label htmlFor="amount">Discount</label>
                     <p className="text-2xl font-semibold">₹ {product?.price - product?.discountedPrice}</p>

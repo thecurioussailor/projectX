@@ -4,7 +4,7 @@ import TotalSaleCard from "../components/dashboard/TotalSaleCard"
 import PiChartSales from "../components/dashboard/PiChartSales"
 import { useDashboard } from "../hooks/useDashboard"
 import LoadingSpinner from "../components/ui/LoadingSpinner"
-import TotalRevenueChart from "../components/dashboard/TotalRevenueChart"
+import TotalRevenueApexChart from "../components/dashboard/ApexChart"
 const Dashboard = () => {
   const { stats, isLoading, error } = useDashboard();
   
@@ -84,8 +84,8 @@ const Dashboard = () => {
             title={"Click Count"}
           />
         </div>
-        <div className="w-full">
-          <TotalRevenueChart />
+        <div className="w-full h-96 mb-36">
+          <TotalRevenueApexChart />
         </div>
         <div className="w-full">
           <RevenueChart />
