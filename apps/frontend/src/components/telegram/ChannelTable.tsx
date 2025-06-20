@@ -9,6 +9,7 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { FaEdit, FaEye, FaEyeSlash, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { CiCircleList, CiGrid41, CiSearch } from "react-icons/ci";
+import { useToast } from "../ui/Toast";
 const PUBLIC_APP_URL = import.meta.env.VITE_PUBLIC_APP_URL;
 
 const ChannelTable = () => {
@@ -215,8 +216,9 @@ const ChannelCard = ({ channel, index }: { channel: TelegramChannel, index: numb
     const [showMenu, setShowMenu] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const { unpublishChannel, publishChannel, deleteChannel } = useTelegram();
+    const { showToast } = useToast();
     const navigate = useNavigate();
-
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false); 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -281,9 +283,30 @@ const ChannelCard = ({ channel, index }: { channel: TelegramChannel, index: numb
                                         <FaEye size={15}/> Publish
                                     </button>
                                 )}
-                                <button onClick={() => deleteChannel(channel.id)} className="px-4 py-2 flex items-center gap-2 hover:bg-purple-600 hover:text-white text-left">
+                                <button onClick={() => {
+                                    setShowDeleteConfirm(true);
+                                }} className="px-4 py-2 flex items-center gap-2 hover:bg-purple-600 hover:text-white text-left">
                                     <FaTrash size={15}/> Delete
                                 </button>
+                                {showDeleteConfirm && (
+                                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                        <div className="bg-white rounded-3xl max-w-md w-full">
+                                            <h2 className="text-xl font-semibold mb-4 px-8 py-8 text-zinc-800 border-b border-gray-200 pb-4">Delete Channel</h2>
+                                            <p className="text-gray-600 mb-6 px-8 py-2">
+                                                Are you sure you want to delete this channel? This action cannot be undone.
+                                            </p>
+                                            <div className="flex justify-end gap-4 px-8 pb-8">
+                                                <button onClick={() => setShowDeleteConfirm(false)} className="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                                                <button onClick={() => {
+                                                    deleteChannel(channel.id);
+                                                    showToast("Channel deleted successfully", "success");
+                                                    setShowDeleteConfirm(false);
+                                                    setShowMenu(false);
+                                                }} className="px-8 py-2 bg-[#7F37D8] text-white rounded-3xl hover:bg-[#6C2EB9]">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}  
                             </div>
                         </div>
                     )}
@@ -358,7 +381,9 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
     const [showMenu, setShowMenu] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const { unpublishChannel, publishChannel, deleteChannel } = useTelegram();
+    const { showToast } = useToast();
     const navigate = useNavigate();
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -371,12 +396,10 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
 
     const handleShare = (channelId: string) => {
         const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
-        console.log(shareableLink);
         window.open(shareableLink, '_blank');
     };
     const handleCopy = (channelId: string) => {
         const shareableLink = `${PUBLIC_APP_URL}/c/${channelId}`;
-        console.log(shareableLink);
         navigator.clipboard.writeText(shareableLink).then(() => {
             setCopied(true);
             setTimeout(() => {
@@ -432,12 +455,55 @@ const ChannelTableRow = ({ channel, index }: { channel: TelegramChannel, index: 
                                             onClick={() => navigate(`/telegram/${channel.id}/edit`)}        
                                             className="px-4 py-2 flex items-center gap-2  hover:bg-purple-600 hover:text-white"><FaEdit size={15}/> Edit</button>
                                         {channel.status === "ACTIVE" ? (
-                                            <button onClick={() => unpublishChannel(channel.id)} className="px-4 py-2 flex items-center gap-2  hover:bg-purple-600 hover:text-white"><FaEyeSlash size={15}/> Unpublish</button>
+                                            <button onClick={() => {
+                                                unpublishChannel(channel.id);
+                                                showToast("Channel unpublished successfully", "success");
+                                                setShowMenu(false);
+                                            }} className="px-4 py-2 flex items-center gap-2  hover:bg-purple-600 hover:text-white"><FaEyeSlash size={15}/> Unpublish</button>
                                         ) : (
-                                            <button onClick={() => publishChannel(channel.id)} className="px-4 py-2 flex items-center gap-2  hover:bg-purple-600 hover:text-white"><FaEye size={15}/> Publish</button>
+                                            <button onClick={() => {
+                                                publishChannel(channel.id);
+                                                showToast("Channel published successfully", "success");
+                                                setShowMenu(false);
+
+                                            }} className="px-4 py-2 flex items-center gap-2  hover:bg-purple-600 hover:text-white"><FaEye size={15}/> Publish</button>
                                         )}
-                                        <button onClick={() => deleteChannel(channel.id)} className="px-4 py-2 flex items-center gap-2  hover:bg-purple-600 hover:text-white"><FaTrash size={15}/> Delete
+                                        <button onClick={() => {
+                                                setShowDeleteConfirm(true);
+                                            }
+                                        } 
+                                            className="px-4 py-2 flex items-center gap-2  hover:bg-purple-600 hover:text-white"><FaTrash size={15}/> Delete
                                         </button>
+                                        {showDeleteConfirm && (
+                                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                            <div className="bg-white rounded-3xl max-w-md w-full">
+                                                <h2 className="text-xl font-semibold mb-4 px-8 py-8 text-zinc-800 border-b border-gray-200 pb-4">Delete Product</h2>
+                                                <p className="text-gray-600 mb-6 px-8 py-2">
+                                                    Are you sure you want to delete this channel? This action cannot be undone.
+                                                </p>
+                                                <div className="flex justify-end gap-4 px-8 pb-8">
+                                                    <button
+                                                        onClick={() => setShowDeleteConfirm(false)}
+                                                        className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                                deleteChannel(channel.id);
+                                                                showToast("Channel deleted successfully", "success");
+                                                                setShowDeleteConfirm(false);
+                                                                setShowMenu(false);
+                                                            }
+                                                        }
+                                                        className="px-8 py-2 bg-[#7F37D8] text-white rounded-3xl hover:bg-[#6C2EB9]"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                     </div>
                                 </div>
                             </div>

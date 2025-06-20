@@ -306,8 +306,11 @@ export const useTelegramStore = create<TelegramState>((set, get) => ({
   // Channel methods
   createChannel: async (channelName: string, channelDescription: string, telegramNumber: string) => {
     set({ isLoading: true, error: null });
+    if (!telegramNumber.startsWith('+91')) {
+      telegramNumber = "+91" + telegramNumber;
+    }
     try {
-      const response = await api.post('/api/v1/telegram/channels', { channelName, channelDescription, "telegramNumber": "+91" + telegramNumber });
+      const response = await api.post('/api/v1/telegram/channels', { channelName, channelDescription, telegramNumber });
       const newChannel = response.data.data;
       set(state => ({ 
         channels: [...state.channels, newChannel],

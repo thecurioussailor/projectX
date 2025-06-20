@@ -298,6 +298,7 @@ const ProductCard = ({ product, index }: { product: DigitalProduct, index: numbe
                                         onClick={() => {
                                             unpublishProduct(product.id);
                                             showToast("Product unpublished successfully", "success");
+                                            setShowMenu(false);
                                         }}
                                         className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left"
                                     >
@@ -308,6 +309,7 @@ const ProductCard = ({ product, index }: { product: DigitalProduct, index: numbe
                                         onClick={() => {
                                             publishProduct(product.id);
                                             showToast("Product published successfully", "success");
+                                            setShowMenu(false);
                                         }}
                                         className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2 text-left"
                                     >
@@ -499,6 +501,7 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
                                     onClick={() => {
                                         unpublishProduct(product.id);
                                         showToast("Product unpublished successfully", "success");
+                                        setShowMenu(false);
                                     }}
                                     className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"
                                 >
@@ -509,6 +512,7 @@ const ProductRow = ({ product, index }: { product: DigitalProduct, index: number
                                     onClick={() => {
                                         publishProduct(product.id);
                                         showToast("Product published successfully", "success");
+                                        setShowMenu(false);
                                     }}
                                     className="text-zinc-800 flex items-center gap-2 hover:bg-[#7F37D8] hover:text-white px-4 py-2"><FaEye size={15}/> Publish</button>
                             )}

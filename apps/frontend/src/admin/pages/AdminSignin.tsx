@@ -2,20 +2,37 @@ import { useState } from "react";
 import { FormEvent } from "react";
 import logo from "../../assets/images/bali.jpg"
 import { useAdmin } from "../hooks/useAdmin";
+import { useToast } from "../../components/ui/Toast";
+import { FaSpinner } from "react-icons/fa";
 
 const AdminSignin = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
-    const { signin, isLoading, error } = useAdmin({
+    const [loading, setLoading] = useState(false);
+    const { signin, error } = useAdmin({
     redirectTo: '/admin/dashboard',
     redirectIfFound: true
   });
+    const { showToast } = useToast();
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!username || !password) return;
-    await signin(username, password);
+    setLoading(true);
+    
+    try {
+      const success = await signin(username, password);
+      if (success) {
+        showToast('Login successful', 'success');
+      } else {
+        showToast(error || 'Login failed', 'error');
+      }
+    } catch {
+      showToast('An unexpected error occurred', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -30,12 +47,6 @@ const AdminSignin = () => {
       <div className="bg-white py-4 px-8 w-2/3">
         <h1 className="text-2xl font-medium text-center text-gray-800 mb-6">SIGN IN</h1>
         <p className="text-center text-gray-600 mb-8">Enter your Username and Password</p>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
         
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
@@ -79,12 +90,10 @@ const AdminSignin = () => {
           
           <button 
             type="submit"
-            disabled={isLoading}
-            className={`w-full bg-purple-600 text-white py-2 text-sm font-medium rounded-md hover:bg-purple-700 transition duration-300 ${
-              isLoading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
+            disabled={loading}
+            className="w-full bg-purple-600 text-white py-2 text-sm font-medium rounded-md hover:bg-purple-700 transition duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'SIGNING IN...' : 'LOGIN'}
+            {loading ? <span className="flex items-center gap-2 text-white w-full justify-center"><FaSpinner className="animate-spin" /> SIGNING IN...</span> : 'LOGIN'}
           </button>
         </form>
       </div>

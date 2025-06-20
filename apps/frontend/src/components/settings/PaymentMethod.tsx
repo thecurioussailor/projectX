@@ -327,9 +327,6 @@ const PaymentMethod = () => {
                             <span className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(method.priority)}`}>
                               {method.priority}
                             </span>
-                            <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(method.status)}`}>
-                              {method.status}
-                            </span>
                           </div>
                           <p className="text-sm text-gray-600">Account: ****{method.accountNumber?.slice(-4)}</p>
                           <p className="text-sm text-gray-600">IFSC: {method.ifscCode}</p>
