@@ -52,10 +52,13 @@ export const useAdminKycStore = create<AdminKycState>((set) => ({
     error: null,
     getAllKycDocuments: async () => {
         set({ isLoading: true, error: null });
+        console.log('getAllKycDocuments called');
         try {
             const response = await api.get('/api/v1/admin/kyc-documents');
+            console.log('KYC API Response:', response.data);
             set({ kycDocument: response.data.data.documents, isLoading: false });
         } catch (error) {
+            console.error('KYC API Error:', error);
             set({ error: error instanceof Error ? error.message : 'An unknown error occurred', isLoading: false });
         }
     },

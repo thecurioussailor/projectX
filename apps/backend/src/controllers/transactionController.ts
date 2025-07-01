@@ -30,7 +30,7 @@ export const getTransactions = async (req: Request, res: Response) => {
                             channel: {
                               telegramAccount: {
                                 userId: userId
-                              }
+                              },
                             }
                           }
                         }
@@ -62,7 +62,13 @@ export const getTransactions = async (req: Request, res: Response) => {
                         telegramPlan: {
                             select: {
                                 id: true,
-                                name: true
+                                name: true,
+                                channel: {
+                                    select: {
+                                        id: true,
+                                        channelName: true
+                                    }
+                                }
                             }
                         },
                         user: {

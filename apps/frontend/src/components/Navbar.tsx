@@ -1,5 +1,5 @@
 import { FiAlignCenter } from "react-icons/fi";
-import { FaHeart, FaUser, FaProductHunt, FaTelegram, FaBell } from "react-icons/fa";
+import { FaHeart, FaUser, FaProductHunt, FaTelegram } from "react-icons/fa";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,6 +8,8 @@ import userImage from "../assets/images/profileprojectx.png";
 import logo from "../assets/images/tinywalletLogo.png";
 import { GoScreenFull, GoSignOut } from "react-icons/go";
 import Notification from "./notifications/Notification";
+import notificationIcon from "../assets/images/notificationBell.png";
+import { IoWalletOutline } from "react-icons/io5";
 const Navbar = ({isMobile}: {isMobile: boolean}) => {
   
   const { toggleSidebar, isSidebarOpen } = useSidebar();
@@ -128,7 +130,7 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
               setIsNotificationOpen(!isNotificationOpen);
             }}
           >
-            <FaBell size={20} className="text-yellow-600"/>
+            <img src={notificationIcon} width={20} className="text-yellow-600"/>
           </button>
         {isNotificationOpen && <Notification/>}
         </div>
@@ -157,6 +159,15 @@ const ProfileBar = ({isMobile}: {isMobile: boolean}) => {
                   className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <FaUser />Profile
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/payments');
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <IoWalletOutline />Wallet
                 </button>
                 <button
                   onClick={handleLogout}

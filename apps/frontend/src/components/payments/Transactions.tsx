@@ -200,7 +200,7 @@ const TransactionRow = ({transaction, index}: {transaction: Transaction, index: 
     return (
         <tr className="border-t border-gray-200 h-20">
             <td className="px-8">{index + 1}</td>
-            <td className="px-4">{transaction.order?.digitalProduct?.title || transaction.order?.telegramPlan?.name}</td>
+            <td className="px-4">{transaction.order?.digitalProduct?.title || transaction.order?.telegramPlan?.name + " - " + transaction.order?.telegramPlan?.channel?.channelName}</td>
             <td className="px-4"><span className="bg-[#E7F3FE] text-[#158DF7] text-xs font-semibold rounded-full px-2 py-1">{transaction.order?.productType}</span></td>
             <td className="px-4"><div className={`border w-fit px-2 flex items-center gap-2 py-1 rounded-full`}><div className={`${transaction.status === "SUCCESS" ? "bg-green-500": "bg-red-500"} w-2 h-2 rounded-full`}></div><span className="text-xs">{transaction.status === "SUCCESS" ? "Success" : "Failed"}</span></div></td>
             <td className="px-4">{transaction.amount}</td>

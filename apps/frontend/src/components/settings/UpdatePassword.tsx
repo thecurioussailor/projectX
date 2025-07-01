@@ -37,7 +37,7 @@ const UpdatePassword = () => {
         }
     }
   return (
-    <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-16 md:mb-0">
+    <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100">
     <div className="flex flex-col gap-4 w-full">
         <div className="relative ml-8 mt-8">
             <div className="absolute rounded-full bg-[#7E37D8] h-14 w-14 -top-6 -left-16"></div>

@@ -28,6 +28,10 @@ const Kyc = () => {
     }
 
     try {
+      if(file.type !== "application/pdf") {
+        showToast('Please upload a PDF document', 'error');
+        return;
+      }
       await uploadDocument(file, documentType, documentNumber);
       showToast('KYC document uploaded successfully!', 'success');
       setFile(null);
@@ -58,7 +62,7 @@ const Kyc = () => {
         </div>
         <div className="flex flex-col lg:flex-row gap-4 p-12 pt-0">
           <div className="flex flex-col gap-4 w-full lg:w-1/3">
-            <h1 className="text-xl font-semibold text-[#1B3155]">Upload KYC Document</h1>
+            <h1 className="text-xl font-semibold text-[#1B3155]">Upload KYC Document (PDF Only)</h1>
             <div className="flex flex-col gap-2">
               <label>Document Type</label>
               <div className="relative">

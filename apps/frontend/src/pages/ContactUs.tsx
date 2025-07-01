@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/tinywalletLogo.png';
+import Footer from '../components/landing/Footer';
 
 const ContactUs = () => {
   const { isAuthenticated } = useAuth();
@@ -137,18 +138,7 @@ const ContactUs = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-800 mt-16">
-        <div className="max-w-7xl mx-auto pb-12 px-4 overflow-hidden sm:px-6 lg:px-8">
-          <div className="mt-8 border-t border-gray-700 pt-8 md:flex md:items-center md:justify-between">
-            <p className="mt-8 text-base text-gray-400 md:mt-0 md:order-1">
-              &copy; 2023 TINYWALLET. All rights reserved. |{" "}
-              <Link to="/privacy" className="text-gray-400 hover:text-gray-300">Privacy</Link> |{" "}
-              <Link to="/terms" className="text-gray-400 hover:text-gray-300">Terms</Link> |{" "}
-              <Link to="/refund" className="text-gray-400 hover:text-gray-300">Refund</Link>
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

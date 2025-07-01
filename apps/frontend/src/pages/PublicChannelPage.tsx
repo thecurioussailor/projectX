@@ -208,6 +208,10 @@ const PublicChannelPage = () => {
               <Accordion title="How I will get confirmation I have been added to the telegram subscription?" content="You will receive a confirmation message on your telegram account after the payment is made." />
               <Accordion title="Which mobile number will be added to telegram?" content="You will Join Now button arfter the payment, make sure you have logged in to proper telegram account before join. selected account will be telgram account." />
             </div>
+            <div className="flex flex-col gap-2 border-t border-gray-200 py-4 px-6">
+              <h1 className="text-2xl font-semibold">Tinywallet</h1>
+              <p className="text-gray-500 flex flex-col gap-1">Want to create your own payment page? Experience hassle-free payouts and premium support. <Link to={"/"} className="text-[#7F37D8]">Get started now!</Link></p>
+            </div>
           </div>
         </div>
       </div>

@@ -204,7 +204,7 @@ const PublicDigitalProductPage = () => {
             </div>
             <div className="flex flex-col gap-2 border-t border-gray-200 pt-4">
               <h1 className="text-2xl font-semibold">Tinywallet</h1>
-              <p className="text-gray-500">Want to create your own payment page? Experience hassle-free payouts and premium support. <a href="#" className="text-[#7F37D8]">Get started now!</a></p>
+              <p className="text-gray-500">Want to create your own payment page? Experience hassle-free payouts and premium support. <Link to={'/'} className="text-[#7F37D8]">Get started now!</Link></p>
             </div>
           </div>
       </div>

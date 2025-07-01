@@ -22,6 +22,10 @@ export interface Transaction {
     telegramPlan?: {
       id: string;
       name: string;
+      channel: {
+        id: string;
+        channelName: string;
+      };
     };
     user: {
       id: string;

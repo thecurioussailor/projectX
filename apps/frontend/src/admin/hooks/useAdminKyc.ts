@@ -17,7 +17,8 @@ export const useAdminKyc = () => {
 
     const fetchAllKycDocuments = useCallback(async () => {
         if (!token) {
-            throw new Error("You must be logged in to create a product");
+            console.error("No token available for KYC fetch");
+            throw new Error("You must be logged in to fetch KYC documents");
         };
         return getAllKycDocumentsStore();
     }, [token, getAllKycDocumentsStore]);

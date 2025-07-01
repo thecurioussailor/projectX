@@ -1,14 +1,10 @@
 import { AdminKycDocument } from "../../store/useAdminKycStore";
 import { useAdminKyc } from "../../hooks/useAdminKyc";
-import Error from "../../../components/ui/Error";
 import { useState } from "react";
 import KycDocumentSidePop from "./KycDocumentSidePop";
 const KycDocumentsTable = () => {
-  const { kycDocument, error } = useAdminKyc();
+  const { kycDocument } = useAdminKyc();
 
-if (error) {
-    return <Error error={error} />;
-}
   return (
     <div className="flex justify-between gap-4 bg-white rounded-[3rem] w-full overflow-clip shadow-lg shadow-purple-100 mb-16 md:mb-0">
     <div className="flex flex-col gap-4 w-full">

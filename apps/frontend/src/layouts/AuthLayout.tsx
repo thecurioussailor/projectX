@@ -21,7 +21,7 @@ const AuthLayout = () => {
         {isMobile ? <MobileNav /> : <Sidebar />}
         {isMobile ? (
           <div 
-          className="flex-grow p-4 overflow-auto h-[calc(100vh-92px)]"
+          className="flex-grow p-4 pb-16 overflow-auto h-[calc(100vh-92px-80px)]"
         >
           <Outlet />
         </div>
