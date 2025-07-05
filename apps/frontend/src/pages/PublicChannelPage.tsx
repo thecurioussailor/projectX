@@ -6,7 +6,7 @@ import { load } from '@cashfreepayments/cashfree-js';
 import { useTelegram } from '../hooks/useTelegram';
 import tinyLogo from '../assets/images/telegramTinyLogo.png';
 import telegramDefaultBanner from '../assets/images/telegramDefault.jpg';
-
+import securePayment from '../assets/images/securePayment.png';
 interface PublicPlan {
   id: string;
   name: string;
@@ -207,6 +207,9 @@ const PublicChannelPage = () => {
               <Accordion title="I have made the payment but it's not reflecting?" content="Please contact the customer support team with payment & contact details on support@projectx.vercel.in"/>
               <Accordion title="How I will get confirmation I have been added to the telegram subscription?" content="You will receive a confirmation message on your telegram account after the payment is made." />
               <Accordion title="Which mobile number will be added to telegram?" content="You will Join Now button arfter the payment, make sure you have logged in to proper telegram account before join. selected account will be telgram account." />
+            </div>
+            <div className="bg-white p-6 rounded-3xl shadow-sm mb-6 w-full">
+              <img src={securePayment} alt="Secure Payment" className="w-full h-48 object-contain" />
             </div>
             <div className="flex flex-col gap-2 border-t border-gray-200 py-4 px-6">
               <h1 className="text-2xl font-semibold">Tinywallet</h1>

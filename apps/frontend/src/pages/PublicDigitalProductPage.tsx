@@ -10,7 +10,7 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Error404 from "../components/ui/Error404";
 import { useToast } from "../components/ui/Toast";
 import { AxiosError as AxiosErrorType } from "axios";
-
+import securePayment from '../assets/images/securePayment.png';
 const PublicDigitalProductPage = () => {
   const { isAuthenticated, user } = useAuth();
   const { 
@@ -201,6 +201,9 @@ const PublicDigitalProductPage = () => {
               <p className="text-white">Tinywallet shall not be held liable for any content or materials published, sold, or distributed by content creators on our associated apps or websites. 
                 <Link to="/contact-us" className="text-white hover:underline pl-2">Learn more</Link>
               </p>
+            </div>
+            <div className="bg-white p-6 rounded-3xl shadow-sm mb-6 w-full">
+              <img src={securePayment} alt="Secure Payment" className="w-full h-48 object-contain" />
             </div>
             <div className="flex flex-col gap-2 border-t border-gray-200 pt-4">
               <h1 className="text-2xl font-semibold">Tinywallet</h1>
@@ -400,7 +403,7 @@ const PublicDigitalProductPage = () => {
                 }
               }}  
               className="bg-[#7F37D8] text-white rounded-3xl p-2 hover:bg-[#6C2EB9] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-              disabled={amount < (product?.price || 0)}
+              disabled={!user?.name || !user?.email || !user?.phone}
             >
               {product?.ctaButtonText|| "Pay Now"}
             </button> : <button 
